@@ -72,41 +72,8 @@ def test_layer1_public_passes():
     # No exception means guard passed — good enough
 
 
-# ── Layer 2: marker skip in write-loop ──
-
-
-def test_layer2_marker_skips_private_msgs(tmp_path):
-    """Messages stamped _phase_private are skipped by the write-loop.
-
-    Uses a real SessionDB (file-backed) so the write-loop runs fully.
-    """
-    from run_agent import _PHASE_PRIVATE_MARKER
-    from hermes_state import SessionDB
-    agent = _bare_agent(_phase="public")
-    db = SessionDB(db_path=tmp_path / "session.db")
-    agent._session_db = db
-    agent.platform = "test"
-    agent._flushed_db_message_ids = {}
-    agent._cached_system_prompt = ""
-    agent._session_init_model_config = None
-
-    msgs = [
-        {"role": "assistant", "content": CANARY, _PHASE_PRIVATE_MARKER: True},
-        {"role": "user", "content": "public-normal-msg"},
-    ]
-    agent._flush_messages_to_session_db(msgs)
-
-    # Query the real DB directly
-    conn = sqlite3.connect(str(agent._session_db.db_path))
-    try:
-        rows = conn.execute("SELECT content FROM messages").fetchall()
-        contents = [r[0] for r in rows]
-        assert any("public-normal-msg" in c for c in contents), f"No public msg: {contents}"
-        assert not any(CANARY in c for c in contents), f"CANARY leaked: {contents}"
-        fts_rows = conn.execute("SELECT * FROM messages_fts WHERE messages_fts MATCH 'WHARE*'").fetchall()
-        assert len(fts_rows) == 0, f"CANARY in FTS: {fts_rows}"
-    finally:
-        conn.close()
+# ── Layer 2: marker skip → tests/run_agent/test_wp2c_isolation.py
+#    (real SessionDB + real AIAgent init — this mock is obsolete)
 
 
 def test_tool_executor_guard():
