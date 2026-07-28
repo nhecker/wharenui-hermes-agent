@@ -5024,8 +5024,11 @@ def run_conversation(
                             agent.stream_delta_callback(None)
                         except Exception:
                             pass
+                    private_start_idx = len(messages)
                     handler = agent._control_handlers.get(outcome.handler)
                     result = handler.run(agent, messages, effective_task_id) if handler else None
+                    for _i in range(private_start_idx, len(messages)):
+                        messages[_i]["_phase_private"] = True
                     agent._phase = "public"
                     resume_marker = "[returned to window]"
                     agent._safe_print(f"\n{resume_marker}\n")

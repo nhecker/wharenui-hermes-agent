@@ -119,6 +119,11 @@ def _flush_session_db_after_tool_progress(
     *,
     stage: str,
 ) -> None:
+    # ponytail: skip mid-private tool-progress flushes so the write-loop
+    # never sees accumulated private messages. Public flush after resume
+    # is blocked by _PHASE_PRIVATE_MARKER (Layer 2).
+    if getattr(agent, "_phase", "public") != "public":
+        return
     """Best-effort incremental SessionDB flush for tool-call progress.
 
     Tool execution can perform side effects that terminate or restart the

@@ -261,6 +261,9 @@ _MAX_TOOL_WORKERS = 8
 # every top-level ``_``-prefixed key before the request leaves the process, so
 # this never reaches a strict OpenAI-compatible gateway.
 _DB_PERSISTED_MARKER = "_db_persisted"
+# Never-persist marker set during private-phase handoff.
+# Becomes the routing key for the Stage-4 encrypted event-file sink.
+_PHASE_PRIVATE_MARKER = "_phase_private"
 
 
 # Guard so the OpenRouter metadata pre-warm thread is only spawned once per
@@ -1849,6 +1852,8 @@ class AIAgent:
         # "becomes" the curator. Hard-stop before any DB touch.
         if getattr(self, "_persist_disabled", False):
             return
+        if getattr(self, "_phase", "public") != "public":
+            return
         if not self._session_db:
             return
         # Persist user-message override (#48677 chokepoint): historically this
@@ -1919,6 +1924,8 @@ class AIAgent:
                 if _is_ephemeral_scaffolding(msg):
                     continue
                 if msg.get(_DB_PERSISTED_MARKER):
+                    continue
+                if msg.get(_PHASE_PRIVATE_MARKER):
                     continue
                 # Already-durable messages: either carried over from the loaded
                 # history copy, or seeded by a caller. Stamp them so future
