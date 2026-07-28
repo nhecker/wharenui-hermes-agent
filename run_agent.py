@@ -2055,7 +2055,12 @@ class AIAgent:
         if not self.save_trajectories:
             return
         
-        trajectory = self._convert_to_trajectory_format(messages, user_query, completed)
+        # Private messages stay in the live model context, never in trajectory files.
+        # ponytail: filter once at this shared sink; callers need no phase plumbing.
+        public_messages = [
+            message for message in messages if not message.get(_PHASE_PRIVATE_MARKER)
+        ]
+        trajectory = self._convert_to_trajectory_format(public_messages, user_query, completed)
         _save_trajectory_to_file(trajectory, self.model, completed)
 
     @staticmethod

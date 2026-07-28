@@ -1,0 +1,112 @@
+"""WP2c regression tests: trajectory and real SessionDB isolation."""
+
+import json
+import os
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
+
+@pytest.mark.parametrize("completed", [True, False])
+def test_trajectory_excludes_private_messages(tmp_path, completed):
+    from agent.trajectory import save_trajectory
+    from run_agent import AIAgent, _PHASE_PRIVATE_MARKER
+
+    path = tmp_path / ("success.jsonl" if completed else "failed.jsonl")
+    agent = AIAgent.__new__(AIAgent)
+    agent.save_trajectories = True
+    agent.model = "test/model"
+    agent._convert_to_trajectory_format = lambda messages, query, done: messages
+    messages = [
+        {"role": "user", "content": "public"},
+        {"role": "assistant", "content": "private-canary", _PHASE_PRIVATE_MARKER: True},
+    ]
+    with patch(
+        "run_agent._save_trajectory_to_file",
+        side_effect=lambda t, m, c: save_trajectory(t, m, c, str(path)),
+    ):
+        agent._save_trajectory(messages, "q", completed)
+
+    record = json.loads(path.read_text())
+    assert record["conversations"] == [{"role": "user", "content": "public"}]
+    assert "private-canary" not in path.read_text()
+
+
+def _make_real_agent(db, session_id):
+    with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}):
+        from run_agent import AIAgent
+
+        agent = AIAgent(
+            api_key="test-key",
+            base_url="https://openrouter.ai/api/v1",
+            model="test/model",
+            quiet_mode=True,
+            session_db=db,
+            session_id=session_id,
+            skip_context_files=True,
+            skip_memory=True,
+        )
+    agent._ensure_db_session()
+    return agent
+
+
+def test_real_session_db_skips_private_marker(tmp_path):
+    from hermes_state import SessionDB
+    from run_agent import _PHASE_PRIVATE_MARKER
+
+    session_id = "wp2c-layer2"
+    db = SessionDB(db_path=Path(tmp_path) / "session.db")
+    db.create_session(session_id, "test", model="test/model")
+    try:
+        agent = _make_real_agent(db, session_id)
+        public = {"role": "user", "content": "public tail"}
+        private = {
+            "role": "assistant",
+            "content": "WHARE-CANARY-7f3a9b2e",
+            _PHASE_PRIVATE_MARKER: True,
+        }
+        agent._flush_messages_to_session_db([public], [])
+        agent._phase = "private"
+        agent._flush_messages_to_session_db([public, private], [])
+        agent._phase = "public"
+        agent._flush_messages_to_session_db(
+            [public, private, {"role": "assistant", "content": "public reply"}], []
+        )
+
+        contents = [row["content"] for row in db.get_messages(session_id)]
+        assert "public tail" in contents
+        assert "public reply" in contents
+        assert "WHARE-CANARY-7f3a9b2e" not in contents
+        fts = db._conn.execute(
+            "SELECT * FROM messages_fts WHERE messages_fts MATCH 'WHARE*'"
+        ).fetchall()
+        assert not fts
+    finally:
+        db.close()
+
+
+def test_private_and_closing_private_flush_guards(tmp_path):
+    from run_agent import AIAgent
+    from unittest.mock import MagicMock
+
+    for phase in ("private", "closing_private"):
+        agent = AIAgent.__new__(AIAgent)
+        agent._persist_disabled = False
+        agent._phase = phase
+        agent._session_db = MagicMock()
+        agent._session_persist_lock = None
+        agent._flush_messages_to_session_db([{"role": "assistant", "content": "x"}])
+        assert agent._session_db.insert_message.call_count == 0
+
+
+def test_trajectory_marker_is_generic():
+    from run_agent import _PHASE_PRIVATE_MARKER
+    assert _PHASE_PRIVATE_MARKER == "_phase_private"
+    assert "wharenui" not in _PHASE_PRIVATE_MARKER
+    assert "journal" not in _PHASE_PRIVATE_MARKER
+
+
+if __name__ == "__main__":
+    print("use pytest")
+    raise SystemExit(0) 
