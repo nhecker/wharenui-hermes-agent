@@ -4981,6 +4981,8 @@ class AIAgent:
             )
 
     def _fire_stream_delta(self, text: str) -> None:
+        if getattr(self, "_phase", "public") != "public":
+            return
         """Fire all registered stream delta callbacks (display + TTS)."""
         # Single-writer guard (#65991): a superseded stream must not interleave
         # its tokens into the turn alongside the retry that replaced it.
@@ -5039,6 +5041,8 @@ class AIAgent:
             self._record_streamed_assistant_text(text)
 
     def _fire_reasoning_delta(self, text: str) -> None:
+        if getattr(self, "_phase", "public") != "public":
+            return
         """Fire reasoning callback if registered."""
         # Single-writer guard (#65991): fence out a superseded stream's
         # reasoning deltas the same way as content deltas.

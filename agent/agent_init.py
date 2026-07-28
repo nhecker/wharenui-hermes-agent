@@ -1988,6 +1988,25 @@ def init_agent(
     # provider tools — without the gate, `platform_toolsets: telegram: []`
     # would still leak lcm_* tools into the tool surface and incur the
     # same local-model latency penalty.
+    
+    # Wharenui phase-control tool loading
+    agent._control_tool_names: set[str] = set()
+    agent._control_handlers: dict[str, Any] = {}
+    agent._pending_phase_transition: Any | None = None
+    agent._phase: str = "public"
+    try:
+        from hermes_cli.plugins import get_control_tool_names, get_control_phase_handler
+        _cnames = get_control_tool_names()
+        agent._control_tool_names = _cnames
+        for _cn in _cnames:
+            _h = get_control_phase_handler(_cn)
+            if _h:
+                agent._control_handlers[_cn] = _h
+        if _cnames:
+            from agent.tool_dispatch_helpers import _CONTROL_TOOLS
+            _CONTROL_TOOLS.update(_cnames)
+    except Exception:
+        pass
     agent._context_engine_tool_names: set = set()
     if (
         hasattr(agent, "context_compressor")

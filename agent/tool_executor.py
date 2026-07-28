@@ -1244,6 +1244,15 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                 error_message=getattr(_guardrail_block_decision, "message", None) or "Tool blocked by guardrail policy",
                 middleware_trace=list(middleware_trace),
             )
+        
+        elif function_name in agent._control_tool_names:
+            _h = agent._control_handlers.get(function_name)
+            outcome = _h.begin(function_args) if _h and hasattr(_h, 'begin') else None
+            if outcome is None:
+                from agent.phase_control import ControlOutcome
+                outcome = ControlOutcome(action="enter", handler=function_name, tool_result=function_name + " acknowledged")
+            agent._pending_phase_transition = outcome
+            _tool_content = outcome.tool_result
         elif function_name == "todo":
             def _execute(next_args: dict) -> Any:
                 from tools.todo_tool import todo_tool as _todo_tool

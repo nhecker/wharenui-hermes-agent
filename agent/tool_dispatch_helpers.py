@@ -42,6 +42,10 @@ logger = logging.getLogger(__name__)
 # When any of these appear in a batch, we fall back to sequential execution.
 _NEVER_PARALLEL_TOOLS = frozenset({"clarify"})
 
+# Populated at agent init with control tools.
+# ponytail: global, scope per-agent if throughput matters.
+_CONTROL_TOOLS: set[str] = set()
+
 # Read-only tools with no shared mutable session state.
 _PARALLEL_SAFE_TOOLS = frozenset({
     "ha_get_state",
@@ -148,7 +152,7 @@ def _plan_tool_batch_segments(tool_calls, *, execution_cwd: Optional[Path] = Non
     for tool_call in tool_calls:
         tool_name = tool_call.function.name
 
-        if tool_name in _NEVER_PARALLEL_TOOLS:
+        if tool_name in _NEVER_PARALLEL_TOOLS or tool_name in _CONTROL_TOOLS:
             _add_sequential(tool_call)
             continue
 

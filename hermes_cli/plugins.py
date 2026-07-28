@@ -388,6 +388,13 @@ class PluginContext:
 
     # -- tool registration --------------------------------------------------
 
+
+    def register_control_tool(self, name: str, schema: dict, handler: Callable, phase_handler: "PhaseHandler") -> None:
+        """Register a control tool and its phase handler."""
+        self.register_tool(name, schema, handler)
+        self._manager._control_phase_handlers[name] = phase_handler
+        self._manager._control_tool_names.add(name)
+
     def register_tool(
         self,
         name: str,
@@ -1256,6 +1263,8 @@ class PluginManager:
         self._plugin_platform_names: Set[str] = set()
         self._cli_commands: Dict[str, dict] = {}
         self._context_engine = None  # Set by a plugin via register_context_engine()
+        self._control_phase_handlers: dict[str, Any] = {}
+        self._control_tool_names: set[str] = set()
         self._plugin_commands: Dict[str, dict] = {}  # Slash commands registered by plugins
         self._discovered: bool = False
         self._cli_ref = None  # Set by CLI after plugin discovery

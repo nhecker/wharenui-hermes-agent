@@ -5010,6 +5010,38 @@ def run_conversation(
 
                 agent._execute_tool_calls(assistant_message, messages, effective_task_id, api_call_count)
 
+                
+                if agent._pending_phase_transition is not None:
+                    outcome = agent._pending_phase_transition
+                    agent._pending_phase_transition = None
+                    prev_phase = agent._phase
+                    agent._phase = "closing_private" if outcome.action == "close" else "private"
+                    marker = "[entered private time]"
+                    agent._safe_print(f"\n{marker}\n")
+                    if agent.stream_delta_callback:
+                        try:
+                            agent.stream_delta_callback(marker)
+                            agent.stream_delta_callback(None)
+                        except Exception:
+                            pass
+                    handler = agent._control_handlers.get(outcome.handler)
+                    result = handler.run(agent, messages, effective_task_id) if handler else None
+                    agent._phase = "public"
+                    resume_marker = "[returned to window]"
+                    agent._safe_print(f"\n{resume_marker}\n")
+                    if agent.stream_delta_callback:
+                        try:
+                            agent.stream_delta_callback(resume_marker)
+                            agent.stream_delta_callback(None)
+                        except Exception:
+                            pass
+                    if (result and result.action == "close") or outcome.action == "close":
+                        final_response = result.tool_result if result else ""
+                        _turn_exit_reason = "phase_close"
+                        break
+                    else:
+                        continue
+
                 if agent._tool_guardrail_halt_decision is not None:
                     decision = agent._tool_guardrail_halt_decision
                     _turn_exit_reason = "guardrail_halt"
