@@ -389,9 +389,9 @@ class PluginContext:
     # -- tool registration --------------------------------------------------
 
 
-    def register_control_tool(self, name: str, schema: dict, handler: Callable, phase_handler: "PhaseHandler") -> None:
+    def register_control_tool(self, name: str, schema: dict, handler: Callable, phase_handler: "PhaseHandler", toolset: str = "wharenui") -> None:
         """Register a control tool and its phase handler."""
-        self.register_tool(name, schema, handler)
+        self.register_tool(name=name, toolset=toolset, schema=schema, handler=handler)
         self._manager._control_phase_handlers[name] = phase_handler
         self._manager._control_tool_names.add(name)
 
@@ -2344,6 +2344,16 @@ def _ensure_plugins_discovered(force: bool = False) -> PluginManager:
     manager = get_plugin_manager()
     manager.discover_and_load(force=force)
     return manager
+
+
+def get_control_tool_names() -> set[str]:
+    """Return all registered control tool names."""
+    return set(get_plugin_manager()._control_tool_names)
+
+
+def get_control_phase_handler(name: str):
+    """Return the PhaseHandler registered for a control tool name."""
+    return get_plugin_manager()._control_phase_handlers.get(name)
 
 
 def get_plugin_context_engine():
