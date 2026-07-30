@@ -1257,7 +1257,8 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                 from agent.phase_control import ControlOutcome
                 outcome = ControlOutcome(action="enter", handler=function_name, tool_result=function_name + " acknowledged")
             agent._pending_phase_transition = outcome
-            _tool_content = outcome.tool_result
+            function_result = outcome.tool_result
+            tool_duration = time.time() - tool_start_time
         elif function_name == "todo":
             def _execute(next_args: dict) -> Any:
                 from tools.todo_tool import todo_tool as _todo_tool
