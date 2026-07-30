@@ -6188,6 +6188,23 @@ class AIAgent:
                 logger.debug("Conversation root lineage walk failed", exc_info=True)
         return start
 
+    def run_subturn(self, messages, *, tool_names, task_id=None):
+        from agent.chat_completion_helpers import build_api_kwargs
+        from agent.phase_control import SubturnResult
+        filtered = [t for t in (self.tools or [])
+                    if (t.get("function", {}) or {}).get("name") in tool_names]
+        api_kwargs = build_api_kwargs(self, messages)
+        api_kwargs["tools"] = filtered or None
+        try:
+            response = self._interruptible_api_call(api_kwargs)
+        except Exception:
+            return SubturnResult(content=None, tool_calls_used=False, finish_reason="error")
+        normalized = self._get_transport().normalize_response(response)
+        if normalized.tool_calls:
+            self._execute_tool_calls(normalized, messages, task_id or "subturn")
+            return SubturnResult(content=normalized.content, tool_calls_used=True, finish_reason=normalized.finish_reason)
+        return SubturnResult(content=normalized.content, tool_calls_used=False, finish_reason=normalized.finish_reason)
+
     def run_conversation(
         self,
         user_message: Any,
