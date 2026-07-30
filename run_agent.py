@@ -6200,6 +6200,8 @@ class AIAgent:
         except Exception:
             return SubturnResult(content=None, tool_calls_used=False, finish_reason="error")
         normalized = self._get_transport().normalize_response(response)
+        assistant_msg = self._build_assistant_message(normalized, normalized.finish_reason)
+        messages.append(assistant_msg)
         if normalized.tool_calls:
             self._execute_tool_calls(normalized, messages, task_id or "subturn")
             return SubturnResult(content=normalized.content, tool_calls_used=True, finish_reason=normalized.finish_reason)
