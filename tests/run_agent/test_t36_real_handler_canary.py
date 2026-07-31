@@ -79,8 +79,8 @@ def _make(sid="t36-c"):
     ]
     return a, db, td
 
-def _assert_clean(agent, db, sid, capsys, spy):
-    c = capsys.readouterr()
+def _assert_clean(agent, db, sid, captured, spy):
+    c = captured
     assert CANARY not in c.out, f"stdout: {c.out}"
     assert CANARY not in c.err, f"stderr: {c.err}"
     for k, v in spy.items():
@@ -135,7 +135,7 @@ def test_canary_real_handler(condition, capsys):
 
     _c = capsys.readouterr()
     captext = _c.out + _c.err
-    _assert_clean(agent, db, sid, capsys, spy)
+    _assert_clean(agent, db, sid, _c, spy)
 
     if condition == "happy":
         assert agent._phase == "public"

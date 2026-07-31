@@ -531,7 +531,7 @@ def build_turn_context(
             task_id=effective_task_id,
             turn_id=turn_id,
             user_message=original_user_message,
-            conversation_history=list(messages),
+            conversation_history=[m for m in list(messages) if not m.get("_phase_private")],
             is_first_turn=(not bool(conversation_history)),
             model=agent.model,
             platform=getattr(agent, "platform", None) or "",

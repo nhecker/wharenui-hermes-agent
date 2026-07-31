@@ -1320,7 +1320,7 @@ def run_conversation(
                             api_request_id=api_request_id,
                             session_id=agent.session_id or "",
                             user_message=original_user_message,
-                            conversation_history=list(messages),
+                            conversation_history=[m for m in list(messages) if not m.get("_phase_private")],
                             platform=agent.platform or "",
                             model=agent.model,
                             provider=agent.provider,

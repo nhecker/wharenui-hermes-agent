@@ -406,7 +406,7 @@ def finalize_turn(
                 turn_id=turn_id,
                 user_message=original_user_message,
                 assistant_response=final_response,
-                conversation_history=list(messages),
+                conversation_history=[m for m in list(messages) if not m.get("_phase_private")],
                 model=agent.model,
                 platform=getattr(agent, "platform", None) or "",
             )
