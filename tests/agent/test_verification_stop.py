@@ -1,3 +1,5 @@
+import pytest
+pytestmark = pytest.mark.xdist_group("verification_stop_group")
 import json
 import tempfile
 from pathlib import Path

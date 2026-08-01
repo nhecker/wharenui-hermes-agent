@@ -1,6 +1,8 @@
+from __future__ import annotations
+import pytest
+pytestmark = pytest.mark.xdist_group("image_routing_group")
 """Tests for agent/image_routing.py — the per-turn image input mode decision."""
 
-from __future__ import annotations
 
 import base64
 from pathlib import Path
@@ -846,3 +848,13 @@ class TestFormatCompatibility:
         img_path.write_bytes(b'<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"/>')
         url = _file_to_data_url(img_path)
         assert url is None
+
+
+
+@pytest.fixture(autouse=True)
+def _reset_model_info_cache():
+    try:
+        import model_tools
+        model_tools._MODEL_INFO_CACHE.clear()
+    except Exception:
+        pass

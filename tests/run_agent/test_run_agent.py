@@ -1424,6 +1424,7 @@ class TestBuildSystemPrompt:
             assert False, "Expected a 'Conversation started:' line in the system prompt"
 
     def test_includes_nous_subscription_prompt(self, agent, monkeypatch):
+        agent.provider = "nous"
         monkeypatch.setattr(run_agent, "build_nous_subscription_prompt", lambda tool_names: "NOUS SUBSCRIPTION BLOCK")
         prompt = agent._build_system_prompt()
         assert "NOUS SUBSCRIPTION BLOCK" in prompt
@@ -3083,6 +3084,7 @@ class TestConcurrentToolExecution:
                 enabled_toolsets=agent.enabled_toolsets,
                 disabled_toolsets=agent.disabled_toolsets,
                 tool_request_middleware_trace=[],
+                agent=agent,
             )
             assert result == "result"
 

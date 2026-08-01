@@ -11,7 +11,13 @@ from agent.transports.types import NormalizedResponse
 @pytest.fixture
 def transport():
     import agent.transports.codex  # noqa: F401
-    return get_transport("codex_responses")
+    t = get_transport("codex_responses")
+    if t is None:
+        from agent.transports.codex import CodexTransport
+        from agent.transports.base import register_transport
+        register_transport("codex_responses", CodexTransport)
+        t = get_transport("codex_responses")
+    return t
 
 
 class TestCodexTransportBasic:

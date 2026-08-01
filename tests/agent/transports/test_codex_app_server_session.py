@@ -1,3 +1,6 @@
+from __future__ import annotations
+import pytest
+pytestmark = pytest.mark.xdist_group('codex_app_server_group')
 """Tests for CodexAppServerSession — drive turns through a mock client.
 
 The session adapter has the most complex behavior of the three new modules:
@@ -5,13 +8,11 @@ notification draining, server-request handling (approvals), interrupt,
 deadline timeouts. These tests pin all of that without spawning real codex.
 """
 
-from __future__ import annotations
 
 import time
 from unittest.mock import patch
 from typing import Any, Optional
 
-import pytest
 
 import agent.transports.codex_app_server_session as session_mod
 from agent.transports.codex_app_server_session import (

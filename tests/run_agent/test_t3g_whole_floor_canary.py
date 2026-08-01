@@ -1,3 +1,5 @@
+import pytest
+pytestmark = pytest.mark.xdist_group("t3g_group")
 """
 Work Package 3g — Whole-floor canary test suite (T3g.0 - T3g.6).
 Verifies whole-floor privacy guarantees across all exit paths and channels.

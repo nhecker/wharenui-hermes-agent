@@ -4328,6 +4328,8 @@ class AIAgent:
             logger.debug("%s singleton read failed: %s", self.provider, exc)
             return False
 
+        if not isinstance(singleton_now, dict):
+            return False
         singleton_key = str(singleton_now.get("api_key") or "").strip()
         active_key = str(self.api_key or "").strip()
         if singleton_key and active_key and singleton_key != active_key:

@@ -1,3 +1,6 @@
+import pytest
+pytestmark = pytest.mark.xdist_group("skill_utils_group")
+import pytest
 """Tests for agent/skill_utils.py."""
 
 from unittest.mock import patch
@@ -514,3 +517,14 @@ class TestBOMToleranceSiblingSites:
         ):
             fm = parser("\ufeff" + self.SKILL)
             assert fm.get("name") == "bom-skill", parser.__qualname__
+
+
+@pytest.fixture(autouse=True)
+def _reset_skill_caches():
+    try:
+        from agent import skill_utils
+        skill_utils._RAW_CONFIG_CACHE.clear()
+        skill_utils._EXTERNAL_DIRS_CACHE.clear()
+        skill_utils._ENV_DETECT_CACHE.clear()
+    except Exception:
+        pass
