@@ -177,6 +177,7 @@ def _emit_terminal_post_tool_call(
             error_type=error_type,
             error_message=error_message,
             middleware_trace=list(middleware_trace or []),
+            agent=agent,
         )
     except Exception:
         pass
@@ -466,6 +467,7 @@ def execute_tool_calls_concurrent(agent, assistant_message, messages: list, effe
                     turn_id=getattr(agent, "_current_turn_id", "") or "",
                     api_request_id=getattr(agent, "_current_api_request_id", "") or "",
                     middleware_trace=list(middleware_trace),
+                    agent=agent,
                 )
             except Exception:
                 block_message = None
@@ -1129,6 +1131,7 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                     turn_id=getattr(agent, "_current_turn_id", "") or "",
                     api_request_id=getattr(agent, "_current_api_request_id", "") or "",
                     middleware_trace=list(middleware_trace),
+                    agent=agent,
                 )
             except Exception:
                 pass
@@ -1510,6 +1513,7 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                     enabled_toolsets=getattr(agent, "enabled_toolsets", None),
                     disabled_toolsets=getattr(agent, "disabled_toolsets", None),
                     tool_request_middleware_trace=list(middleware_trace),
+                    agent=agent,
                 )
                 _spinner_result = function_result
             except KeyboardInterrupt:
@@ -1552,6 +1556,7 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                     enabled_toolsets=getattr(agent, "enabled_toolsets", None),
                     disabled_toolsets=getattr(agent, "disabled_toolsets", None),
                     tool_request_middleware_trace=list(middleware_trace),
+                    agent=agent,
                 )
             except KeyboardInterrupt:
                 _emit_cancelled_terminal_post_tool_call(

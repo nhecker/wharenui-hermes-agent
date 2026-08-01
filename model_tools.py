@@ -986,6 +986,8 @@ def _emit_post_tool_call_hook(
     error_type: Optional[str] = None,
     error_message: Optional[str] = None,
     middleware_trace: Optional[List[Dict[str, Any]]] = None,
+    agent: Optional[Any] = None,
+    phase: Optional[str] = None,
 ) -> None:
     """Emit the ``post_tool_call`` observer hook.
 
@@ -996,6 +998,9 @@ def _emit_post_tool_call_hook(
     result *after* the gate (parsing the result is only worth it when a
     listener will actually consume it).
     """
+    cur_phase = phase if phase is not None else getattr(agent, "_phase", "public")
+    if cur_phase != "public":
+        return
     try:
         from hermes_cli.plugins import has_hook, invoke_hook
         if not has_hook("post_tool_call"):
@@ -1037,6 +1042,8 @@ def handle_function_call(
     tool_request_middleware_trace: Optional[List[Dict[str, Any]]] = None,
     enabled_toolsets: Optional[List[str]] = None,
     disabled_toolsets: Optional[List[str]] = None,
+    agent: Optional[Any] = None,
+    phase: Optional[str] = None,
 ) -> str:
     """
     Main function call dispatcher that routes calls to the tool registry.
@@ -1143,6 +1150,7 @@ def handle_function_call(
                 disabled_toolsets=disabled_toolsets,
             )
 
+    cur_phase = phase if phase is not None else getattr(agent, "_phase", "public")
     _tool_original_args = dict(function_args)
     if not skip_tool_request_middleware:
         try:
@@ -1191,6 +1199,8 @@ def handle_function_call(
                     turn_id=turn_id or "",
                     api_request_id=api_request_id or "",
                     middleware_trace=list(_tool_middleware_trace),
+                    agent=agent,
+                    phase=cur_phase,
                 )
             except Exception as _hook_err:
                 logger.debug("pre_tool_call hook error: %s", _hook_err)
@@ -1210,6 +1220,8 @@ def handle_function_call(
                     error_type="plugin_block",
                     error_message=block_message,
                     middleware_trace=list(_tool_middleware_trace),
+                    agent=agent,
+                    phase=cur_phase,
                 )
                 return result
 
@@ -1308,6 +1320,8 @@ def handle_function_call(
             api_request_id=api_request_id,
             duration_ms=duration_ms,
             middleware_trace=list(_tool_middleware_trace),
+            agent=agent,
+            phase=cur_phase,
         )
 
         # Generic tool-result canonicalization seam: plugins receive the
@@ -1320,7 +1334,7 @@ def handle_function_call(
         # field derivation and the payload dispatch.
         try:
             from hermes_cli.plugins import has_hook, invoke_hook
-            if has_hook("transform_tool_result"):
+            if (cur_phase == "public") and has_hook("transform_tool_result"):
                 status, error_type, error_message = _tool_result_observer_fields(result)
                 hook_results = invoke_hook(
                     "transform_tool_result",
