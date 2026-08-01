@@ -399,6 +399,7 @@ def finalize_turn(
     if final_response and not interrupted:
         try:
             from hermes_cli.plugins import invoke_hook as _invoke_hook
+            from run_agent import _public_only
             _invoke_hook(
                 "post_llm_call",
                 session_id=agent.session_id,
@@ -406,7 +407,7 @@ def finalize_turn(
                 turn_id=turn_id,
                 user_message=original_user_message,
                 assistant_response=final_response,
-                conversation_history=[m for m in list(messages) if not m.get("_phase_private")],
+                conversation_history=_public_only(messages),
                 model=agent.model,
                 platform=getattr(agent, "platform", None) or "",
             )

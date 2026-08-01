@@ -268,7 +268,7 @@ _PHASE_PRIVATE_MARKER = "_phase_private"
 
 def _public_only(messages):
     """Messages with private-phase turns removed — for observer/egress payloads."""
-    return [m for m in messages if not m.get(_PHASE_PRIVATE_MARKER)]
+    return [m for m in (messages or []) if isinstance(m, dict) and not m.get(_PHASE_PRIVATE_MARKER)]
 
 
 # Guard so the OpenRouter metadata pre-warm thread is only spawned once per
@@ -2062,9 +2062,7 @@ class AIAgent:
         
         # Private messages stay in the live model context, never in trajectory files.
         # ponytail: filter once at this shared sink; callers need no phase plumbing.
-        public_messages = [
-            message for message in messages if not message.get("_phase_private")
-        ]
+        public_messages = _public_only(messages)
         trajectory = self._convert_to_trajectory_format(public_messages, user_query, completed)
         _save_trajectory_to_file(trajectory, self.model, completed)
 

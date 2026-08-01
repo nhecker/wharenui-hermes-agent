@@ -1290,6 +1290,7 @@ def run_conversation(
                         has_hook,
                         invoke_hook as _invoke_hook,
                     )
+                    from run_agent import _public_only
                     if has_hook("pre_api_request"):
                         request_messages = api_kwargs.get("messages")
                         if not isinstance(request_messages, list):
@@ -1320,7 +1321,7 @@ def run_conversation(
                             api_request_id=api_request_id,
                             session_id=agent.session_id or "",
                             user_message=original_user_message,
-                            conversation_history=[m for m in list(messages) if not m.get("_phase_private")],
+                            conversation_history=_public_only(messages),
                             platform=agent.platform or "",
                             model=agent.model,
                             provider=agent.provider,

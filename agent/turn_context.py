@@ -525,13 +525,14 @@ def build_turn_context(
     plugin_user_context = ""
     try:
         from hermes_cli.plugins import invoke_hook as _invoke_hook
+        from run_agent import _public_only
         _pre_results = _invoke_hook(
             "pre_llm_call",
             session_id=agent.session_id,
             task_id=effective_task_id,
             turn_id=turn_id,
             user_message=original_user_message,
-            conversation_history=[m for m in list(messages) if not m.get("_phase_private")],
+            conversation_history=_public_only(messages),
             is_first_turn=(not bool(conversation_history)),
             model=agent.model,
             platform=getattr(agent, "platform", None) or "",
