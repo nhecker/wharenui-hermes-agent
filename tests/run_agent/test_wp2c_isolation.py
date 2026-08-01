@@ -1,5 +1,26 @@
 """WP2c regression tests: trajectory and real SessionDB isolation."""
 
+# Self-bootstrap plugin sys.path dynamically
+import os, sys
+from pathlib import Path
+
+_repo_root = Path(__file__).resolve().parents[2]
+_plugin_candidates = [
+    os.environ.get("WHARENUI_PLUGIN_DIR"),
+    _repo_root.parent / "wharenui-hermes-agent-plugin",
+    Path("/root/work/wharenui-hermes-agent-plugin"),
+]
+for _candidate in _plugin_candidates:
+    if _candidate and Path(_candidate).is_dir():
+        _plugin_dir = str(Path(_candidate).resolve())
+        if _plugin_dir not in sys.path:
+            sys.path.insert(0, _plugin_dir)
+        break
+
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
+
+
 import json
 import os
 from pathlib import Path

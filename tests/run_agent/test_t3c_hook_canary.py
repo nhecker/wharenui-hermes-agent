@@ -1,3 +1,23 @@
+# Self-bootstrap plugin sys.path dynamically
+import os, sys
+from pathlib import Path
+
+_repo_root = Path(__file__).resolve().parents[2]
+_plugin_candidates = [
+    os.environ.get("WHARENUI_PLUGIN_DIR"),
+    _repo_root.parent / "wharenui-hermes-agent-plugin",
+    Path("/root/work/wharenui-hermes-agent-plugin"),
+]
+for _candidate in _plugin_candidates:
+    if _candidate and Path(_candidate).is_dir():
+        _plugin_dir = str(Path(_candidate).resolve())
+        if _plugin_dir not in sys.path:
+            sys.path.insert(0, _plugin_dir)
+        break
+
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
+
 # T3c.4 — hook-bus canary with real spy hooks + mutation.
 import os, tempfile
 from contextlib import contextmanager
@@ -124,4 +144,3 @@ def test_hooks_filter_private_content(loaded_agent):
     assert CANARY not in ct, f"DB leaked: {ct}"
     assert "Public reply." in ct, "public reply missing"
     db.close()
-
