@@ -2509,6 +2509,10 @@ class AIAgent:
             for key, value in (api_kwargs or {}).items()
             if key not in {"timeout", "http_client"}
         }
+        if "messages" in body and isinstance(body["messages"], list):
+            body["messages"] = _public_only(body["messages"])
+        if "input" in body and isinstance(body["input"], list):
+            body["input"] = _public_only(body["input"])
         return self._sanitize_hook_payload(
             {
                 "method": "POST",
