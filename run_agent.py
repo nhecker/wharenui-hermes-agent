@@ -830,6 +830,10 @@ class AIAgent:
         handles ANSI escape sequences properly (e.g. prompt_toolkit's
         ``print_formatted_text(ANSI(...))``) without touching this method.
         """
+        if getattr(self, "_phase", "public") != "public" and not kwargs.get("force", False):
+            msg_str = " ".join(str(a) for a in args)
+            if "[entered private time]" not in msg_str and "[returned to window]" not in msg_str:
+                return
         try:
             fn = self._print_fn or print
             fn(*args, **kwargs)
@@ -1976,13 +1980,16 @@ class AIAgent:
                             _txt.append("[screenshot]")
                     content = "\n".join(_txt) if _txt else None
                 tool_calls_data = None
-                if hasattr(msg, "tool_calls") and isinstance(msg.tool_calls, list) and msg.tool_calls:
-                    tool_calls_data = [
-                        {"name": tc.function.name, "arguments": tc.function.arguments}
-                        for tc in msg.tool_calls
-                    ]
-                elif isinstance(msg.get("tool_calls"), list):
-                    tool_calls_data = msg["tool_calls"]
+                raw_tc = getattr(msg, "tool_calls", None) or (msg.get("tool_calls") if isinstance(msg, dict) else None)
+                if isinstance(raw_tc, list) and raw_tc:
+                    tool_calls_data = []
+                    for tc in raw_tc:
+                        if isinstance(tc, dict):
+                            tool_calls_data.append(tc)
+                        elif hasattr(tc, "function") and hasattr(getattr(tc, "function", None), "name"):
+                            tool_calls_data.append({"name": str(tc.function.name), "arguments": str(tc.function.arguments)})
+                        else:
+                            tool_calls_data.append(str(tc))
                 self._session_db.append_message(
                     session_id=self.session_id,
                     role=role,

@@ -1287,6 +1287,7 @@ def handle_function_call(
                         task_id=task_id,
                         session_id=session_id,
                         user_task=user_task,
+                        agent=agent,
                     )
             from hermes_cli.middleware import run_tool_execution_middleware
 
