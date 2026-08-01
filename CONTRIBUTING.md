@@ -1006,3 +1006,47 @@ test(tools): add unit tests for file_operations
 ## License
 
 By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+
+## Running Tests & CI Pipeline
+
+### Local Test Runner (`run_tests.py`)
+
+Hermes provides a digestible test runner script located at `.github/scripts/run_tests.py` that executes tests, reconciles counts (§6.4.1), categorizes failures (env vs real logic), and enforces a stateless CI gate (`failures == 0`).
+
+```bash
+# Run default test selector (tests/agent tests/run_agent) in serial mode
+python3 .github/scripts/run_tests.py
+
+# Run full test suite in fast xdist parallel mode (-n auto), excluding network tests
+python3 .github/scripts/run_tests.py --mode xdist -m "not network"
+
+# Run fast privacy floor subset
+python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py
+
+# Run with sharding (e.g. shard 1 of 2)
+python3 .github/scripts/run_tests.py --shard 1/2
+
+# Compare local test results against a baseline git ref (e.g. main) using an isolated git worktree
+python3 .github/scripts/run_tests.py --baseline main
+```
+
+### Two-Tier CI Pipeline (GitHub Actions)
+
+The repository uses a two-tier GitHub Actions workflow (`.github/workflows/tests.yml`):
+
+1. **`privacy-gate` (Privacy Floor Subset)**:
+   - **Label**: `Privacy floor (subset)`
+   - **Triggers**: Every `push` and `pull_request` on all branches.
+   - **Scope**: Fast privacy canary subset (`tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py`).
+   - **Behavior**: Fast, blocking execution to guarantee zero privacy regressions.
+
+2. **`full-suite` (Full Offline Test Suite)**:
+   - **Label**: `Full Test Suite`
+   - **Triggers**: Pull requests targeting `main` and a nightly scheduled cron run.
+   - **Scope**: Full test suite with `--mode xdist` and `-m "not network"`.
+   - **Behavior**: Stateless CI gate requiring `failures == 0` and exact count reconciliation.
+
+> [!IMPORTANT]
+> **Manual GitHub Branch Protection Requirement**:
+> Enabling `full-suite` as a required status check before merging to `main` is a **manual repository configuration step** on GitHub.
+> A GitHub repo admin must navigate to **Settings -> Branches -> Branch protection rules -> main** (or Repository Rulesets), enable **Require status checks to pass before merging**, and add `Full Test Suite` (the name of the `full-suite` GHA job) to the list of required checks.
