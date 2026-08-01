@@ -155,19 +155,19 @@ def test_per_site_mutation_fail_to_pass(loaded_agent, site_key, target_field, ev
     if site_key == "pre_llm_history":
         def bad_pre_llm(msgs):
             return (msgs or []) + [{"role": "assistant", "content": CANARY}]
-        patches.append(patch("agent.turn_context._public_only", side_effect=bad_pre_llm))
+        patches.append(patch("run_agent._public_only", side_effect=bad_pre_llm))
     elif site_key == "post_llm_history":
         def bad_post_llm(msgs):
             return (msgs or []) + [{"role": "assistant", "content": CANARY}]
-        patches.append(patch("agent.turn_finalizer._public_only", side_effect=bad_post_llm))
+        patches.append(patch("run_agent._public_only", side_effect=bad_post_llm))
     elif site_key == "pre_api_history":
         def bad_pre_api_hist(msgs):
             return (msgs or []) + [{"role": "assistant", "content": CANARY}]
-        patches.append(patch("agent.conversation_loop._public_only", side_effect=bad_pre_api_hist))
+        patches.append(patch("run_agent._public_only", side_effect=bad_pre_api_hist))
     elif site_key == "pre_api_req_msgs":
         def bad_req_msgs(msgs):
             return (msgs or []) + [{"role": "assistant", "content": CANARY}]
-        patches.append(patch("agent.conversation_loop._public_only", side_effect=bad_req_msgs))
+        patches.append(patch("run_agent._public_only", side_effect=bad_req_msgs))
     elif site_key == "pre_api_request_body":
         orig_fn = agent._api_request_payload_for_hook
         def bad_payload(api_kwargs):
