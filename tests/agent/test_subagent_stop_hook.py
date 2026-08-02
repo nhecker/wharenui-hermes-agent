@@ -8,8 +8,6 @@ Covers wire-up from tools.delegate_tool.delegate_task:
 """
 
 from __future__ import annotations
-import pytest
-pytestmark = pytest.mark.xdist_group('subagent_stop_hook_group')
 
 import json
 import threading
@@ -52,7 +50,7 @@ def _fresh_plugin_manager():
     original = plugins._plugin_manager
     plugins._plugin_manager = plugins.PluginManager()
     yield
-    plugins._plugin_manager = None
+    plugins._plugin_manager = original
 
 
 @pytest.fixture(autouse=True)

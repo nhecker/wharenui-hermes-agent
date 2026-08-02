@@ -94,13 +94,7 @@ class TestAnthropicTransport:
     @pytest.fixture
     def transport(self):
         import agent.transports.anthropic  # noqa: F401
-        t = get_transport("anthropic_messages")
-        if t is None:
-            from agent.transports.anthropic import AnthropicTransport
-            from agent.transports.base import register_transport
-            register_transport("anthropic_messages", AnthropicTransport)
-            t = get_transport("anthropic_messages")
-        return t
+        return get_transport("anthropic_messages")
 
     def test_api_mode(self, transport):
         assert transport.api_mode == "anthropic_messages"

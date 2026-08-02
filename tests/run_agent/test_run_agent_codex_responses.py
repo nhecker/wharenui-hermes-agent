@@ -1,5 +1,3 @@
-import pytest
-pytestmark = pytest.mark.xdist_group("codex_group")
 import sys
 import types
 from types import SimpleNamespace
@@ -53,7 +51,6 @@ def _build_agent(monkeypatch):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     agent._cleanup_task_resources = lambda task_id: None
     agent._persist_session = lambda messages, history=None: None
     agent._save_trajectory = lambda messages, user_message, completed: None
@@ -74,7 +71,6 @@ def _build_copilot_agent(monkeypatch, *, model="gpt-5.4"):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     agent._cleanup_task_resources = lambda task_id: None
     agent._persist_session = lambda messages, history=None: None
     agent._save_trajectory = lambda messages, user_message, completed: None
@@ -262,7 +258,6 @@ def test_api_mode_uses_explicit_provider_when_codex(monkeypatch):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     assert agent.api_mode == "codex_responses"
     assert agent.provider == "openai-codex"
 
@@ -279,7 +274,6 @@ def test_api_mode_normalizes_provider_case(monkeypatch):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     assert agent.provider == "openai-codex"
     assert agent.api_mode == "codex_responses"
 
@@ -302,7 +296,6 @@ def test_api_mode_respects_explicit_openrouter_provider_over_codex_url(monkeypat
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     assert agent.api_mode == "codex_responses"
     assert agent.provider == "openrouter"
 
@@ -319,7 +312,6 @@ def test_copilot_acp_stays_on_chat_completions_for_gpt_5_models(monkeypatch):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     assert agent.provider == "copilot-acp"
     assert agent.api_mode == "chat_completions"
 
@@ -336,7 +328,6 @@ def test_custom_provider_gpt5_stays_on_chat_completions(monkeypatch):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     assert agent.provider == "custom"
     assert agent.api_mode == "chat_completions"
 
@@ -353,7 +344,6 @@ def test_custom_provider_direct_openai_url_still_uses_responses(monkeypatch):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     assert agent.provider == "custom"
     assert agent.api_mode == "codex_responses"
 
@@ -371,7 +361,6 @@ def test_copilot_gpt_5_mini_stays_on_chat_completions(monkeypatch):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     assert agent.provider == "copilot"
     assert agent.api_mode == "chat_completions"
 
@@ -552,7 +541,6 @@ def _build_xai_agent_with_slash_enum_tool(monkeypatch):
         max_iterations=4,
         skip_context_files=True,
         skip_memory=True,
-        
     )
     agent._cleanup_task_resources = lambda task_id: None
     agent._persist_session = lambda messages, history=None: None
@@ -1298,7 +1286,6 @@ def _build_xai_oauth_agent(monkeypatch):
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     agent._cleanup_task_resources = lambda task_id: None
     agent._persist_session = lambda messages, history=None: None
     agent._save_trajectory = lambda messages, user_message, completed: None
@@ -1886,7 +1873,6 @@ def test_run_conversation_codex_continues_after_max_output_incomplete(monkeypatc
     )
 
 
-@pytest.mark.xfail(reason="inherited @614dc194e: AIAgent._get_effective_max_tokens absent tree-wide", strict=False)
 def test_run_conversation_compresses_mid_turn_before_output_budget_exhaustion(monkeypatch):
     """Long tool-heavy turns should compact before the next API request.
 
@@ -1899,7 +1885,6 @@ def test_run_conversation_compresses_mid_turn_before_output_budget_exhaustion(mo
     agent = _build_agent(monkeypatch)
     agent.context_compressor.context_length = 20_000
     agent.context_compressor.threshold_tokens = 20_000
-    monkeypatch.setattr(agent, "_get_effective_max_tokens", lambda: 20_000)
 
     responses = [
         _codex_tool_call_response(),
@@ -1942,7 +1927,6 @@ def test_run_conversation_compresses_mid_turn_before_output_budget_exhaustion(mo
     assert len(requests) == 2
 
 
-@pytest.mark.xfail(reason="inherited @614dc194e: AIAgent._get_effective_max_tokens absent tree-wide", strict=False)
 def test_mid_turn_compaction_does_not_double_persist_in_place_rows(monkeypatch, tmp_path):
     """Mid-turn pre-API compaction must re-baseline the flush cursor.
 
@@ -1967,7 +1951,6 @@ def test_mid_turn_compaction_does_not_double_persist_in_place_rows(monkeypatch, 
 
     agent.context_compressor.context_length = 20_000
     agent.context_compressor.threshold_tokens = 20_000
-    monkeypatch.setattr(agent, "_get_effective_max_tokens", lambda: 20_000)
 
     agent._session_db = SessionDB()
     agent._ensure_db_session()
@@ -2714,7 +2697,6 @@ def test_run_conversation_codex_continues_after_commentary_phase_message(monkeyp
     assert any(msg.get("role") == "tool" and msg.get("tool_call_id") == "call_1" for msg in result["messages"])
 
 
-@pytest.mark.xfail(reason="inherited @614dc194e: event stream timing broken on base fork", strict=False)
 def test_codex_commentary_emits_before_tool_and_withholds_final_answer(monkeypatch):
     agent = _build_agent(monkeypatch)
     events = []
@@ -2741,8 +2723,10 @@ def test_codex_commentary_emits_before_tool_and_withholds_final_answer(monkeypat
     result = agent.run_conversation("analyze repo")
 
     assert result["completed"] is True
-    assert events[0] == ("interim", "I'll inspect the repo first.")
-    assert len(events) >= 2 and events[1][0] == "tool"
+    assert events == [
+        ("interim", "I'll inspect the repo first."),
+        ("tool", "terminal"),
+    ]
     assert all(text != "Done." for kind, text in events if kind == "interim")
 
 
@@ -2854,7 +2838,6 @@ def test_dump_api_request_debug_uses_chat_completions_url(monkeypatch, tmp_path)
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     agent.logs_dir = tmp_path
 
     dump_file = agent._dump_api_request_debug(
@@ -2881,7 +2864,6 @@ def test_dump_api_request_debug_redacts_request_and_error_secrets(monkeypatch, t
         skip_context_files=True,
         skip_memory=True,
     )
-    agent.valid_tool_names = {"brave_like"}
     agent.logs_dir = tmp_path
 
     notion_token = "ntn_abc123def456ghi789jkl"

@@ -1,7 +1,6 @@
 """Tests for agent.title_generator — auto-generated session titles."""
 
 import pytest
-pytestmark = pytest.mark.xdist_group('title_generator_group')
 from unittest.mock import MagicMock, patch
 
 

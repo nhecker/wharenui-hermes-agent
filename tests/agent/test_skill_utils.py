@@ -1,6 +1,3 @@
-import pytest
-pytestmark = pytest.mark.xdist_group("skill_utils_group")
-import pytest
 """Tests for agent/skill_utils.py."""
 
 from unittest.mock import patch
@@ -157,7 +154,6 @@ skills:
     assert parse_count == 1
 
 
-@pytest.mark.xfail(reason="inherited @614dc194e: raw config cache mtime resolution on overlay/tmpfs filesystem", strict=False)
 def test_skill_config_raw_cache_invalidates_on_config_edit(tmp_path, monkeypatch):
     """Editing config.yaml should invalidate the shared raw config cache."""
     from agent import skill_utils
@@ -518,14 +514,3 @@ class TestBOMToleranceSiblingSites:
         ):
             fm = parser("\ufeff" + self.SKILL)
             assert fm.get("name") == "bom-skill", parser.__qualname__
-
-
-@pytest.fixture(autouse=True)
-def _reset_skill_caches():
-    try:
-        from agent import skill_utils
-        skill_utils._RAW_CONFIG_CACHE.clear()
-        skill_utils._EXTERNAL_DIRS_CACHE.clear()
-        skill_utils._ENV_DETECT_CACHE.clear()
-    except Exception:
-        pass
