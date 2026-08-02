@@ -161,10 +161,15 @@ def loaded_agent_harness():
 
     mgr = get_plugin_manager()
     orig_hooks = {k: list(v) for k, v in mgr._hooks.items()}
-    # registry already imported
+    orig_control_phase_handlers = dict(mgr._control_phase_handlers)
+    orig_control_tool_names = set(mgr._control_tool_names)
+    orig_plugin_tool_names = set(mgr._plugin_tool_names)
     orig_registry_tools = dict(registry._tools)
 
     mgr._hooks.clear()
+    for tname in ["reflect_pause", "reflect_settle", "reflect_done", "throwaway_tool", "throwaway_write"]:
+        registry._tools.pop(tname, None)
+
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
     ctx = PluginContext(manifest, mgr)
     register(ctx)
@@ -280,6 +285,13 @@ def loaded_agent_harness():
 
     mgr._hooks.clear()
     mgr._hooks.update(orig_hooks)
+    mgr._control_phase_handlers.clear()
+    mgr._control_phase_handlers.update(orig_control_phase_handlers)
+    mgr._control_tool_names.clear()
+    mgr._control_tool_names.update(orig_control_tool_names)
+    mgr._plugin_tool_names.clear()
+    mgr._plugin_tool_names.update(orig_plugin_tool_names)
+
     registry._tools.clear()
     registry._tools.update(orig_registry_tools)
 
