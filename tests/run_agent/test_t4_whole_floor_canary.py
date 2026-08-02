@@ -135,10 +135,13 @@ class LogCaptureHandler(logging.Handler):
 
 @pytest.fixture
 def t4_harness():
+    import model_tools
     from hermes_cli.plugins import get_plugin_manager, PluginContext, PluginManifest
     from wharenui_plugin import register
     import wharenui_plugin.phase.toolset as ts_module
     from tools.registry import registry
+
+    model_tools.registry = registry
 
     mgr = get_plugin_manager()
     orig_hooks = {k: list(v) for k, v in mgr._hooks.items()}
@@ -161,6 +164,13 @@ def t4_harness():
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
     ctx = PluginContext(manifest, mgr)
     register(ctx)
+
+    assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
+    assert "reflect_pause" in registry._tools, "reflect_pause missing from registry"
+    assert "reflect_settle" in registry._tools, "reflect_settle missing from registry"
+    assert "reflect_done" in registry._tools, "reflect_done missing from registry"
+    assert "journal_append" in registry._tools, "journal_append missing from registry"
+    assert model_tools.registry is registry, "model_tools.registry out of sync"
 
     captured_hooks = []
     def make_spy(name):

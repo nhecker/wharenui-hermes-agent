@@ -154,10 +154,14 @@ class LogCaptureHandler(logging.Handler):
 
 @pytest.fixture
 def loaded_agent_harness():
+    import model_tools
     from hermes_cli.plugins import get_plugin_manager, PluginContext, PluginManifest
     from wharenui_plugin import register
+    from wharenui_plugin.journal import tools as jtools
     import wharenui_plugin.phase.toolset as ts_module
     from tools.registry import registry
+
+    model_tools.registry = registry
 
     mgr = get_plugin_manager()
     orig_hooks = {k: list(v) for k, v in mgr._hooks.items()}
@@ -198,6 +202,14 @@ def loaded_agent_harness():
 
     orig_allowlist = set(ts_module.PRIVATE_ALLOWLIST)
     ts_module.PRIVATE_ALLOWLIST.update({"throwaway_tool", "throwaway_write"})
+
+    assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
+    assert "reflect_pause" in registry._tools, "reflect_pause missing from registry"
+    assert "reflect_settle" in registry._tools, "reflect_settle missing from registry"
+    assert "reflect_done" in registry._tools, "reflect_done missing from registry"
+    assert "throwaway_tool" in registry._tools, "throwaway_tool missing from registry"
+    assert "throwaway_write" in registry._tools, "throwaway_write missing from registry"
+    assert model_tools.registry is registry, "model_tools.registry out of sync"
 
     captured_hooks = []
     def make_spy(name):
@@ -731,3 +743,39 @@ def test_fixture_isolation(loaded_agent_harness):
     orig_hooks = loaded_agent_harness["orig_hooks"]
 
     assert len(mgr._hooks) > len(orig_hooks)
+
+@pytest.fixture
+def corrupt_global_registries():
+    from hermes_cli.plugins import get_plugin_manager
+    import model_tools
+    from tools.registry import ToolRegistry, registry
+
+    model_tools.registry = ToolRegistry()
+    registry._tools["reflect_pause"] = "CORRUPTED_ENTRY"
+    registry._tools["reflect_settle"] = None
+    registry._tools["throwaway_write"] = "BAD_STATE"
+    mgr = get_plugin_manager()
+    mgr._control_phase_handlers["reflect_pause"] = "BAD_HANDLER"
+    yield
+
+
+def test_floor_recovers_from_prior_corrupted_globals(corrupt_global_registries, loaded_agent_harness):
+    agent = loaded_agent_harness["agent"]
+    td = loaded_agent_harness["td"]
+    from agent.conversation_loop import run_conversation
+
+    responses = [
+        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
+        _nfake(content=CANARY_TEXT, tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content="Public recovery answer", finish_reason="stop"),
+    ]
+    orig_cwd = Path.cwd()
+    try:
+        os.chdir(td)
+        with _scripted_prov(agent, responses):
+            run_conversation(agent, "Hello", task_id="t3g-corrupt-recovery")
+    finally:
+        os.chdir(orig_cwd)
+
+    violations = check_sink_absence(loaded_agent_harness)
+    assert len(violations) == 0, f"Corrupted recovery run produced violations: {violations}"
