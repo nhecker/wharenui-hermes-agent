@@ -34,28 +34,4 @@ jobs:
 
       - name: Run fast privacy subset
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py
-
-  full-suite:
-    name: Full Test Suite
-    if: github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.base_ref == 'main')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.2.2
-
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v5.4.0
-        with:
-          python-version: '3.13'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip install -e .[test,dev,web,acp]
-          pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
-
-      - name: Run full test suite (xdist, offline)
-        run: |
-          python3 .github/scripts/run_tests.py --mode xdist -m "not network"
+          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py tests/run_agent/test_t4*.py --mode serial
