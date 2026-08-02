@@ -1,6 +1,6 @@
 from __future__ import annotations
 import pytest
-pytestmark = pytest.mark.xdist_group('codex_app_server_group')
+pytestmark = [pytest.mark.xdist_group('codex_app_server_group'), pytest.mark.integration]
 """Tests for CodexAppServerSession — drive turns through a mock client.
 
 The session adapter has the most complex behavior of the three new modules:

@@ -1,4 +1,6 @@
 """Tests for agent.models_dev — models.dev registry integration."""
+import pytest
+pytestmark = pytest.mark.xdist_group('models_dev_group')
 from unittest.mock import patch, MagicMock
 
 from agent.models_dev import (

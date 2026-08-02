@@ -1,6 +1,6 @@
 from __future__ import annotations
 import pytest
-pytestmark = pytest.mark.xdist_group("image_routing_group")
+pytestmark = pytest.mark.xdist_group("image_routing_unique_group")
 """Tests for agent/image_routing.py — the per-turn image input mode decision."""
 
 
@@ -74,30 +74,32 @@ class TestExplicitAuxVisionOverride:
 # ─── decide_image_input_mode ─────────────────────────────────────────────────
 
 
+import agent.image_routing as _image_routing_mod
+
 class TestDecideImageInputMode:
     def test_explicit_native_overrides_everything(self):
         cfg = {"agent": {"image_input_mode": "native"}}
         # Non-vision model, aux-vision explicitly configured: native still wins.
         cfg["auxiliary"] = {"vision": {"provider": "openrouter", "model": "foo"}}
         with patch("agent.image_routing._lookup_supports_vision", return_value=False):
-            assert decide_image_input_mode("openrouter", "some-non-vision-model", cfg) == "native"
+            assert _image_routing_mod.decide_image_input_mode("openrouter", "some-non-vision-model", cfg) == "native"
 
     def test_explicit_text_overrides_everything(self):
         cfg = {"agent": {"image_input_mode": "text"}}
         with patch("agent.image_routing._lookup_supports_vision", return_value=True):
-            assert decide_image_input_mode("anthropic", "claude-sonnet-4", cfg) == "text"
+            assert _image_routing_mod.decide_image_input_mode("anthropic", "claude-sonnet-4", cfg) == "text"
 
     def test_auto_with_vision_capable_model(self):
         with patch("agent.image_routing._lookup_supports_vision", return_value=True):
-            assert decide_image_input_mode("anthropic", "claude-sonnet-4", {}) == "native"
+            assert _image_routing_mod.decide_image_input_mode("anthropic", "claude-sonnet-4", {}) == "native"
 
     def test_auto_with_non_vision_model(self):
         with patch("agent.image_routing._lookup_supports_vision", return_value=False):
-            assert decide_image_input_mode("openrouter", "qwen/qwen3-235b", {}) == "text"
+            assert _image_routing_mod.decide_image_input_mode("openrouter", "qwen/qwen3-235b", {}) == "text"
 
     def test_auto_with_unknown_model(self):
         with patch("agent.image_routing._lookup_supports_vision", return_value=None):
-            assert decide_image_input_mode("openrouter", "brand-new-slug", {}) == "text"
+            assert _image_routing_mod.decide_image_input_mode("openrouter", "brand-new-slug", {}) == "text"
 
     def test_auto_prefers_native_for_vision_capable_main_model_even_with_aux_configured(self):
         """Regression #29135: vision-capable main model wins over aux fallback.
@@ -107,22 +109,22 @@ class TestDecideImageInputMode:
         """
         cfg = {"auxiliary": {"vision": {"provider": "openrouter", "model": "google/gemini-2.5-flash"}}}
         with patch("agent.image_routing._lookup_supports_vision", return_value=True):
-            assert decide_image_input_mode("anthropic", "claude-sonnet-4", cfg) == "native"
+            assert _image_routing_mod.decide_image_input_mode("anthropic", "claude-sonnet-4", cfg) == "native"
 
     def test_auto_uses_aux_vision_fallback_for_text_only_main_model(self):
         """#29135: aux vision still acts as fallback for non-vision main models."""
         cfg = {"auxiliary": {"vision": {"provider": "openrouter", "model": "google/gemini-2.5-flash"}}}
         with patch("agent.image_routing._lookup_supports_vision", return_value=False):
-            assert decide_image_input_mode("deepseek", "deepseek-v4-pro", cfg) == "text"
+            assert _image_routing_mod.decide_image_input_mode("deepseek", "deepseek-v4-pro", cfg) == "text"
 
     def test_none_config_is_auto(self):
         with patch("agent.image_routing._lookup_supports_vision", return_value=True):
-            assert decide_image_input_mode("anthropic", "claude-sonnet-4", None) == "native"
+            assert _image_routing_mod.decide_image_input_mode("anthropic", "claude-sonnet-4", None) == "native"
 
     def test_invalid_mode_coerces_to_auto(self):
         cfg = {"agent": {"image_input_mode": "weird-value"}}
         with patch("agent.image_routing._lookup_supports_vision", return_value=True):
-            assert decide_image_input_mode("anthropic", "claude-sonnet-4", cfg) == "native"
+            assert _image_routing_mod.decide_image_input_mode("anthropic", "claude-sonnet-4", cfg) == "native"
 
     def test_auto_uses_text_for_text_only_modalities_even_with_attachment_flag(self):
         registry = {
@@ -137,7 +139,7 @@ class TestDecideImageInputMode:
             },
         }
         with patch("agent.models_dev.fetch_models_dev", return_value=registry):
-            assert decide_image_input_mode("xiaomi", "mimo-v2.5-pro", {}) == "text"
+            assert _image_routing_mod.decide_image_input_mode("xiaomi", "mimo-v2.5-pro", {}) == "text"
 
 
 # ─── _coerce_capability_bool ─────────────────────────────────────────────────
@@ -325,17 +327,17 @@ class TestAutoModeRespectsOverride:
         # native — no need to also set agent.image_input_mode: native.
         cfg = {"model": {"supports_vision": True}}
         with patch("agent.models_dev.get_model_capabilities", return_value=None):
-            assert decide_image_input_mode("custom", "qwen3.6-35b", cfg) == "native"
+            assert _image_routing_mod.decide_image_input_mode("custom", "qwen3.6-35b", cfg) == "native"
 
     def test_auto_text_for_custom_with_supports_vision_false(self):
         cfg = {"model": {"supports_vision": False}}
         with patch("agent.models_dev.get_model_capabilities", return_value=None):
-            assert decide_image_input_mode("custom", "some-text-only", cfg) == "text"
+            assert _image_routing_mod.decide_image_input_mode("custom", "some-text-only", cfg) == "text"
 
     def test_auto_text_for_custom_with_no_override(self):
         # Unchanged baseline: unknown custom model → text.
         with patch("agent.models_dev.get_model_capabilities", return_value=None):
-            assert decide_image_input_mode("custom", "unknown", {}) == "text"
+            assert _image_routing_mod.decide_image_input_mode("custom", "unknown", {}) == "text"
 
     def test_explicit_aux_vision_no_longer_overrides_native_capable_main(self):
         # #29135: aux.vision is a fallback for text-only main models; it
@@ -346,7 +348,7 @@ class TestAutoModeRespectsOverride:
             "auxiliary": {"vision": {"provider": "openrouter", "model": "gemini-2.5-pro"}},
         }
         with patch("agent.models_dev.get_model_capabilities", return_value=None):
-            assert decide_image_input_mode("custom", "qwen3.6-35b", cfg) == "native"
+            assert _image_routing_mod.decide_image_input_mode("custom", "qwen3.6-35b", cfg) == "native"
 
     def test_explicit_aux_vision_used_when_main_model_supports_vision_false(self):
         # #29135 counterpart: text-only main model + aux fallback → text.
@@ -355,7 +357,7 @@ class TestAutoModeRespectsOverride:
             "auxiliary": {"vision": {"provider": "openrouter", "model": "gemini-2.5-pro"}},
         }
         with patch("agent.models_dev.get_model_capabilities", return_value=None):
-            assert decide_image_input_mode("custom", "deepseek-v4", cfg) == "text"
+            assert _image_routing_mod.decide_image_input_mode("custom", "deepseek-v4", cfg) == "text"
 
 
 # ─── build_native_content_parts ──────────────────────────────────────────────
@@ -856,5 +858,19 @@ def _reset_model_info_cache():
     try:
         import model_tools
         model_tools._MODEL_INFO_CACHE.clear()
+    except Exception:
+        pass
+
+@pytest.fixture(autouse=True)
+def _clean_runtime_main():
+    try:
+        from agent.auxiliary_client import clear_runtime_main
+        clear_runtime_main()
+    except Exception:
+        pass
+    yield
+    try:
+        from agent.auxiliary_client import clear_runtime_main
+        clear_runtime_main()
     except Exception:
         pass
