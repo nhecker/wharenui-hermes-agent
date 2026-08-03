@@ -31,6 +31,55 @@ import pytest
 CANARY = "WHARE-CANARY-7f3a9b2e"
 
 
+@pytest.fixture(autouse=True)
+def wp2e_harness():
+    import model_tools
+    from hermes_cli.plugins import get_plugin_manager, PluginContext, PluginManifest
+    from wharenui_plugin import register
+    from tools.registry import registry
+
+    model_tools.registry = registry
+
+    mgr = get_plugin_manager()
+    orig_hooks = {k: list(v) for k, v in mgr._hooks.items()}
+    orig_control_phase_handlers = dict(mgr._control_phase_handlers)
+    orig_control_tool_names = set(mgr._control_tool_names)
+    orig_plugin_tool_names = set(mgr._plugin_tool_names)
+    orig_registry_tools = dict(registry._tools)
+
+    mgr._hooks.clear()
+    for tname, entry in list(registry._tools.items()):
+        if not hasattr(entry, "toolset"):
+            registry._tools.pop(tname, None)
+    for tname in ["reflect_pause", "reflect_settle", "reflect_done"]:
+        registry._tools.pop(tname, None)
+
+    manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
+    ctx = PluginContext(manifest, mgr)
+    register(ctx)
+
+    assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
+    assert "reflect_pause" in registry._tools, "reflect_pause missing from registry"
+    assert "reflect_settle" in registry._tools, "reflect_settle missing from registry"
+    assert "reflect_done" in registry._tools, "reflect_done missing from registry"
+    assert model_tools.registry is registry, "model_tools.registry out of sync"
+
+    yield
+
+    mgr._hooks.clear()
+    mgr._hooks.update(orig_hooks)
+    mgr._control_phase_handlers.clear()
+    mgr._control_phase_handlers.update(orig_control_phase_handlers)
+    mgr._control_tool_names.clear()
+    mgr._control_tool_names.update(orig_control_tool_names)
+    mgr._plugin_tool_names.clear()
+    mgr._plugin_tool_names.update(orig_plugin_tool_names)
+
+    registry._tools.clear()
+    registry._tools.update(orig_registry_tools)
+    model_tools.registry = registry
+
+
 def _nfake(content=None, tool_calls=None, finish_reason="stop"):
     """FIX: explicitly nil out reasoning attrs so MagicMock doesn't auto-create truthy mocks."""
     m = MagicMock()
