@@ -1,3 +1,18 @@
+> ## 🛖 This is the Wharenui fork of Hermes
+>
+> This fork adds a small, generic **phase-control seam** to Hermes: a plugin can register control tools that move
+> a single continuing context between a public (observed) phase and a private (unobserved) phase, with message,
+> tool, and trajectory egress gated by phase. The seam is inert on its own.
+>
+> The Wharenui capability that uses it (voluntary private phase + an encrypted, self-authored journal) lives in a
+> separate plugin: **wharenui-hermes-agent-plugin**.
+>
+> - Seam surface, and how to maintain it across upstream merges → **[wharenui-fork.md](./wharenui-fork.md)**
+> - The product (phases, journal, crypto) → the plugin repo's README
+> - CI: the `wharenui_seam` gate validates the seam only; inherited base-Hermes test debt is not gated.
+
+
+
 <p align="center">
   <img src="assets/banner.png" alt="Hermes Agent" width="100%">
 </p>
