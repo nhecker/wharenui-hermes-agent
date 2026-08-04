@@ -1,5 +1,5 @@
 import pytest
-pytestmark = pytest.mark.xdist_group("t4_group")
+pytestmark = [pytest.mark.wharenui_seam, pytest.mark.xdist_group("t4_group")]
 
 """
 Work Package 4 — Cross-session persistence & encryption/signature verification (T4.5).

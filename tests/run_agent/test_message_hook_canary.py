@@ -24,6 +24,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 import pytest
+pytestmark = pytest.mark.wharenui_seam
 
 sys.path.insert(0, "/root/work/wharenui-hermes-agent")
 

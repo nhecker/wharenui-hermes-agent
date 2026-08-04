@@ -1,5 +1,5 @@
 import pytest
-pytestmark = pytest.mark.xdist_group("t4_group")
+pytestmark = [pytest.mark.wharenui_seam, pytest.mark.xdist_group("t4_group")]
 
 """
 Work Package 4 — Whole-floor canary test suite with REAL journal tools (T4.4).

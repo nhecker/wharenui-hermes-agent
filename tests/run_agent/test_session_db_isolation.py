@@ -27,6 +27,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+pytestmark = pytest.mark.wharenui_seam
 
 
 @pytest.fixture(autouse=True)

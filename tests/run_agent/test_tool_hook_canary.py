@@ -29,6 +29,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 from contextlib import contextmanager
 import pytest
+pytestmark = pytest.mark.wharenui_seam
 
 
 CANARY = "CANARY_SECRET_WP3E_PAYLOAD_992183"

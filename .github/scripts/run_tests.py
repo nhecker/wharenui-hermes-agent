@@ -58,6 +58,12 @@ def parse_args():
         default=None,
         help="Pytest marker expression (e.g. 'not network')",
     )
+    parser.add_argument(
+        "--min-collected",
+        type=int,
+        default=0,
+        help="Minimum number of collected tests expected (causes gate failure if collected count is lower)",
+    )
 
     return parser.parse_known_args()
 
@@ -328,6 +334,8 @@ def main():
             if total_executed < expected_collected * 0.9:
                 subset_warning = True
 
+        min_collected_warning = (args.min_collected > 0 and results["collected"] < args.min_collected)
+
         env_dep_failures, real_failures = categorize_failures(results["failures_details"])
 
         baseline_results = None
@@ -348,6 +356,8 @@ def main():
             print("                  [!] COLLECTION ERROR DETECTED DURING TEST DISCOVERY")
         if subset_warning:
             print(f"                  [!] WARNING: Executed {total_executed} tests, far below collected {expected_collected}!")
+        if min_collected_warning:
+            print(f"                  [!] WARNING: Collected {results['collected']} tests, below --min-collected {args.min_collected}!")
             
         print("-" * 72)
         print(f" Passed         : {results['passed']}")

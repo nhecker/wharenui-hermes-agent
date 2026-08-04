@@ -27,6 +27,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+pytestmark = pytest.mark.wharenui_seam
 
 CANARY = "WHARE-CANARY-7f3a9b2e"
 

@@ -1,5 +1,5 @@
 import pytest
-pytestmark = pytest.mark.xdist_group("t3g_group")
+pytestmark = [pytest.mark.wharenui_seam, pytest.mark.xdist_group("t3g_group")]
 """
 Work Package 3g — Whole-floor canary test suite (T3g.0 - T3g.6).
 Verifies whole-floor privacy guarantees across all exit paths and channels.
@@ -750,13 +750,22 @@ def corrupt_global_registries():
     import model_tools
     from tools.registry import ToolRegistry, registry
 
+    orig_tools = dict(registry._tools)
+    orig_mt_reg = model_tools.registry
+    mgr = get_plugin_manager()
+    orig_handlers = dict(mgr._control_phase_handlers)
+
     model_tools.registry = ToolRegistry()
     registry._tools["reflect_pause"] = "CORRUPTED_ENTRY"
     registry._tools["reflect_settle"] = None
     registry._tools["throwaway_write"] = "BAD_STATE"
-    mgr = get_plugin_manager()
     mgr._control_phase_handlers["reflect_pause"] = "BAD_HANDLER"
     yield
+    registry._tools.clear()
+    registry._tools.update(orig_tools)
+    model_tools.registry = orig_mt_reg
+    mgr._control_phase_handlers.clear()
+    mgr._control_phase_handlers.update(orig_handlers)
 
 
 def test_floor_recovers_from_prior_corrupted_globals(corrupt_global_registries, all_channels_harness):
