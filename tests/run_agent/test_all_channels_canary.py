@@ -1,5 +1,5 @@
 import pytest
-pytestmark = [pytest.mark.wharenui_seam, pytest.mark.xdist_group("t3g_group")]
+pytestmark = [pytest.mark.wharenui_seam, pytest.mark.xdist_group("all_channels_group")]
 """
 Work Package 3g — Whole-floor canary test suite (T3g.0 - T3g.6).
 Verifies whole-floor privacy guarantees across all exit paths and channels.
