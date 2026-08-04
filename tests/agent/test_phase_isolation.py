@@ -72,7 +72,7 @@ def test_layer1_public_passes():
     # No exception means guard passed — good enough
 
 
-# ── Layer 2: marker skip → tests/run_agent/test_wp2c_isolation.py
+# ── Layer 2: marker skip → tests/run_agent/test_session_db_isolation.py
 #    (real SessionDB + real AIAgent init — this mock is obsolete)
 
 

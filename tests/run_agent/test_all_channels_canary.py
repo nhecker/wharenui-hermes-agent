@@ -153,7 +153,7 @@ class LogCaptureHandler(logging.Handler):
 
 
 @pytest.fixture
-def loaded_agent_harness():
+def all_channels_harness():
     import model_tools
     from hermes_cli.plugins import get_plugin_manager, PluginContext, PluginManifest
     from wharenui_plugin import register
@@ -396,10 +396,10 @@ def check_sink_absence(harness_data, canaries=ALL_PRIVATE_CANARIES, stdout_err="
     return violations
 
 
-def test_private_toolset_structural_guard(loaded_agent_harness):
+def test_private_toolset_structural_guard(all_channels_harness):
     """T3g.0 — Structural assertion that no side-effecting tool is in private_tools."""
     from wharenui_plugin.phase.toolset import private_tools
-    agent = loaded_agent_harness["agent"]
+    agent = all_channels_harness["agent"]
     p_tools = private_tools(agent.tools)
     p_names = {(t.get("function", {}) or {}).get("name") for t in p_tools}
 
@@ -413,10 +413,10 @@ def test_private_toolset_structural_guard(loaded_agent_harness):
 
 
 @pytest.mark.parametrize("exit_path", ["settle", "done", "cap", "provider-exception-mid-private", "failed-trajectory-dump"])
-def test_maximal_private_scenario_across_all_exit_paths(loaded_agent_harness, capsys, exit_path):
+def test_maximal_private_scenario_across_all_exit_paths(all_channels_harness, capsys, exit_path):
     """T3g.0 — Drive maximal private scenario with distinct canary tokens across all 5 exit paths."""
-    agent = loaded_agent_harness["agent"]
-    td = loaded_agent_harness["td"]
+    agent = all_channels_harness["agent"]
+    td = all_channels_harness["td"]
     from agent.conversation_loop import run_conversation
 
     tool_arg = json.dumps({"arg": CANARY_TOOLARG})
@@ -478,18 +478,18 @@ def test_maximal_private_scenario_across_all_exit_paths(loaded_agent_harness, ca
     finally:
         os.chdir(orig_cwd)
 
-    assert CANARY_WRITE in loaded_agent_harness["journal_store"], f"Journal store missing CANARY_WRITE for exit path {exit_path}"
+    assert CANARY_WRITE in all_channels_harness["journal_store"], f"Journal store missing CANARY_WRITE for exit path {exit_path}"
     captured = capsys.readouterr()
     stdout_err = captured.out + captured.err
-    violations = check_sink_absence(loaded_agent_harness, stdout_err=stdout_err)
+    violations = check_sink_absence(all_channels_harness, stdout_err=stdout_err)
     assert len(violations) == 0, f"Unexpected violations on exit path {exit_path}: {violations}"
 
 
-def test_public_positive_control_all_sinks(loaded_agent_harness, capsys):
+def test_public_positive_control_all_sinks(all_channels_harness, capsys):
     """T3g.1 — Positive control: prove for EACH sink individually that CANARY_PUBLIC reaches it."""
-    agent = loaded_agent_harness["agent"]
-    td = loaded_agent_harness["td"]
-    db = loaded_agent_harness["db"]
+    agent = all_channels_harness["agent"]
+    td = all_channels_harness["td"]
+    db = all_channels_harness["db"]
     from agent.conversation_loop import run_conversation
 
     agent.quiet_mode = False
@@ -526,16 +526,16 @@ def test_public_positive_control_all_sinks(loaded_agent_harness, capsys):
 
     # 4. Message Hooks (Sink D: pre_llm_call, post_llm_call, pre_api_request)
     for msg_hook in ["pre_llm_call", "post_llm_call", "pre_api_request"]:
-        hook_found = any(h == msg_hook and CANARY_PUBLIC in str(payload) for h, _, payload in loaded_agent_harness["captured_hooks"])
+        hook_found = any(h == msg_hook and CANARY_PUBLIC in str(payload) for h, _, payload in all_channels_harness["captured_hooks"])
         assert hook_found, f"Sink D positive control failed: CANARY_PUBLIC not in hook {msg_hook}"
 
     # 5. Tool Hooks (Sink E: pre_tool_call, post_tool_call, transform_tool_result)
     for tool_hook in ["pre_tool_call", "post_tool_call", "transform_tool_result"]:
-        hook_found = any(h == tool_hook and CANARY_PUBLIC in str(payload) for h, _, payload in loaded_agent_harness["captured_hooks"])
+        hook_found = any(h == tool_hook and CANARY_PUBLIC in str(payload) for h, _, payload in all_channels_harness["captured_hooks"])
         assert hook_found, f"Sink E positive control failed: CANARY_PUBLIC not in hook {tool_hook}"
 
     # 6. Stream deltas (Sink H)
-    stream_found = any(CANARY_PUBLIC in str(d) for d in loaded_agent_harness["captured_stream_deltas"])
+    stream_found = any(CANARY_PUBLIC in str(d) for d in all_channels_harness["captured_stream_deltas"])
     assert stream_found, "Sink H positive control failed: CANARY_PUBLIC not in stream deltas"
 
     # 7. Stdout (Sink I)
@@ -544,7 +544,7 @@ def test_public_positive_control_all_sinks(loaded_agent_harness, capsys):
     assert CANARY_PUBLIC in stdout_err, "Sink I positive control failed: CANARY_PUBLIC not in stdout"
 
     # 8. Logging (Sink I)
-    log_str = "\n".join([str(r) for r in loaded_agent_harness["log_handler"].records])
+    log_str = "\n".join([str(r) for r in all_channels_harness["log_handler"].records])
     assert CANARY_PUBLIC in log_str, "Sink I positive control failed: CANARY_PUBLIC not in logging"
 
 
@@ -555,10 +555,10 @@ def test_public_positive_control_all_sinks(loaded_agent_harness, capsys):
     "E_ToolHooks",
     "I_Stdout",
 ])
-def test_per_channel_mutations(loaded_agent_harness, capsys, target_channel):
+def test_per_channel_mutations(all_channels_harness, capsys, target_channel):
     """T3g.2 & T3g.3 — Single-channel per-guard mutation testing."""
-    agent = loaded_agent_harness["agent"]
-    td = loaded_agent_harness["td"]
+    agent = all_channels_harness["agent"]
+    td = all_channels_harness["td"]
     from agent.conversation_loop import run_conversation
 
     tool_arg = json.dumps({"arg": CANARY_TOOLARG})
@@ -628,7 +628,7 @@ def test_per_channel_mutations(loaded_agent_harness, capsys, target_channel):
 
         captured = capsys.readouterr()
         stdout_err = captured.out + captured.err
-        violations = check_sink_absence(loaded_agent_harness, stdout_err=stdout_err)
+        violations = check_sink_absence(all_channels_harness, stdout_err=stdout_err)
 
         if target_channel == "A_B_DB":
             assert any(v.channel in ("A", "B") for v in violations), f"Mutation A_B_DB failed to produce A/B violation: {violations}"
@@ -646,10 +646,10 @@ def test_per_channel_mutations(loaded_agent_harness, capsys, target_channel):
             p.stop()
 
 
-def test_stream_absence_structural_proof(loaded_agent_harness):
+def test_stream_absence_structural_proof(all_channels_harness):
     """T3g.3 — Prove streaming absence is structural and test stream mutation."""
-    agent = loaded_agent_harness["agent"]
-    td = loaded_agent_harness["td"]
+    agent = all_channels_harness["agent"]
+    td = all_channels_harness["td"]
     from agent.conversation_loop import run_conversation
 
     tool_arg = json.dumps({"arg": CANARY_TOOLARG})
@@ -674,14 +674,14 @@ def test_stream_absence_structural_proof(loaded_agent_harness):
     if agent.stream_delta_callback:
         agent.stream_delta_callback(f"MUTATED_PRIVATE_STREAM_{CANARY_TEXT}")
 
-    violations = check_sink_absence(loaded_agent_harness)
+    violations = check_sink_absence(all_channels_harness)
     assert any(v.channel == "H" for v in violations), f"Stream mutation failed to trigger Channel H violation: {violations}"
 
 
-def test_all_23_hooks_private_phase_accounting(loaded_agent_harness):
+def test_all_23_hooks_private_phase_accounting(all_channels_harness):
     """T3g.4 — Account for all 23 hooks with per-hook private phase fire counts."""
-    agent = loaded_agent_harness["agent"]
-    td = loaded_agent_harness["td"]
+    agent = all_channels_harness["agent"]
+    td = all_channels_harness["td"]
     from agent.conversation_loop import run_conversation
 
     tool_arg = json.dumps({"arg": CANARY_TOOLARG})
@@ -703,21 +703,21 @@ def test_all_23_hooks_private_phase_accounting(loaded_agent_harness):
         os.chdir(orig_cwd)
 
     counts = {h: 0 for h in ALL_23_HOOKS}
-    for h_name, phase, payload in loaded_agent_harness["captured_hooks"]:
+    for h_name, phase, payload in all_channels_harness["captured_hooks"]:
         if phase in ("private", "closing_private"):
             counts[h_name] = counts.get(h_name, 0) + 1
 
-    violations = check_sink_absence(loaded_agent_harness)
+    violations = check_sink_absence(all_channels_harness)
     assert len(violations) == 0, f"Private hook violations detected: {violations}"
 
     for h, cnt in counts.items():
         assert cnt == 0, f"Hook {h} fired {cnt} times in private phase unexpectedly"
 
 
-def test_real_registry_settle_done_dispatch(loaded_agent_harness):
+def test_real_registry_settle_done_dispatch(all_channels_harness):
     """T3g.6 — Dispatch reflect_settle and reflect_done through the real registry path."""
     from model_tools import handle_function_call
-    agent = loaded_agent_harness["agent"]
+    agent = all_channels_harness["agent"]
 
     agent._phase = "private"
     res_settle = handle_function_call("reflect_settle", {}, agent=agent)
@@ -733,14 +733,14 @@ def test_real_registry_settle_done_dispatch(loaded_agent_harness):
     assert agent._private_exit.action == "close"
 
 
-def test_fixture_isolation(loaded_agent_harness):
+def test_fixture_isolation(all_channels_harness):
     """T3g.5 — Assert fixture restores global registry and hook manager."""
     from hermes_cli.plugins import get_plugin_manager
     from tools.registry import registry
 
     mgr = get_plugin_manager()
     # registry already imported
-    orig_hooks = loaded_agent_harness["orig_hooks"]
+    orig_hooks = all_channels_harness["orig_hooks"]
 
     assert len(mgr._hooks) > len(orig_hooks)
 
@@ -759,9 +759,9 @@ def corrupt_global_registries():
     yield
 
 
-def test_floor_recovers_from_prior_corrupted_globals(corrupt_global_registries, loaded_agent_harness):
-    agent = loaded_agent_harness["agent"]
-    td = loaded_agent_harness["td"]
+def test_floor_recovers_from_prior_corrupted_globals(corrupt_global_registries, all_channels_harness):
+    agent = all_channels_harness["agent"]
+    td = all_channels_harness["td"]
     from agent.conversation_loop import run_conversation
 
     responses = [
@@ -777,5 +777,5 @@ def test_floor_recovers_from_prior_corrupted_globals(corrupt_global_registries, 
     finally:
         os.chdir(orig_cwd)
 
-    violations = check_sink_absence(loaded_agent_harness)
+    violations = check_sink_absence(all_channels_harness)
     assert len(violations) == 0, f"Corrupted recovery run produced violations: {violations}"

@@ -134,7 +134,7 @@ class LogCaptureHandler(logging.Handler):
 
 
 @pytest.fixture
-def t4_harness():
+def journal_harness():
     import model_tools
     from hermes_cli.plugins import get_plugin_manager, PluginContext, PluginManifest
     from wharenui_plugin import register
@@ -345,10 +345,10 @@ def check_sink_absence(harness_data, canaries=ALL_JOURNAL_CANARIES, stdout_err="
 
 
 @pytest.mark.parametrize("exit_path", ["settle", "done", "cap", "provider-exception-mid-private", "failed-trajectory-dump"])
-def test_real_journal_canary_absence_across_all_5_exit_paths(t4_harness, capsys, exit_path):
+def test_real_journal_canary_absence_across_all_5_exit_paths(journal_harness, capsys, exit_path):
     """T4.4 — Drive real journal tools in private phase with CANARY_JOURNAL across all 5 exit paths."""
-    agent = t4_harness["agent"]
-    td = t4_harness["td"]
+    agent = journal_harness["agent"]
+    td = journal_harness["td"]
     from agent.conversation_loop import run_conversation
 
     append_arg = json.dumps({"content": CANARY_JOURNAL, "slug": CANARY_JOURNAL_SLUG, "description": CANARY_JOURNAL_DESC})
@@ -409,16 +409,16 @@ def test_real_journal_canary_absence_across_all_5_exit_paths(t4_harness, capsys,
 
     captured = capsys.readouterr()
     stdout_err = captured.out + captured.err
-    violations = check_sink_absence(t4_harness, stdout_err=stdout_err)
+    violations = check_sink_absence(journal_harness, stdout_err=stdout_err)
 
     assert len(violations) == 0, f"Exit path '{exit_path}' produced privacy violations: {violations}"
 
 
 @pytest.mark.parametrize("target_channel", ["A_B_DB", "C_Trajectory", "D_MessageHooks", "E_ToolHooks", "I_Stdout"])
-def test_t4_per_channel_mutations(t4_harness, capsys, target_channel):
+def test_t4_per_channel_mutations(journal_harness, capsys, target_channel):
     """T4.4 — Prove per-channel mutations catch leaks when real journal tools are used."""
-    agent = t4_harness["agent"]
-    td = t4_harness["td"]
+    agent = journal_harness["agent"]
+    td = journal_harness["td"]
     from agent.conversation_loop import run_conversation
 
     append_arg = json.dumps({"content": CANARY_JOURNAL, "slug": CANARY_JOURNAL_SLUG})
@@ -485,7 +485,7 @@ def test_t4_per_channel_mutations(t4_harness, capsys, target_channel):
 
         captured = capsys.readouterr()
         stdout_err = captured.out + captured.err
-        violations = check_sink_absence(t4_harness, stdout_err=stdout_err)
+        violations = check_sink_absence(journal_harness, stdout_err=stdout_err)
 
         if target_channel == "A_B_DB":
             assert any(v.channel in ("A", "B") for v in violations), f"Mutation A_B_DB failed to produce A/B violation: {violations}"
@@ -502,10 +502,10 @@ def test_t4_per_channel_mutations(t4_harness, capsys, target_channel):
             p.stop()
 
 
-def test_t4_positive_control(t4_harness):
+def test_t4_positive_control(journal_harness):
     """T4.4 — Positive control asserting public content IS recorded in sinks."""
-    agent = t4_harness["agent"]
-    td = t4_harness["td"]
+    agent = journal_harness["agent"]
+    td = journal_harness["td"]
     from agent.conversation_loop import run_conversation
 
     responses = [
@@ -520,5 +520,5 @@ def test_t4_positive_control(t4_harness):
     finally:
         os.chdir(orig_cwd)
 
-    violations = check_sink_absence(t4_harness, canaries=[CANARY_PUBLIC])
+    violations = check_sink_absence(journal_harness, canaries=[CANARY_PUBLIC])
     assert any(v.channel == "A" for v in violations), f"Positive control failed to detect public canary in DB: {violations}"

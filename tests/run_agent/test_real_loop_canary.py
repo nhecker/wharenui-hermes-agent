@@ -32,7 +32,7 @@ CANARY = "WHARE-CANARY-7f3a9b2e"
 
 
 @pytest.fixture(autouse=True)
-def wp2e_harness():
+def real_loop_harness():
     import model_tools
     from hermes_cli.plugins import get_plugin_manager, PluginContext, PluginManifest
     from wharenui_plugin import register

@@ -30,7 +30,7 @@ import pytest
 
 
 @pytest.fixture(autouse=True)
-def wp2c_harness():
+def session_db_harness():
     import model_tools
     from hermes_cli.plugins import get_plugin_manager, PluginContext, PluginManifest
     from wharenui_plugin import register
