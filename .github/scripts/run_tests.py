@@ -334,7 +334,7 @@ def main():
             if total_executed < expected_collected * 0.9:
                 subset_warning = True
 
-        min_collected_warning = (args.min_collected > 0 and results["collected"] < args.min_collected)
+        min_collected_failed = (args.min_collected > 0 and results["collected"] < args.min_collected)
 
         env_dep_failures, real_failures = categorize_failures(results["failures_details"])
 
@@ -356,8 +356,8 @@ def main():
             print("                  [!] COLLECTION ERROR DETECTED DURING TEST DISCOVERY")
         if subset_warning:
             print(f"                  [!] WARNING: Executed {total_executed} tests, far below collected {expected_collected}!")
-        if min_collected_warning:
-            print(f"                  [!] WARNING: Collected {results['collected']} tests, below --min-collected {args.min_collected}!")
+        if min_collected_failed:
+            print(f"                  [!] ERROR: Collected {results['collected']} tests, below --min-collected {args.min_collected}!")
             
         print("-" * 72)
         print(f" Passed         : {results['passed']}")
@@ -401,12 +401,24 @@ def main():
 
         total_failures = results["failed"] + results["errors"]
         
-        if total_failures == 0 and reconciled and not collection_errored and not subset_warning:
+        is_clean = (total_failures == 0 and reconciled and not collection_errored and not subset_warning and not min_collected_failed)
+
+        if is_clean:
             print(" CI GATE RESULT  : CLEAN (0 failures)")
             print("=" * 72 + "\n")
             sys.exit(0)
         else:
-            print(f" CI GATE RESULT  : FAILED ({total_failures} failures / collection error / reconciliation mismatch)")
+            reasons = []
+            if total_failures > 0:
+                reasons.append(f"{total_failures} failures")
+            if collection_errored:
+                reasons.append("collection error")
+            if not reconciled or subset_warning:
+                reasons.append("reconciliation mismatch")
+            if min_collected_failed:
+                reasons.append(f"collected {results['collected']} < min-collected {args.min_collected}")
+            reason_str = " / ".join(reasons) if reasons else "failures detected"
+            print(f" CI GATE RESULT  : FAILED ({reason_str})")
             print("=" * 72 + "\n")
             sys.exit(1)
 
