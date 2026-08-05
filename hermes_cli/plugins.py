@@ -391,6 +391,41 @@ class PluginContext:
 
     def register_control_tool(self, name: str, schema: dict, handler: Callable, phase_handler: "PhaseHandler", toolset: str = "wharenui") -> None:
         """Register a control tool and its phase handler."""
+        from agent.phase_control import PHASE_CONTROL_API_VERSION
+        plugin_version = None
+        if hasattr(self, "plugin_module"):
+            plugin_version = getattr(self.plugin_module, "PHASE_CONTROL_API_VERSION", None)
+
+        if plugin_version is None:
+            import inspect
+            import sys
+            frame = inspect.currentframe()
+            while frame:
+                module_name = frame.f_globals.get("__name__")
+                if module_name:
+                    mod = sys.modules.get(module_name)
+                    if mod and hasattr(mod, "PHASE_CONTROL_API_VERSION"):
+                        plugin_version = getattr(mod, "PHASE_CONTROL_API_VERSION")
+                        self.plugin_module = mod
+                        break
+                frame = frame.f_back
+
+        if plugin_version is None or plugin_version != PHASE_CONTROL_API_VERSION:
+            version_pair = f"plugin{plugin_version or 'unknown'}-seam{PHASE_CONTROL_API_VERSION}"
+            allowed_override = os.environ.get("WHARENUI_ALLOW_UNVERIFIED_SEAM", "")
+            if allowed_override != version_pair:
+                raise RuntimeError(
+                    f"Wharenui phase-control version mismatch! Seam version: {PHASE_CONTROL_API_VERSION}, "
+                    f"Plugin version: {plugin_version}. To bypass this safety refusal, "
+                    f"set WHARENUI_ALLOW_UNVERIFIED_SEAM={version_pair}."
+                )
+            
+            if hasattr(self, "plugin_module"):
+                self.plugin_module.SEAM_STATE = "unverified"
+                self.plugin_module.SEAM_VERSION_PAIR = version_pair
+                setattr(phase_handler, "seam_state", "unverified")
+                setattr(phase_handler, "seam_version_pair", version_pair)
+
         self.register_tool(name=name, toolset=toolset, schema=schema, handler=handler)
         self._manager._control_phase_handlers[name] = phase_handler
         self._manager._control_tool_names.add(name)
@@ -1784,6 +1819,7 @@ class PluginManager:
                 logger.warning("Plugin '%s' has no register() function", manifest.name)
             else:
                 ctx = PluginContext(manifest, self)
+                ctx.plugin_module = module
                 # Snapshot registry state BEFORE register() so each registry's
                 # attribution counts only what THIS plugin actually added.
                 # The previous approach diffed names against all already-loaded

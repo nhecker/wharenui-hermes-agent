@@ -2,6 +2,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Optional, Protocol
 
+PHASE_CONTROL_API_VERSION = 1
+
 
 @dataclass
 class ControlOutcome:

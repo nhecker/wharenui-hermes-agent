@@ -34,4 +34,4 @@ jobs:
 
       - name: Run fast privacy subset
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 61 --mode serial
+          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 62 --mode serial

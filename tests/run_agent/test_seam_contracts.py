@@ -106,3 +106,36 @@ def test_contract_fail_red_demonstration():
         result = run_agent._public_only([priv_msg])
         assert len(result) == 1
         assert run_agent._PHASE_PRIVATE_MARKER in result[0]
+
+
+def test_contract_phase_control_api_version():
+    """Contract 6: PHASE_CONTROL_API_VERSION exists in agent/phase_control.py and is checked on registration."""
+    from agent.phase_control import PHASE_CONTROL_API_VERSION
+    assert PHASE_CONTROL_API_VERSION == 1
+    
+    from hermes_cli.plugins import PluginContext, PluginManifest
+    
+    manifest = PluginManifest(
+        name="test_plugin",
+        version="0.1.0",
+        description="test",
+        key="test",
+        source="user",
+        kind="standalone",
+        path=str(Path("/tmp")),
+    )
+    
+    class DummyModule:
+        PHASE_CONTROL_API_VERSION = 999  # mismatched version
+        
+    manager_mock = MagicMock()
+    ctx = PluginContext(manifest, manager_mock)
+    ctx.plugin_module = DummyModule()
+    
+    with pytest.raises(RuntimeError, match="Wharenui phase-control version mismatch"):
+        ctx.register_control_tool(
+            name="reflect_pause",
+            schema={},
+            handler=lambda x: None,
+            phase_handler=MagicMock(),
+        )
