@@ -86,6 +86,76 @@ The plugin is **not** vendored into this repo. Tests and runtime put it on `sys.
 `register(ctx)` calls `register_control_tool(...)` for each reflect_* tool. If the plugin dir isn't found, Hermes
 runs as stock upstream — the seam is inert without a plugin registered.
 
+## Install
+
+Two repos, and the order matters — the fork provides the seam that the plugin registers into.
+
+```bash
+# 1. The fork (provides agent/phase_control.py — the seam)
+git clone https://github.com/nhecker/wharenui-hermes-agent.git
+cd wharenui-hermes-agent
+git checkout wharenui-integration
+./setup-hermes.sh            # the fork's bundled installer; takes no arguments
+
+# 2. The plugin (the product: phases + journal) — as a *sibling* directory
+cd ..
+git clone https://github.com/nhecker/wharenui-hermes-agent-plugin.git
+pip install -e wharenui-hermes-agent-plugin
+
+# 3. Enable it, once
+hermes plugins enable wharenui
+```
+
+**Don't use the hosted installer.** `curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash` from
+upstream's README installs **stock upstream Hermes**, which has no seam — so there is no private phase, and the
+`reflect_*` tools will not be registered at all. (The journal *can* still be used on stock Hermes as an explicit
+**open notebook** — entries are written in the public transcript, the tools say so in their own descriptions, and
+each entry is stamped `seam: absent`. That mode is opt-in and never a fallback; if you wanted privacy, you want the
+fork.) There is no
+`install.sh` in this fork. `setup-hermes.sh` is the installer, and it's the right one *because* it sets up the
+clone you are standing in ("quick setup for developers who cloned the repo manually"). Nothing inside it needs to
+be edited to point at this fork — cloning the fork is what points it here.
+
+Clone the plugin as a **sibling** of the fork unless you have a reason not to: discovery order is
+`$WHARENUI_PLUGIN_DIR`, then `../wharenui-hermes-agent-plugin`, then `/root/work/...` (see *How the plugin
+attaches*), so a sibling checkout needs no configuration at all.
+
+## Upgrade
+
+Two components, two upgrade paths, and they are **not** symmetric.
+
+**Plugin — cheap.** It's installed with `pip install -e`, so the working tree *is* the installation:
+
+```bash
+cd wharenui-hermes-agent-plugin && git pull      # restart Hermes; no reinstall, no re-enable
+```
+
+**Fork — this is the expensive one,** because upgrading it means merging *upstream*, not pulling our own commits:
+
+```bash
+cd wharenui-hermes-agent && git checkout wharenui-integration
+git remote -v                                    # confirm an 'upstream' remote exists; add it if not
+git fetch upstream && git merge upstream/main    # the actual work
+./setup-hermes.sh                                # only if the dependency set moved
+```
+
+That merge is the entire subject of the next section — read it first and treat the seam-contract tests as the
+punch-list. Re-run `setup-hermes.sh` after any merge that touched `pyproject.toml`.
+
+**Version skew between the two.** The pair is checked at startup: the plugin declares which phase-control API it
+was built against, and the fork refuses to register a mismatch with a clear error naming both versions. Upgrading
+one without the other therefore fails **loudly at startup** rather than as a mid-session `AttributeError` inside a
+private phase. If you see that error, upgrade the other half.
+
+> **Pending as of this writing:** `PHASE_CONTROL_API_VERSION` and the "named-but-missing journal dir raises"
+> behaviour below both land with `WP-FIX-JOURNAL-SAFETY-AND-SEAM-VERSION`. Delete this note once they're in.
+
+**Your journal is not touched by an upgrade.** Entries live in `~/.hermes/journal/` by default (override with
+`WHARENUI_JOURNAL_DIR`), alongside `journal.key` and `signing.key`. A journal is auto-created only when no
+directory was explicitly named; if you *do* name one and it isn't there, that raises rather than quietly starting a
+new empty journal. **Back up both keys.** They are not derived from anything and not recoverable — losing
+`journal.key` loses every entry, and losing `signing.key` makes existing signatures unverifiable.
+
 ## Keeping the fork alive across an upstream merge
 
 The seam-contract tests are the safety net. The workflow:
