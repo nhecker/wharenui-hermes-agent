@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: ["*"]
   schedule:
-    - cron: '0 3 * * *'
+    - cron: "0 3 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,18 +20,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
 
-      - name: Checkout plugin (sibling)
+      - name: Checkout plugin (sibling inside workspace)
         uses: actions/checkout@v4.2.2
         with:
           repository: nhecker/wharenui-hermes-agent-plugin
           ref: main
-          path: ../wharenui-hermes-agent-plugin
+          path: ./wharenui-hermes-agent-plugin
 
       - name: Set up Python 3.13
         uses: actions/setup-python@v5.4.0
         with:
-          python-version: '3.13'
-          cache: 'pip'
+          python-version: "3.13"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -41,6 +41,6 @@ jobs:
 
       - name: Run fast privacy subset
         env:
-          WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/../wharenui-hermes-agent-plugin
+          WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
           python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 62 --mode serial
