@@ -123,7 +123,18 @@ def test_cross_session_persistence_encrypted_signed(tmp_path):
     with pytest.raises(FileNotFoundError):
         jtools.handle_journal_read({"handle": handle}, agent=session_b_agent)
 
-    # Signed raw file still exists on disk
-    assert on_disk_path.exists(), "Original entry file was unlinked instead of tombstoned!"
+    # After T1 (WP-TIDY), withdrawn entries are renamed to <token>.tomb.md.
+    # The sig file stays at <token>.md.sig (canonical — signature_path_for uses the leading token).
+    # Check both the renamed file and the unmoved original (legacy tolerance).
+    token = on_disk_path.stem  # <token> from <token>.md
+    tomb_path = on_disk_path.parent / f"{token}.tomb.md"
+    renamed = tomb_path.exists() and not on_disk_path.exists()
+    stayed = on_disk_path.exists()
+    assert renamed or stayed, (
+        f"Original entry file was unlinked instead of tombstoned!\n"
+        f"  original: {on_disk_path} exists={on_disk_path.exists()}\n"
+        f"  renamed:  {tomb_path} exists={tomb_path.exists()}"
+    )
     assert sig_path.exists(), "Original signature file was unlinked!"
-    assert sign.verify_entry(on_disk_path, verifying_key) is True, "Original signature compromised after withdrawal!"
+    verify_target = tomb_path if renamed else on_disk_path
+    assert sign.verify_entry(verify_target, verifying_key) is True, "Original signature compromised after withdrawal!"
