@@ -57,6 +57,7 @@ def real_loop_harness():
 
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
     ctx = PluginContext(manifest, mgr)
+    import wharenui_plugin; ctx.plugin_module = wharenui_plugin
     register(ctx)
 
     assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"

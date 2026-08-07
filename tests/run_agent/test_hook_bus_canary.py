@@ -73,6 +73,7 @@ def loaded_agent():
     mgr = get_plugin_manager()
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
     ctx = PluginContext(manifest, mgr)
+    import wharenui_plugin; ctx.plugin_module = wharenui_plugin
     register(ctx)
     from hermes_state import SessionDB
     td = Path(tempfile.mkdtemp(prefix="hv-"))

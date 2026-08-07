@@ -392,26 +392,25 @@ class PluginContext:
     def register_control_tool(self, name: str, schema: dict, handler: Callable, phase_handler: "PhaseHandler", toolset: str = "wharenui") -> None:
         """Register a control tool and its phase handler."""
         from agent.phase_control import PHASE_CONTROL_API_VERSION
-        plugin_version = None
-        if hasattr(self, "plugin_module"):
-            plugin_version = getattr(self.plugin_module, "PHASE_CONTROL_API_VERSION", None)
 
+        # M1: Resolve plugin version explicitly from plugin_module only.
+        # No stack walking — if plugin_module is not set, that is a refusal.
+        plugin_module = getattr(self, "plugin_module", None)
+        if plugin_module is None:
+            raise RuntimeError(
+                "Wharenui phase-control refusal: plugin_module is not set. "
+                "The loader must set ctx.plugin_module before calling register_control_tool."
+            )
+        plugin_version = getattr(plugin_module, "PHASE_CONTROL_API_VERSION", None)
         if plugin_version is None:
-            import inspect
-            import sys
-            frame = inspect.currentframe()
-            while frame:
-                module_name = frame.f_globals.get("__name__")
-                if module_name:
-                    mod = sys.modules.get(module_name)
-                    if mod and hasattr(mod, "PHASE_CONTROL_API_VERSION"):
-                        plugin_version = getattr(mod, "PHASE_CONTROL_API_VERSION")
-                        self.plugin_module = mod
-                        break
-                frame = frame.f_back
+            raise RuntimeError(
+                f"Wharenui phase-control refusal: plugin_module {plugin_module.__name__} "
+                f"does not carry PHASE_CONTROL_API_VERSION."
+            )
 
-        if plugin_version is None or plugin_version != PHASE_CONTROL_API_VERSION:
-            version_pair = f"plugin{plugin_version or 'unknown'}-seam{PHASE_CONTROL_API_VERSION}"
+        version_pair = f"plugin{plugin_version}-seam{PHASE_CONTROL_API_VERSION}"
+
+        if plugin_version != PHASE_CONTROL_API_VERSION:
             allowed_override = os.environ.get("WHARENUI_ALLOW_UNVERIFIED_SEAM", "")
             if allowed_override != version_pair:
                 raise RuntimeError(
@@ -419,12 +418,17 @@ class PluginContext:
                     f"Plugin version: {plugin_version}. To bypass this safety refusal, "
                     f"set WHARENUI_ALLOW_UNVERIFIED_SEAM={version_pair}."
                 )
-            
-            if hasattr(self, "plugin_module"):
-                self.plugin_module.SEAM_STATE = "unverified"
-                self.plugin_module.SEAM_VERSION_PAIR = version_pair
-                setattr(phase_handler, "seam_state", "unverified")
-                setattr(phase_handler, "seam_version_pair", version_pair)
+            # Override accepted — mark unverified
+            plugin_module.SEAM_STATE = "unverified"
+            plugin_module.SEAM_VERSION_PAIR = version_pair
+            setattr(phase_handler, "seam_state", "unverified")
+            setattr(phase_handler, "seam_version_pair", version_pair)
+        else:
+            # Version matched — promote to ok
+            plugin_module.SEAM_STATE = "ok"
+            plugin_module.SEAM_VERSION_PAIR = version_pair
+            setattr(phase_handler, "seam_state", "ok")
+            setattr(phase_handler, "seam_version_pair", version_pair)
 
         self.register_tool(name=name, toolset=toolset, schema=schema, handler=handler)
         self._manager._control_phase_handlers[name] = phase_handler

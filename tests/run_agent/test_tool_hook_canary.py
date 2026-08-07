@@ -83,6 +83,7 @@ def loaded_agent():
     mgr._hooks.clear()
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
     ctx = PluginContext(manifest, mgr)
+    import wharenui_plugin; ctx.plugin_module = wharenui_plugin
     register(ctx)
 
     captured = {
