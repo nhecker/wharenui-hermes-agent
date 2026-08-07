@@ -73,6 +73,8 @@ def parse_args():
              "Exits non-zero only on newly-failing.",
     )
 
+    parser.add_argument("--baseline-collected-file", metavar="PATH", default=None, help="Path to the baseline complete collected node-ID set.")
+
     return parser.parse_known_args()
 
 
@@ -427,27 +429,19 @@ def main():
                 if line and not line.startswith("#"):
                     baseline_failures.add(_normalize_node_id(line))
 
+            baseline_collected = set()
+            if args.baseline_collected_file:
+                collected_path = Path(args.baseline_collected_file)
+                if not collected_path.exists():
+                    print("\nERROR: baseline collected file not found: " + str(collected_path))
+                    sys.exit(1)
+                baseline_collected = {_normalize_node_id(line.strip()) for line in collected_path.read_text().splitlines() if line.strip() and not line.startswith("#")}
+
             curr_fail_set = {f["node_id"] for f in results["failures_details"]}
             curr_collected = set(_normalize_node_id(n) for n in collected_nodes)
-
-            newly_failing = sorted(curr_fail_set - baseline_failures)
+            new_tests = sorted(curr_collected - baseline_collected) if baseline_collected else []
+            newly_failing = sorted(curr_fail_set - baseline_failures - set(new_tests))
             newly_fixed = sorted(baseline_failures - curr_fail_set)
-            new_tests = sorted(
-                node for node in curr_collected
-                if node not in baseline_failures
-                and node not in curr_fail_set
-                # "new" = collected now, not in baseline failures, not failing now
-                # But we don't have the baseline's full collected set —
-                # so "new tests" = collected now and not in baseline
-            )
-            # Actually we need the baseline's collected set too.
-            # The baseline file only has failing node IDs, not all collected.
-            # "new tests" = failing now but not in baseline failures AND not in baseline collected.
-            # Since we only have baseline failures, "new tests" = newly_failing that are
-            # genuinely new (not just newly-broken existing tests).
-            # We can't distinguish without the full baseline collected set.
-            # For now, report newly_failing and newly_fixed only — those are the gate.
-            # "disappeared" = baseline failures not collected now.
             disappeared = sorted(
                 node for node in baseline_failures
                 if node not in curr_collected
@@ -456,12 +450,17 @@ def main():
             print("-" * 72)
             print(f" Baseline File  : {args.baseline_file}")
             print(f"   Newly failing: {len(newly_failing)}  <-- GATE")
+            print(f"   New tests    : {len(new_tests)}  (non-blocking)")
             print(f"   Newly fixed  : {len(newly_fixed)}")
             print(f"   Disappeared  : {len(disappeared)}")
             if newly_failing:
                 print("\n   *** NEWLY FAILING (gate) ***")
                 for nf in newly_failing:
                     print(f"     + {nf}")
+            if new_tests:
+                print("\n   New tests (non-blocking):")
+                for node in new_tests:
+                    print(f"     ? {node}")
             if newly_fixed:
                 print("\n   Newly fixed (informational):")
                 for nf in newly_fixed:

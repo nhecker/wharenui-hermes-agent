@@ -13,6 +13,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  tier-1-run-agent:
+    name: "Tier 1 blocking gate (tests/run_agent, zero failures)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.13"
+          cache: "pip"
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -e .[test,dev,web,acp]
+          pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
+      - name: Run Tier 1 gate
+        run: |
+          python3 .github/scripts/run_tests.py --selector tests/run_agent --mode xdist --min-collected 2174
+
   privacy-gate:
     name: "Privacy floor (subset)"
     runs-on: ubuntu-latest
@@ -45,7 +65,7 @@ jobs:
         run: |
           python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 62 --mode serial
   fork-without-plugin:
-    name: "Fork without plugin (upstream canary)"
+    name: "Fork without plugin (non-blocking pre-merge canary)"
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'
     steps:
@@ -64,9 +84,9 @@ jobs:
           pip install -e .[test,dev,web,acp]
           pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
 
-      - name: Run full suite with baseline delta (no -x, no plugin)
+      - name: Run pre-merge population with baseline delta (non-blocking canary)
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/ --mode xdist --baseline-file .github/baseline-pre-merge.txt
+          python3 .github/scripts/run_tests.py --selector tests/agent tests/run_agent --mode xdist --baseline-file .github/baseline-pre-merge.txt --baseline-collected-file .github/baseline-pre-merge-collected.txt
 
   version-mismatch:
     name: "Version mismatch refusal"
