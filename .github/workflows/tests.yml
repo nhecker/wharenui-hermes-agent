@@ -44,3 +44,58 @@ jobs:
           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
           python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 62 --mode serial
+  fork-without-plugin:
+    name: "Fork without plugin (upstream canary)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -e .[test,dev,web,acp]
+          pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
+
+      - name: Run base suite (no plugin)
+        env: {}
+        run: |
+          python3 -m pytest tests/ -q --ignore=tests/run_agent -x
+
+  version-mismatch:
+    name: "Version mismatch refusal"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Checkout plugin (mismatched version)
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: nhecker/wharenui-hermes-agent-plugin
+          ref: main
+          path: ./wharenui-hermes-agent-plugin
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -e .[test,dev,web,acp]
+          pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
+
+      - name: Run matrix tests
+        env:
+          WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
+        run: |
+          python3 -m pytest tests/run_agent/test_matrix.py -v -k "m1 or m2 or m4 or m5"
