@@ -1,0 +1,28 @@
+# Pre-merge failure baseline for wharenui-integration
+# Generated: 2026-08-07
+# Ref: wharenui-integration (HEAD at time of measurement)
+# Selector: tests/agent tests/run_agent
+# Mode: xdist (-n 4)
+# Command: python3 -m pytest tests/agent tests/run_agent -n 4 --junitxml=<xml> --tb=no -q
+# Determinism: 2 runs, 17 stable failures, 174 flaky (run 2 only)
+# These are the REAL (non-env) failures that are stable across runs.
+# Env/dep failures (3277) are excluded — they differ between this box and a runner.
+# This file legitimises these known failures. It should shrink, never grow.
+
+tests.agent.test_auxiliary_client_proxy_env::test_create_openai_client_ignores_macos_system_proxy
+tests.agent.test_auxiliary_client_proxy_env::test_create_openai_client_no_proxy_when_env_unset
+tests.agent.test_auxiliary_client_proxy_env::test_create_openai_client_routes_via_env_proxy
+tests.agent.test_auxiliary_main_first.TestResolveAutoMainFirst::test_main_unavailable_falls_through_to_chain
+tests.agent.test_auxiliary_main_first.TestResolveAutoMainFirst::test_no_main_config_uses_chain_directly
+tests.agent.test_auxiliary_main_first.TestResolveAutoMainFirst::test_nous_main_uses_main_model_for_aux
+tests.agent.test_auxiliary_main_first.TestResolveAutoMainFirst::test_openrouter_main_uses_main_model_for_aux
+tests.agent.test_auxiliary_main_first.TestResolveVisionCustomProvider::test_custom_main_forwards_runtime_endpoint
+tests.agent.test_auxiliary_main_first.TestResolveVisionCustomProvider::test_custom_main_no_runtime_falls_back_to_configured_endpoint
+tests.agent.test_auxiliary_main_first.TestResolveVisionCustomProvider::test_custom_prefixed_main_forwards_runtime_endpoint
+tests.agent.test_curator_reports::test_curator_report_has_no_cron_section_when_nothing_changes
+tests.agent.test_curator_reports::test_reports_root_is_under_logs_not_skills
+tests.agent.test_curator_reports::test_run_json_has_expected_shape
+tests.agent.test_curator_reports::test_same_second_reruns_get_unique_dirs
+tests.agent.test_curator_reports::test_write_run_report_creates_both_files
+tests.agent.test_skill_utils::test_skill_config_raw_cache_invalidates_on_config_edit
+tests.run_agent.test_run_agent_codex_responses::test_build_api_kwargs_xai_does_not_mutate_agent_tools
