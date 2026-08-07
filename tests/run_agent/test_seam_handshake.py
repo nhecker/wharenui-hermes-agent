@@ -30,7 +30,7 @@ class MismatchedModule:
 
 # --- M1 ---
 
-def test_m1_no_plugin_module_is_refusal():
+def test_no_plugin_module_is_refusal():
     """M1: register_control_tool refuses when plugin_module is not set."""
     ctx = _make_ctx()
     with pytest.raises(RuntimeError, match="plugin_module is not set"):
@@ -40,7 +40,7 @@ def test_m1_no_plugin_module_is_refusal():
         )
 
 
-def test_m1_no_version_attribute_is_refusal():
+def test_no_version_attribute_is_refusal():
     """M1: plugin_module without PHASE_CONTROL_API_VERSION is a refusal."""
     class NoVersion:
         __name__ = "noversion"
@@ -52,7 +52,7 @@ def test_m1_no_version_attribute_is_refusal():
         )
 
 
-def test_m1_mismatched_version_still_refuses():
+def test_mismatched_version_still_refuses():
     """M1: mismatched version raises (regression for hoisted-import case)."""
     ctx = _make_ctx(plugin_module=MismatchedModule())
     with pytest.raises(RuntimeError, match="version mismatch"):
@@ -64,7 +64,7 @@ def test_m1_mismatched_version_still_refuses():
 
 # --- M2 ---
 
-def test_m2_matched_version_sets_ok():
+def test_matched_version_sets_ok():
     """M2: successful handshake promotes SEAM_STATE to 'ok'."""
     mod = MatchedModule()
     mod.SEAM_STATE = "unknown"
@@ -77,7 +77,7 @@ def test_m2_matched_version_sets_ok():
     assert mod.SEAM_VERSION_PAIR == "plugin1-seam1"
 
 
-def test_m2_mismatched_with_override_sets_unverified():
+def test_mismatched_with_override_sets_unverified():
     """M2: override accepted sets 'unverified', not 'ok'."""
     mod = MismatchedModule()
     mod.SEAM_STATE = "unknown"
@@ -93,7 +93,7 @@ def test_m2_mismatched_with_override_sets_unverified():
         os.environ.pop("WHARENUI_ALLOW_UNVERIFIED_SEAM", None)
 
 
-def test_m2_stale_override_does_not_grant():
+def test_stale_override_does_not_grant():
     """M6/M2: stale override from a different version pair does not grant access."""
     mod = MismatchedModule()
     mod.SEAM_STATE = "unknown"
@@ -111,7 +111,7 @@ def test_m2_stale_override_does_not_grant():
 
 # --- M4 ---
 
-def test_m4_seam_inert_no_plugin():
+def test_seam_inert_no_plugin():
     """M4: fork with no plugin — agent._phase defaults to public, no control tools."""
     from run_agent import AIAgent
     agent = MagicMock(spec=AIAgent)
@@ -130,7 +130,7 @@ def test_m4_seam_inert_no_plugin():
 
 # --- M5 ---
 
-def test_m5_mid_registration_failure_coherent():
+def test_mid_registration_failure_coherent():
     """M5: after register_control_tool succeeds, phase is still public (inert handler).
 
     The "half-open" risk is: control handler registered, but plugin's register()

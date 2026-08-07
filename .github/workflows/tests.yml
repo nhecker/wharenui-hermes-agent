@@ -98,4 +98,4 @@ jobs:
         env:
           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
-          python3 -m pytest tests/run_agent/test_matrix.py -v -k "m1 or m2 or m4 or m5"
+          python3 -m pytest tests/run_agent/test_seam_handshake.py -v -k "refusal or matched or mismatched or stale or inert or mid_registration"
