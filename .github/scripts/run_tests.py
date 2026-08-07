@@ -64,6 +64,14 @@ def parse_args():
         default=0,
         help="Minimum number of collected tests expected (causes gate failure if collected count is lower)",
     )
+    parser.add_argument(
+        "--baseline-file",
+        metavar="PATH",
+        default=None,
+        help="Path to a baseline file (sorted failing node IDs, one per line). "
+             "Reports newly-failing/fixed/new/disappeared by node ID. "
+             "Exits non-zero only on newly-failing.",
+    )
 
     return parser.parse_known_args()
 
@@ -286,6 +294,15 @@ def run_baseline_worktree(ref, selectors, mode, marker, extra_args):
         print(f"--- Cleaned up worktree at {tmp_dir} ---")
 
 
+def _normalize_node_id(node_id: str) -> str:
+    """Normalize a node ID to the JUnit classname::name format."""
+    if "/" in node_id and ".py::" in node_id:
+        parts = node_id.split("::", 1)
+        path_part = parts[0].replace("/", ".").removesuffix(".py")
+        return path_part + "." + parts[1] if len(parts) == 2 else path_part
+    return node_id
+
+
 def main():
     args, extra_pytest_args = parse_args()
     selectors = normalize_selector(args.selector)
@@ -397,23 +414,89 @@ def main():
                 for nf in sorted(new_fails):
                     print(f"     - {nf}")
 
+        # --- B2: baseline-file delta mode ---
+        baseline_file_newly_failing = []
+        if args.baseline_file:
+            baseline_path = Path(args.baseline_file)
+            if not baseline_path.exists():
+                print("\nERROR: baseline file not found: " + str(baseline_path))
+                sys.exit(1)
+            baseline_failures = set()
+            for line in baseline_path.read_text().splitlines():
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    baseline_failures.add(_normalize_node_id(line))
+
+            curr_fail_set = {f["node_id"] for f in results["failures_details"]}
+            curr_collected = set(_normalize_node_id(n) for n in collected_nodes)
+
+            newly_failing = sorted(curr_fail_set - baseline_failures)
+            newly_fixed = sorted(baseline_failures - curr_fail_set)
+            new_tests = sorted(
+                node for node in curr_collected
+                if node not in baseline_failures
+                and node not in curr_fail_set
+                # "new" = collected now, not in baseline failures, not failing now
+                # But we don't have the baseline's full collected set —
+                # so "new tests" = collected now and not in baseline
+            )
+            # Actually we need the baseline's collected set too.
+            # The baseline file only has failing node IDs, not all collected.
+            # "new tests" = failing now but not in baseline failures AND not in baseline collected.
+            # Since we only have baseline failures, "new tests" = newly_failing that are
+            # genuinely new (not just newly-broken existing tests).
+            # We can't distinguish without the full baseline collected set.
+            # For now, report newly_failing and newly_fixed only — those are the gate.
+            # "disappeared" = baseline failures not collected now.
+            disappeared = sorted(
+                node for node in baseline_failures
+                if node not in curr_collected
+            )
+
+            print("-" * 72)
+            print(f" Baseline File  : {args.baseline_file}")
+            print(f"   Newly failing: {len(newly_failing)}  <-- GATE")
+            print(f"   Newly fixed  : {len(newly_fixed)}")
+            print(f"   Disappeared  : {len(disappeared)}")
+            if newly_failing:
+                print("\n   *** NEWLY FAILING (gate) ***")
+                for nf in newly_failing:
+                    print(f"     + {nf}")
+            if newly_fixed:
+                print("\n   Newly fixed (informational):")
+                for nf in newly_fixed:
+                    print(f"     - {nf}")
+            if disappeared:
+                print("\n   Disappeared (informational):")
+                for d in disappeared:
+                    print(f"     * {d}")
+
         print("=" * 72)
 
         total_failures = results["failed"] + results["errors"]
-        
-        is_clean = (total_failures == 0 and reconciled and not collection_errored and not subset_warning and not min_collected_failed)
+
+        # If baseline-file mode, gate on newly-failing only
+        if args.baseline_file:
+            is_clean = (len(newly_failing) == 0 and not collection_errored and not min_collected_failed)
+        else:
+            is_clean = (total_failures == 0 and reconciled and not collection_errored and not subset_warning and not min_collected_failed)
 
         if is_clean:
-            print(" CI GATE RESULT  : CLEAN (0 failures)")
+            if args.baseline_file:
+                print(" CI GATE RESULT  : CLEAN (0 newly-failing vs baseline)")
+            else:
+                print(" CI GATE RESULT  : CLEAN (0 failures)")
             print("=" * 72 + "\n")
             sys.exit(0)
         else:
             reasons = []
-            if total_failures > 0:
+            if args.baseline_file:
+                reasons.append(f"{len(newly_failing)} newly-failing vs baseline")
+            elif total_failures > 0:
                 reasons.append(f"{total_failures} failures")
             if collection_errored:
                 reasons.append("collection error")
-            if not reconciled or subset_warning:
+            if not args.baseline_file and (not reconciled or subset_warning):
                 reasons.append("reconciliation mismatch")
             if min_collected_failed:
                 reasons.append(f"collected {results['collected']} < min-collected {args.min_collected}")
