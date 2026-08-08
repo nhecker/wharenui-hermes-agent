@@ -90,11 +90,13 @@ def normalize_selector(selector_args):
     return paths or ["tests/agent", "tests/run_agent"]
 
 
-def collect_test_nodes(selectors, marker=None):
+def collect_test_nodes(selectors, marker=None, extra_args=None):
     """Run pytest --collect-only to get all test node IDs and check collection errors."""
     cmd = [sys.executable, "-m", "pytest", "--collect-only", "-q"]
     if marker:
         cmd.extend(["-m", marker])
+    if extra_args:
+        cmd.extend(extra_args)
     cmd.extend(selectors)
 
     proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -318,7 +320,7 @@ def main():
         junit_path = os.path.join(temp_junit_dir, "junit.xml")
 
     try:
-        collected_nodes, collection_errored, collect_output = collect_test_nodes(selectors, marker=marker)
+        collected_nodes, collection_errored, collect_output = collect_test_nodes(selectors, marker=marker, extra_args=extra_pytest_args)
         expected_collected = len(collected_nodes)
         
         target_nodes, shard_label = apply_shard(collected_nodes if "/" in (args.shard or "") else selectors, args.shard)
