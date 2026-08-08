@@ -8,7 +8,11 @@ private phase. Tests verify:
 - Exclusivity enforcement (multi-call rejection)
 """
 
+import pytest
+
 from agent.phase_control import ControlOutcome
+
+pytestmark = pytest.mark.wharenui_seam
 
 CANARY = "WHARE-CANARY-7f3a9b2e"
 MAX_PRIVATE_TURNS = 3

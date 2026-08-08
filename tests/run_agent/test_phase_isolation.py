@@ -16,6 +16,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
+pytestmark = pytest.mark.wharenui_seam
+
 CANARY = "WHARE-CANARY-7f3a9b2e"
 
 
