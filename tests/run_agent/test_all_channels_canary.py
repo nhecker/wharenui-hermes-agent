@@ -595,15 +595,20 @@ def test_per_channel_mutations(all_channels_harness, capsys, target_channel):
         import run_agent as ra_module
         def bad_public_only(msgs):
             return msgs
+        # Coupling note: this global patch also affects Channel C (trajectory jsonl)
+        # because trajectory serialization also calls `_public_only`.
+        # This is harmless here because the non-fail-fast checker will collect 
+        # both D and C violations and we explicitly verify D's presence.
         patches.append(patch.object(ra_module, "_public_only", side_effect=bad_public_only))
 
     elif target_channel == "E_ToolHooks":
-        import model_tools as mt_module
-        real_emit = mt_module._emit_post_tool_call_hook
-        def mutated_emit(*args, **kwargs):
-            kwargs["phase"] = "public"
-            return real_emit(*args, **kwargs)
-        patches.append(patch("model_tools._emit_post_tool_call_hook", side_effect=mutated_emit))
+        import hermes_cli.plugins as plugins_module
+        orig_invoke = plugins_module.invoke_hook
+        def mutated_invoke(hook_name, *args, **kwargs):
+            if hook_name in ("pre_tool_call", "post_tool_call", "transform_tool_result"):
+                kwargs["phase"] = "public"
+            return orig_invoke(hook_name, *args, **kwargs)
+        patches.append(patch.object(plugins_module, "invoke_hook", side_effect=mutated_invoke))
 
     elif target_channel == "I_Stdout":
         agent.quiet_mode = False

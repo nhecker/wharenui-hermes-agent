@@ -245,21 +245,40 @@ def categorize_failures(failures_details):
 
 def run_pytest(targets, mode, junit_path, marker=None, extra_args=None):
     """Execute pytest with specified options."""
-    cmd = [sys.executable, "-m", "pytest", f"--junitxml={junit_path}"]
+    cmd_args = [f"--junitxml={junit_path}"]
     
     if mode == "xdist":
-        cmd.extend(["-n", "auto"])
+        cmd_args.extend(["-n", "auto"])
         
     if marker:
-        cmd.extend(["-m", marker])
+        cmd_args.extend(["-m", marker])
         
     if extra_args:
-        cmd.extend(extra_args)
+        cmd_args.extend(extra_args)
         
-    cmd.extend(targets)
+    cmd_args.extend(targets)
 
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    return proc.returncode, proc.stdout, proc.stderr
+    # If targets is very large, passing it on the command line will raise OSError
+    # (Argument list too long). Write a temporary python script to call pytest.main()
+    import tempfile
+    with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as f:
+        f.write("import sys\nimport runpy\n")
+        f.write(f"args = {repr(cmd_args)}\n")
+        f.write("sys.argv = ['pytest'] + args\n")
+        f.write("try:\n")
+        f.write("    runpy.run_module('pytest', run_name='__main__')\n")
+        f.write("except SystemExit as e:\n")
+        f.write("    sys.exit(e.code)\n")
+        wrapper_path = f.name
+
+    try:
+        cmd = [sys.executable, wrapper_path]
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return proc.returncode, proc.stdout, proc.stderr
+    finally:
+        import os
+        if os.path.exists(wrapper_path):
+            os.remove(wrapper_path)
 
 
 def run_baseline_worktree(ref, selectors, mode, marker, extra_args):
@@ -337,6 +356,8 @@ def main():
         results = parse_junit_xml(junit_path)
         if not results:
             print("ERROR: Failed to parse test results from JUnit XML.")
+            print(f"Pytest stdout:\n{stdout}")
+            print(f"Pytest stderr:\n{stderr}")
             sys.exit(1)
 
         total_executed = (

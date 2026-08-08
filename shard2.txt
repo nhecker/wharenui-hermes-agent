@@ -1,0 +1,871 @@
+Shard 2/2: selected 2549 of 5098 total test nodes.
+Running tests (Mode: serial, Selector: ['tests/agent', 'tests/run_agent'], Shard: 2/2, Marker: None)...
+
+========================================================================
+                      HERMES AGENT TEST SUMMARY                     
+========================================================================
+ Selector       : tests/agent tests/run_agent
+ Mode           : serial
+ Shard          : 2/2
+ Marker         : None
+ Reconciliation : FAIL
+                  (Collected: 2549 | Executed: 2549)
+                  [!] COLLECTION ERROR DETECTED DURING TEST DISCOVERY
+------------------------------------------------------------------------
+ Passed         : 1715
+ Failed         : 704
+ Errors         : 116
+ Skipped        : 14
+ XFailed        : 0
+ XPassed        : 0
+------------------------------------------------------------------------
+ Failures Breakdown:
+   ENV / DEP    : 593
+   REAL         : 227
+
+ Failure Details:
+   [REAL] tests.agent.test_skill_utils::test_skill_config_raw_cache_invalidates_on_config_edit: AssertionError: assert {'old-skill'} == {'new-skill'}
+  
+  Extra items in the left set:
+  'old-skill'
+  Extra items in the right set:
+  'new-skill'
+  Use -v to get more diff
+   [REAL] tests.agent.test_verification_evidence::test_file_tool_stales_evidence_by_session_id_for_absolute_edit: KeyError: 'files_modified'
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_default_auto_off_on_messaging: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_sentinel_resolves_to_surface_default: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_off_on_gateway_messaging_platform: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_off_for_each_messaging_platform[discord]: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_off_for_each_messaging_platform[whatsapp_cloud]: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_off_for_each_messaging_platform[signal]: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_off_for_each_messaging_platform[slack]: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_off_for_each_messaging_platform[matrix]: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_off_for_each_messaging_platform[email]: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_off_for_each_messaging_platform[sms]: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_auto_messaging_platform_is_case_insensitive: AssertionError: assert True is False
+ +  where True = verify_on_stop_enabled({'agent': {'verify_on_stop': 'auto'}})
+   [REAL] tests.agent.test_verification_stop::test_verify_on_stop_default_path_through_load_config: assert True is False
+ +  where True = verify_on_stop_enabled()
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockBasic::test_api_mode: AttributeError: 'NoneType' object has no attribute 'api_mode'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockBasic::test_registered: assert None is not None
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockBuildKwargs::test_basic_kwargs: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockBuildKwargs::test_custom_region: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockBuildKwargs::test_max_tokens: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockConvertTools::test_convert_tools: AttributeError: 'NoneType' object has no attribute 'convert_tools'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockValidate::test_none: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockValidate::test_raw_dict_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockValidate::test_raw_dict_invalid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockValidate::test_normalized_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockMapFinishReason::test_end_turn: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockMapFinishReason::test_tool_use: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockMapFinishReason::test_max_tokens: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockMapFinishReason::test_guardrail: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockMapFinishReason::test_unknown: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockNormalize::test_text_response: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockNormalize::test_tool_call_response: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockNormalize::test_raw_reasoning_content_response: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_bedrock_transport.TestBedrockNormalize::test_already_normalized_response: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_api_mode: AttributeError: 'NoneType' object has no attribute 'api_mode'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_registered: assert None is not None
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_gpt56_ultra_uses_max_wire_effort[nous]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_gpt56_ultra_uses_max_wire_effort[openrouter]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_tools_identity: AttributeError: 'NoneType' object has no attribute 'convert_tools'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_no_codex_leaks: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_strips_internal_effect_disposition: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_strips_codex_fields: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_strips_extra_content_for_strict_provider: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_strips_extra_content_when_model_unknown: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_keeps_extra_content_for_gemini: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_strips_tool_name: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_strips_tool_output_risk_metadata: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_strips_timestamp: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_no_copy_without_timestamp: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_strips_internal_scaffolding_markers: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_clean_list_is_identity: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_convert_messages_copy_on_write_for_dirty_history: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBasic::test_same_history_survives_strict_then_gemini_model_switch: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_basic_kwargs: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_developer_role_swap: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_no_developer_swap_for_non_gpt5: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_tools_included: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_openrouter_provider_prefs: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_openrouter_pareto_min_coding_score: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_openrouter_pareto_score_ignored_for_other_models: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_openrouter_pareto_score_omitted_when_unset: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_openrouter_pareto_score_out_of_range_dropped: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_openrouter_pareto_legacy_path: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_nous_tags: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_reasoning_default: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_nous_omits_disabled_reasoning: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_ollama_num_ctx: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_custom_think_false: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemini_native_without_explicit_reasoning_config_keeps_existing_behavior: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemini_native_flash_reasoning_maps_to_top_level_thinking_config: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemini_openai_compat_flash_reasoning_maps_to_nested_google_thinking_config: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemini_native_25_reasoning_only_enables_visible_thoughts: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemini_openai_compat_pro_reasoning_clamps_to_supported_levels: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemini_native_disabled_reasoning_hides_thoughts: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemini_openai_compat_xhigh_clamps_to_high: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemini_flash_minimal_clamps_to_low: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemma_does_not_receive_thinking_config: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_gemma_disabled_reasoning_still_omits_thinking_config: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_google_prefixed_gemma_also_omits_thinking_config: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_max_tokens_with_fn: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_ephemeral_overrides_max_tokens: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_nvidia_default_max_tokens: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_qwen_default_max_tokens: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_anthropic_max_output_for_claude_on_aggregator: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_request_overrides_last: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_fixed_temperature: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsBuildKwargs::test_omit_temperature: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsKimi::test_kimi_max_tokens_default: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsKimi::test_kimi_reasoning_effort_top_level: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsKimi::test_kimi_reasoning_effort_omitted_when_thinking_disabled: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsKimi::test_kimi_thinking_enabled_extra_body: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsKimi::test_kimi_thinking_disabled_extra_body: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsKimi::test_moonshot_tool_schemas_are_sanitized_by_model_name: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsKimi::test_non_moonshot_tools_are_not_mutated: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsLmStudioReasoning::test_omits_effort_when_high_not_allowed_toggle: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsLmStudioReasoning::test_omits_effort_when_high_not_allowed_minimal_low: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsLmStudioReasoning::test_passes_through_when_effort_allowed: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsLmStudioReasoning::test_passes_through_aliased_on_for_toggle: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsLmStudioReasoning::test_disabled_keeps_none_when_off_allowed: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsLmStudioReasoning::test_no_options_falls_back_to_legacy_behavior: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsValidate::test_none: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsValidate::test_no_choices: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsValidate::test_empty_choices: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsValidate::test_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_text_response: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_tool_call_response: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_tool_call_extra_content_preserved: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_reasoning_content_preserved_separately: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_empty_reasoning_content_preserved: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_reasoning_content_preserved_from_model_extra: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_refusal_field_promoted_to_content_filter: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_refusal_none_is_noop: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_refusal_preserves_explicit_content_filter_finish_reason: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_explicit_content_filter_finish_reason_passes_through: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_refusal_does_not_clobber_existing_content: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsNormalize::test_refusal_with_tool_calls_is_not_promoted: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsCacheStats::test_no_usage: AttributeError: 'NoneType' object has no attribute 'extract_cache_stats'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsCacheStats::test_no_details: AttributeError: 'NoneType' object has no attribute 'extract_cache_stats'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsCacheStats::test_with_cache: AttributeError: 'NoneType' object has no attribute 'extract_cache_stats'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsCacheStats::test_deepseek_native_top_level_cache_hit_tokens: AttributeError: 'NoneType' object has no attribute 'extract_cache_stats'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsCacheStats::test_nested_details_win_over_deepseek_top_level: AttributeError: 'NoneType' object has no attribute 'extract_cache_stats'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsGeminiNativeExtraBodyStrip::test_tags_stripped_when_endpoint_is_native_gemini: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsGeminiNativeExtraBodyStrip::test_tags_preserved_on_nous_endpoint: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_chat_completions.TestChatCompletionsGeminiNativeExtraBodyStrip::test_tags_pass_through_on_gemini_openai_compat: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_app_server_session.TestRunTurn::test_turn_start_failure_returns_error: agent.transports.codex_app_server.CodexAppServerError: codex app-server error -32600: bad input
+   [REAL] tests.agent.transports.test_codex_app_server_session.TestRunTurn::test_turn_start_failure_attaches_redacted_stderr_tail: agent.transports.codex_app_server.CodexAppServerError: codex app-server error -32603: Internal error
+   [REAL] tests.agent.transports.test_codex_app_server_session.TestRunTurn::test_startup_failure_returns_error_with_stderr: agent.transports.codex_app_server.CodexAppServerError: codex app-server error -32603: Internal error
+   [REAL] tests.agent.transports.test_codex_app_server_session.TestCompactThread::test_compact_thread_failure_returns_error: agent.transports.codex_app_server.CodexAppServerError: codex app-server error -32603: compact unavailable
+   [REAL] tests.agent.transports.test_codex_app_server_session.TestSessionRetirement::test_oauth_refresh_failure_on_turn_start_suggests_login: agent.transports.codex_app_server.CodexAppServerError: codex app-server error -32603: auth refresh failed: invalid_grant
+   [REAL] tests.agent.transports.test_codex_app_server_session.TestSessionRetirement::test_oauth_failure_from_stderr_on_turn_start_failure: agent.transports.codex_app_server.CodexAppServerError: codex app-server error -32603: rpc broke
+   [REAL] tests.agent.transports.test_codex_app_server_session.TestThreadStartCrossFill::test_missing_thread_id_raises: agent.transports.codex_app_server.CodexAppServerError: codex app-server error -32603: codex thread/start returned no thread id (payload keys: ['activePermissionProfile', 'thread'])
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportBasic::test_api_mode: AttributeError: 'NoneType' object has no attribute 'api_mode'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportBasic::test_registered_on_import: assert None is not None
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportBasic::test_convert_tools: AttributeError: 'NoneType' object has no attribute 'convert_tools'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_basic_kwargs: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_system_extracted_from_messages: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_no_system_uses_default: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_reasoning_config: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_extended_reasoning_efforts_use_api_wire_value[max-max]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_extended_reasoning_efforts_use_api_wire_value[ultra-max]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_reasoning_disabled: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_cache_key_is_content_addressed_not_session_id: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_cache_key_stable_across_session_ids: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_github_responses_no_cache_key: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_github_responses_drops_message_item_id_end_to_end: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_github_responses_requires_literal_true: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_github_preflight_drops_id_reintroduced_by_request_override: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_non_github_responses_keeps_message_item_id_end_to_end: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_responses_sends_cache_key_via_extra_body: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_responses_extra_body_preserves_caller_fields: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_max_tokens: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_codex_backend_no_max_output_tokens: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_codex_backend_sets_cache_routing_headers: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_codex_backend_hashes_overlength_cache_routing_headers: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_codex_cache_scope_boundary[64]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_codex_cache_scope_boundary[65]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_codex_backend_overlength_cache_scope_is_stable_and_collision_resistant: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_long_override_keys_are_bounded_at_build_and_preflight: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_long_override_key_is_bounded_at_build_and_preflight: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_codex_backend_no_headers_without_session_id: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_codex_backend_preserves_caller_extra_headers: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_non_codex_responses_preserves_caller_extra_headers: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_headers: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_headers_preserve_request_override_headers: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_minimal_effort_clamped: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_reasoning_effort_passed: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_stronger_generic_efforts_clamp_to_high[xhigh]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_stronger_generic_efforts_clamp_to_high[max]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_stronger_generic_efforts_clamp_to_high[ultra]: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_injects_native_web_search_when_client_web_search_present: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_does_not_inject_native_web_search_without_client_web_search: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_drops_clientside_web_search_to_avoid_duplicate: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_non_xai_path_does_not_inject_native_web_search: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_reasoning_disabled_no_reasoning_key: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_minimal_effort_clamped: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_grok_4_omits_reasoning_effort: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_grok_4_fast_omits_reasoning_effort: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_grok_3_non_mini_omits_reasoning_effort: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_grok_3_mini_keeps_reasoning_effort: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_grok_4_20_0309_variants_omit_reasoning_effort: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_grok_4_20_multi_agent_keeps_reasoning_effort: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_grok_code_fast_omits_reasoning_effort: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexBuildKwargs::test_xai_aggregator_prefix_stripped: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_none_response: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_empty_output: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_valid_output: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_output_text_fallback_not_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_empty_output_content_filter_incomplete_is_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_empty_output_content_filter_dict_incomplete_is_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_empty_output_other_incomplete_reasons_remain_invalid[max_output_tokens]: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_empty_output_other_incomplete_reasons_remain_invalid[length]: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_empty_output_other_incomplete_reasons_remain_invalid[]: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexValidateResponse::test_empty_output_other_incomplete_reasons_remain_invalid[None]: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexMapFinishReason::test_completed: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexMapFinishReason::test_incomplete: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexMapFinishReason::test_failed: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexMapFinishReason::test_unknown: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexNormalizeResponse::test_text_response: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexNormalizeResponse::test_message_items_preserved_in_provider_data: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexNormalizeResponse::test_tool_call_response: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportTimeout::test_positive_timeout_preserved: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportTimeout::test_zero_timeout_dropped: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportTimeout::test_none_timeout_omitted: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportTimeout::test_inf_timeout_dropped: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportTimeout::test_bool_timeout_dropped: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_codex_transport.TestCodexTransportTimeout::test_request_overrides_can_supply_timeout: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_transport.TestTransportRegistry::test_anthropic_registered_on_import: assert None is not None
+   [REAL] tests.agent.transports.test_transport.TestTransportRegistry::test_discovers_missing_transport_when_registry_partially_populated: assert None is not None
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_api_mode: AttributeError: 'NoneType' object has no attribute 'api_mode'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_convert_tools_simple: AttributeError: 'NoneType' object has no attribute 'convert_tools'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_validate_response_none: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_validate_response_empty_content: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_validate_response_empty_content_with_end_turn_is_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_validate_response_empty_content_with_tool_use_is_invalid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_validate_response_empty_content_with_refusal_is_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_validate_response_valid: AttributeError: 'NoneType' object has no attribute 'validate_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_map_finish_reason: AttributeError: 'NoneType' object has no attribute 'map_finish_reason'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_extract_cache_stats_none_usage: AttributeError: 'NoneType' object has no attribute 'extract_cache_stats'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_extract_cache_stats_with_cache: AttributeError: 'NoneType' object has no attribute 'extract_cache_stats'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_extract_cache_stats_zero: AttributeError: 'NoneType' object has no attribute 'extract_cache_stats'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_normalize_response_text: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_normalize_response_tool_calls: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_normalize_response_thinking: AttributeError: 'NoneType' object has no attribute 'normalize_response'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_build_kwargs_returns_dict: AttributeError: 'NoneType' object has no attribute 'build_kwargs'
+   [REAL] tests.agent.transports.test_transport.TestAnthropicTransport::test_convert_messages_extracts_system: AttributeError: 'NoneType' object has no attribute 'convert_messages'
+   [REAL] tests.run_agent.test_interrupt_propagation.TestPerThreadInterruptIsolation::test_clear_interrupt_only_clears_target_thread: assert 99990002 in set()
+   [REAL] tests.run_agent.test_tool_arg_coercion.TestCoerceToolArgs::test_real_read_file_schema: AssertionError: assert '10' == 10
+   [REAL] tests.run_agent.test_tool_arg_coercion.TestCoerceToolArgsNested::test_real_todo_schema_element_strings: assert '{"id": "1", "content": "x", "status": "pending"}' == {'content': 'x', 'id': '1', 'status': 'pending'}
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestDetectLocalServerTypeLocalhostIPv4::test_non_localhost_urls_unchanged: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestDetectLocalServerTypeLocalhostIPv4::test_127_0_0_1_urls_unchanged: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestFetchEndpointModelMetadataLmStudio::test_uses_native_models_endpoint_only: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestFetchEndpointModelMetadataLmStudio::test_native_api_base_url_is_not_doubled: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestQueryLocalContextLengthNetworkError::test_connection_error_returns_none: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_local_endpoint_unknown_model_queries_server: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_local_endpoint_unknown_model_result_is_cached: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_local_endpoint_stale_cache_reconciled_from_live_probe: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_local_endpoint_stale_cache_reconciled_to_valid_live_probe: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_local_endpoint_bypasses_stale_persistent_cache: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_local_endpoint_server_returns_none_falls_back_to_2m: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_non_local_endpoint_does_not_query_local_server: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_cached_result_skips_local_query: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestGetModelContextLengthLocalFallback::test_no_base_url_does_not_query_local_server: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestLocalContextProbeTTLCache::test_second_call_within_ttl_does_not_reprobe: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestLocalContextProbeTTLCache::test_different_key_still_probes: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_model_metadata_local_ctx.TestLocalContextProbeTTLCache::test_none_result_not_cached: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_estimator_chat_completions_messages: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_estimator_responses_api_input: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_estimator_responses_api_long_session_triggers_tier: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_estimator_bare_list_back_compat: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_estimator_empty_inputs: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_estimator_unknown_dict_fallback: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_default_base_is_90s: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_short_codex_request_uses_base_only: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_long_codex_request_bumps_to_50k_tier: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_very_long_codex_request_bumps_to_100k_tier: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_chat_completions_long_messages_bumps_tier: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_explicit_user_config_overrides_default: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_openai_codex_stale_floor_covers_gateway_tool_payload: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_non_stream_stale_timeout::test_openai_codex_stale_floor_tiers: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_nous_rate_guard.TestAuxiliaryClientIntegration::test_try_nous_skips_when_rate_limited: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_nous_rate_guard.TestAuxiliaryClientIntegration::test_try_nous_works_when_not_rate_limited: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_base_attribution_always_present: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_cache_enabled: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_cache_disabled: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_cache_disabled_by_default_empty_config: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_ttl_default: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_ttl_custom: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_ttl_max: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_ttl_out_of_range_too_high: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_ttl_out_of_range_zero: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_ttl_negative: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_ttl_not_a_number: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_ttl_float_truncated: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_returns_fresh_dict: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_none_config_falls_back_to_load_config: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestBuildOrHeaders::test_none_config_load_config_fails_gracefully: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_env_enables_cache: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_env_disables_cache: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_truthy_values[1]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_truthy_values[true]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_truthy_values[TRUE]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_truthy_values[yes]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_truthy_values[Yes]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_truthy_values[on]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_non_truthy_values[0]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_non_truthy_values[false]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_non_truthy_values[no]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_non_truthy_values[off]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_non_truthy_values[maybe]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_non_truthy_values[]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_env_ttl_overrides_config: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_invalid_env_ttl_dropped[0]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_invalid_env_ttl_dropped[86401]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_invalid_env_ttl_dropped[abc]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_invalid_env_ttl_dropped[-1]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_invalid_env_ttl_dropped[12.5]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_valid_env_ttl_boundaries[1]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_valid_env_ttl_boundaries[300]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_valid_env_ttl_boundaries[86400]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestEnvVarOverrides::test_no_env_vars_falls_through_to_config: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestCheckOpenrouterCacheStatus::test_hit_increments_counter: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestCheckOpenrouterCacheStatus::test_miss_does_not_increment: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestCheckOpenrouterCacheStatus::test_no_header_is_noop: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestCheckOpenrouterCacheStatus::test_none_response_is_safe: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestCheckOpenrouterCacheStatus::test_no_headers_attr_is_safe: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_openrouter_response_cache.TestCheckOpenrouterCacheStatus::test_case_insensitive: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_pet_engine::test_store_install_resolution: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_store_remove: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_renderer_decodes_frames: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_trims_trailing_blank_frames: ModuleNotFoundError: No module named 'PIL'
+   [ENV ] tests.agent.test_pet_engine::test_every_encoder_emits[unicode]: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_every_encoder_emits[kitty]: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_every_encoder_emits[iterm]: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_every_encoder_emits[sixel]: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_frame_index_wraps: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_cells_grid_shape: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_kitty_payload_structure: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_pet_engine::test_kitty_payload_snaps_to_whole_cells: failed on setup with "ModuleNotFoundError: No module named 'PIL'"
+   [ENV ] tests.agent.test_phase_isolation::test_layer1_private_phase_guard: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_phase_isolation::test_layer1_closing_private_guard: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_phase_isolation::test_layer1_public_passes: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_phase_isolation::test_tool_executor_guard: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_platform_hint_desktop.TestPlatformHintResolutionInStablePrompt::test_desktop_platform_yields_desktop_hint_no_tui_framing: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_platform_hint_desktop.TestPlatformHintResolutionInStablePrompt::test_standalone_tui_yields_plain_tui_hint_no_clarifier: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_platform_hint_desktop.TestPlatformHintResolutionInStablePrompt::test_embedded_tui_yields_tui_hint_with_clarifier: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_platform_hint_desktop.TestPlatformHintResolutionInStablePrompt::test_embedded_clarifier_does_not_attach_to_desktop_platform: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_plugin_llm.TestAttribution::test_falls_back_to_main_provider_and_model_when_no_overrides: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_plugin_llm.TestAttribution::test_response_model_used_even_when_no_overrides: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_plugin_llm.TestAttribution::test_placeholder_fallback_only_when_everything_is_empty: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_portal_tags::test_auxiliary_client_nous_extra_body_uses_helper: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_probe_cache_followups.TestOllamaApiShowCaching::test_positive_result_cached_within_ttl: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestOllamaApiShowCaching::test_failure_never_memoized: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestOllamaApiShowCaching::test_ttl_expiry_reprobes: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestOllamaApiShowCaching::test_cache_key_does_not_collide_with_local_ctx_probe: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestDetectLocalServerTypeCache::test_second_call_served_from_cache: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestDetectLocalServerTypeCache::test_ttl_expiry_allows_server_swap_redetection: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestLocalhostIPv4SiblingSites::test_helper_rewrites_all_forms: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestLocalhostIPv4SiblingSites::test_rewrite_is_host_only_not_substring: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestLocalhostIPv4SiblingSites::test_ollama_api_show_probes_ipv4: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestLocalhostIPv4SiblingSites::test_query_ollama_num_ctx_probes_ipv4: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestContextCacheKeyNormalization::test_trailing_slash_variants_share_one_entry: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestContextCacheKeyNormalization::test_legacy_unnormalized_row_still_honored: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestContextCacheKeyNormalization::test_legacy_slashed_row_found_with_normalized_caller: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestContextCacheKeyNormalization::test_invalidate_clears_both_key_shapes: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestContextCacheKeyNormalization::test_invalidate_with_normalized_caller_clears_legacy_row: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_probe_cache_followups.TestContextCacheKeyNormalization::test_invalidate_also_drops_in_memory_probe_entries: failed on setup with "ModuleNotFoundError: No module named 'requests'"
+   [ENV ] tests.agent.test_prompt_builder.TestEnvironmentHints::test_probe_remote_backend_imports_real_factory: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_reasoning_stale_timeout_floor::test_reasoning_floor_applies_to_nemotron_3_ultra: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_reasoning_stale_timeout_floor::test_reasoning_floor_applies_to_opus_4_thinking: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_reasoning_stale_timeout_floor::test_reasoning_floor_never_overrides_explicit_user_config: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_reasoning_stale_timeout_floor::test_reasoning_floor_loses_to_env_var_when_no_floor_match: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_reasoning_stale_timeout_floor::test_non_reasoning_model_keeps_default: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_reasoning_stale_timeout_floor::test_stream_stale_timeout_floor_for_nemotron_3_ultra: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_reasoning_stale_timeout_floor::test_stream_stale_timeout_floor_never_lowers_existing: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_reasoning_stale_timeout_floor::test_stream_stale_timeout_unchanged_for_non_reasoning_models: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_save_url_image.TestSaveUrlImage::test_writes_real_bytes_to_hermes_home_cache: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_save_url_image.TestSaveUrlImage::test_extension_inferred_from_content_type: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_save_url_image.TestSaveUrlImage::test_extension_falls_back_to_url_suffix: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_save_url_image.TestSaveUrlImage::test_extension_defaults_to_png_when_unknowable: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_save_url_image.TestSaveUrlImage::test_404_raises: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_save_url_image.TestSaveUrlImage::test_empty_body_raises_without_writing_file: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_save_url_image.TestSaveUrlImage::test_oversize_raises_and_cleans_up: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_save_url_image.TestSaveUrlImage::test_unique_filenames_avoid_collision: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_set_runtime_main_custom_provider.TestSetRuntimeMainCustomProvider::test_globals_stored: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_set_runtime_main_custom_provider.TestSetRuntimeMainCustomProvider::test_clear_resets_all_globals: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_set_runtime_main_custom_provider.TestSetRuntimeMainCustomProvider::test_resolve_auto_uses_globals_for_custom_provider: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_set_runtime_main_custom_provider.TestSetRuntimeMainCustomProvider::test_explicit_main_runtime_takes_precedence: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_set_runtime_main_custom_provider.TestSetRuntimeMainCustomProvider::test_backward_compatible_defaults: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_set_runtime_main_custom_provider.TestResolveAutoCustomEndToEnd::test_config_less_custom_endpoint_routes_via_global: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_set_runtime_main_custom_provider.TestResolveAutoCustomEndToEnd::test_named_custom_with_config_entry_still_routes: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_set_runtime_main_custom_provider.TestResolveAutoCustomEndToEnd::test_named_custom_anthropic_messages_keeps_full_name_and_url: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_skill_utils.TestBOMToleranceSiblingSites::test_skills_hub_parsers_accept_bom: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_system_prompt.TestContextFileCwd::test_none_when_terminal_cwd_unset: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_system_prompt.TestContextFileCwd::test_configured_dir_when_terminal_cwd_set: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_system_prompt.TestCodingContextBlock::test_injected_when_active: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_system_prompt.TestCodingContextBlock::test_absent_when_off: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_system_prompt.TestCodingContextBlock::test_absent_without_tools: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_system_prompt.TestTelegramRichMessagesHint::test_base_hint_without_rich_messages: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_system_prompt.TestTelegramRichMessagesHint::test_rich_hint_with_rich_messages_enabled: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_system_prompt.TestTelegramRichMessagesHint::test_base_hint_without_config: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_turn_finalizer_cleanup_guard::test_all_cleanup_steps_raise_response_still_returned: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_cleanup_guard::test_single_cleanup_step_raises_does_not_skip_others[save_trajectory]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_cleanup_guard::test_single_cleanup_step_raises_does_not_skip_others[cleanup_task_resources]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_cleanup_guard::test_single_cleanup_step_raises_does_not_skip_others[persist_session]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_cleanup_guard::test_clean_turn_has_no_cleanup_errors_key: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_cleanup_guard::test_text_response_on_last_allowed_call_is_completed: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_final_response_persistence::test_finalizer_restores_clean_api_local_text_before_return: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_final_response_persistence::test_finalizer_restores_clean_api_local_multimodal_before_return: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_final_response_persistence::test_final_response_closes_tool_tail_before_persistence: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_interrupt_alternation::test_interrupt_after_tool_closes_sequence_with_placeholder: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_interrupt_alternation::test_interrupt_after_tool_keeps_delivered_text_when_present: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_interrupt_alternation::test_non_interrupted_tool_tail_is_left_untouched: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_interrupt_alternation::test_interrupt_without_tool_tail_adds_nothing: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_pending_verify_response_is_preserved_for_cron_delivery: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_pending_pre_verify_response_is_preserved_on_budget_exhaustion: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_empty_pending_verification_response_uses_summary_fallback: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_short_generated_summary_keeps_abnormal_turn_explainer: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_short_preserved_verification_response_is_not_rewritten: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_text_response_exit_not_rewritten_at_iteration_limit: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_unrelated_non_success_response_is_not_reclassified[error_near_max_iterations(boom)]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_unrelated_non_success_response_is_not_reclassified[guardrail_halt]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_unrelated_non_success_response_is_not_reclassified[partial_stream_recovery]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_unrelated_non_success_response_is_not_reclassified[fallback_prior_turn_content]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_unrelated_non_success_response_is_not_reclassified[empty_response_exhausted]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_pending_response_does_not_mask_later_terminal_exit[interrupted_by_user-True-False]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_pending_response_does_not_mask_later_terminal_exit[all_retries_exhausted_no_response-False-False]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_pending_response_does_not_mask_later_terminal_exit[provider_failure-False-True]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_turn_finalizer_iteration_limit_exit::test_pending_response_records_kanban_timeout: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_verification_stop_caching::test_verification_flags_registered_as_ephemeral: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_verification_stop_caching::test_db_flush_drops_verification_scaffolding: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_verification_stop_caching::test_json_log_drops_verification_scaffolding: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.test_vision_resolved_args::test_vision_call_uses_resolved_provider_args: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_resolved_args::test_vision_base_url_override_keeps_explicit_provider: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestOpenAiAliasForAuxiliary::test_provider_openai_routes_to_openai_dot_com: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestOpenAiAliasForAuxiliary::test_provider_openai_with_explicit_base_url_preserves_user_endpoint: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestOpenAiAliasForAuxiliary::test_provider_openai_resolves_to_working_client: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestTextOnlyMainSkippedForVision::test_text_only_main_skipped_when_no_aggregator: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestTextOnlyMainSkippedForVision::test_vision_capable_main_used: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestTextOnlyMainSkippedForVision::test_unknown_capability_does_not_block: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestVisionToolGating::test_check_vision_succeeds_for_aliased_openai: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestVisionToolGating::test_check_vision_falls_back_to_auto: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestVisionToolGating::test_check_vision_false_with_text_only_main_and_no_aggregator: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.agent.test_vision_routing_31179.TestVisionToolGating::test_browser_vision_requires_both_browser_and_vision: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_vision_routing_31179.TestVisionToolGating::test_browser_vision_false_when_browser_missing: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.test_vision_routing_31179.TestVisionToolGating::test_browser_vision_true_when_both_available: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.agent.transports.test_codex_transport.TestCodexTransportXaiServiceTierStrip::test_xai_strips_service_tier_from_request_overrides: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.transports.test_codex_transport.TestCodexTransportXaiServiceTierStrip::test_non_xai_codex_preserves_service_tier: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.agent.transports.test_codex_transport.TestCodexTransportXaiServiceTierStrip::test_github_responses_preserves_service_tier: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_31273_402_not_retried.TestSourceStillHasBillingExclusionRemoved::test_conversation_loop_omits_billing_from_client_error_exclusion: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_63425_credential_pool_auto_detect.TestCredentialPoolPreservedOnAutoDetect::test_anthropic_pool_preserved_with_url_auto_detect: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_63425_credential_pool_auto_detect.TestCredentialPoolPreservedOnAutoDetect::test_codex_pool_preserved_with_url_auto_detect: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_63425_credential_pool_auto_detect.TestCredentialPoolPreservedOnAutoDetect::test_xai_pool_preserved_with_url_auto_detect: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_66267_multimodal_interim.TestBuildAssistantMessageMultimodal::test_list_content_does_not_crash: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_66267_multimodal_interim.TestBuildAssistantMessageMultimodal::test_inline_think_in_list_content_is_extracted_and_stripped: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_66267_multimodal_interim.TestBuildAssistantMessageMultimodal::test_str_content_still_works: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_66267_multimodal_interim.TestInterimVisibleTextMultimodal::test_tool_list_content_does_not_crash: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_66267_multimodal_interim.TestInterimVisibleTextMultimodal::test_tool_message_yields_no_interim_text: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_66267_multimodal_interim.TestInterimVisibleTextMultimodal::test_assistant_list_content_flattened: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_66267_multimodal_interim.TestDuplicatePreviousInterimDedup::test_previous_tool_list_content_safe_and_not_duplicate: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_66267_multimodal_interim.TestDuplicatePreviousInterimDedup::test_identical_assistant_interim_is_flagged_duplicate: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_860_dedup.TestFlushDeduplication::test_flush_writes_only_new_messages: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_860_dedup.TestFlushDeduplication::test_flush_writes_incrementally: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_860_dedup.TestFlushDeduplication::test_persist_session_multiple_calls_no_duplication: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_860_dedup.TestFlushDeduplication::test_flush_reset_after_compression: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_860_dedup.TestFlushIdxInit::test_init_zero: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_860_dedup.TestFlushIdxInit::test_no_session_db_noop: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_all_channels_canary::test_private_toolset_structural_guard: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_maximal_private_scenario_across_all_exit_paths[settle]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_maximal_private_scenario_across_all_exit_paths[done]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_maximal_private_scenario_across_all_exit_paths[cap]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_maximal_private_scenario_across_all_exit_paths[provider-exception-mid-private]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_maximal_private_scenario_across_all_exit_paths[failed-trajectory-dump]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_public_positive_control_all_sinks: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_per_channel_mutations[A_B_DB]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_per_channel_mutations[C_Trajectory]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_per_channel_mutations[D_MessageHooks]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_per_channel_mutations[E_ToolHooks]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_per_channel_mutations[I_Stdout]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_stream_absence_structural_proof: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_all_23_hooks_private_phase_accounting: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_real_registry_settle_done_dispatch: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_fixture_isolation: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_all_channels_canary::test_floor_recovers_from_prior_corrupted_globals: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestNeuterAsyncHttpxDel::test_del_becomes_noop: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestNeuterAsyncHttpxDel::test_neuter_idempotent: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestNeuterAsyncHttpxDel::test_neuter_graceful_without_sdk: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestCleanupStaleAsyncClients::test_removes_stale_entries: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestCleanupStaleAsyncClients::test_keeps_live_entries: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestCleanupStaleAsyncClients::test_keeps_entries_without_loop: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestClientCacheBoundedGrowth::test_same_key_replaces_stale_loop_entry: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestClientCacheBoundedGrowth::test_different_loops_do_not_grow_cache: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_async_httpx_del_neuter.TestClientCacheBoundedGrowth::test_max_cache_size_eviction: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_background_review_cache_parity::test_review_fork_inherits_parent_cached_system_prompt: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_background_review_cache_parity::test_review_fork_pins_session_start_and_session_id: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_background_review_cache_parity::test_review_fork_inherits_parent_toolset_config: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_background_review_cache_parity::test_review_fork_inherits_parent_reasoning_config: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_background_review_cache_parity::test_routed_review_fork_does_not_inherit_reasoning_config: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_background_review_cost_controls::test_routing_to_different_model_marks_routed_and_resolves_credentials: AttributeError: module 'hermes_cli' has no attribute 'runtime_provider'
+   [ENV ] tests.run_agent.test_background_review_cost_controls::test_routing_resolution_failure_falls_back_to_parent: AttributeError: module 'hermes_cli' has no attribute 'runtime_provider'
+   [ENV ] tests.run_agent.test_background_review_toolset_restriction::test_background_review_matches_parent_toolset_config: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_background_review_toolset_restriction::test_background_review_installs_thread_local_whitelist: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_background_review_toolset_restriction::test_background_review_excludes_memory_when_disabled: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_background_review_toolset_restriction::test_background_review_includes_memory_when_user_profile_enabled: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_callable_api_key.TestCreateOpenAIClientCallable::test_callable_api_key_passed_to_openai_constructor: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_callable_api_key.TestNormalizeMainRuntimePreservesCallable::test_callable_api_key_survives_normalization: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_callable_api_key.TestNormalizeMainRuntimePreservesCallable::test_string_api_key_still_works: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_callable_api_key.TestNormalizeMainRuntimePreservesCallable::test_normalization_drops_empty_string_but_preserves_callable: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_callable_api_key.TestNormalizeMainRuntimePreservesCallable::test_unknown_field_dropped: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_callable_api_key.TestTruncateTokenCallable::test_callable_returns_placeholder: SystemExit: Web UI requires fastapi and uvicorn.
+Install with: /usr/bin/python3 -m pip install 'fastapi' 'uvicorn[standard]'
+   [ENV ] tests.run_agent.test_callable_api_key.TestTruncateTokenCallable::test_string_jwt_still_truncated_to_signature_tail: SystemExit: Web UI requires fastapi and uvicorn.
+Install with: /usr/bin/python3 -m pip install 'fastapi' 'uvicorn[standard]'
+   [ENV ] tests.run_agent.test_callable_api_key.TestTruncateTokenCallable::test_empty_returns_empty: SystemExit: Web UI requires fastapi and uvicorn.
+Install with: /usr/bin/python3 -m pip install 'fastapi' 'uvicorn[standard]'
+   [ENV ] tests.run_agent.test_codex_no_tools_nonetype::test_build_kwargs_omits_tools_key_when_no_tools: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_no_tools_nonetype::test_build_kwargs_omits_tool_choice_and_parallel_when_no_tools: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_no_tools_nonetype::test_build_kwargs_keeps_required_codex_fields_without_tools: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_no_tools_nonetype::test_build_kwargs_emits_tools_when_tools_present: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_no_tools_nonetype::test_build_kwargs_drops_empty_tools_list: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_no_tools_nonetype::test_openai_sdk_raises_typeerror_on_tools_none: ModuleNotFoundError: No module named 'openai'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_fires_for_bare_gpt_5_5_on_codex: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_fires_for_vendor_prefixed_gpt_5_5: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_fires_for_gpt_5_5_codex_suffix: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_fires_when_model_arg_omitted: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_skipped_for_gpt_5_4: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_skipped_for_gpt_5_50_false_positive: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_skipped_for_non_codex_api_mode: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_skipped_for_non_codex_provider: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_skipped_for_empty_model: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_silent_hang_hint::test_hint_skipped_for_unrelated_model_on_codex: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_wire_error_event_surfaces_stream_error_event[You do not have an active Grok subscription]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_wire_error_event_surfaces_stream_error_event[rate limit exceeded]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_wire_error_event_surfaces_stream_error_event[model not available]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_wire_error_event_nested_envelope_dict: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_wire_error_event_nested_envelope_attr_style: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_wire_error_event_top_level_wins_over_envelope: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_wire_error_event_null_fields_fall_back_to_placeholder: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_retries_remote_protocol_error_once: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_unrelated_runtimeerror_still_raises: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_stream_truncated_no_terminal_event_raises: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_summarize_api_error_decorates_xai_entitlement_403: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_summarize_api_error_does_not_accuse_subscribers: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_summarize_api_error_decorates_xai_body_message: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_summarize_api_error_handles_nested_provider_message: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_summarize_api_error_idempotent_for_entitlement_hint: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_summarize_api_error_passes_through_unrelated_errors: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_classify_api_error_stream_event_grok_subscription_is_auth: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_classify_api_error_stream_event_resources_exhausted_grok_is_auth: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_classify_api_error_stream_event_unrelated_not_reclassified: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_transport_xai_request_includes_encrypted_content: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_transport_xai_replays_reasoning_in_input: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_codex_transport_native_codex_still_replays_reasoning_in_input: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_matches_real_xai_bodies[You have either run out of available resources or do not have an active Grok subscription. Manage at https://grok.com]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_matches_real_xai_bodies[The caller does not have permission to execute the specified operation for grok-4.3]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_for_status_other_than_401_403: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_for_unrelated_auth_errors: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_recover_with_credential_pool_skips_refresh_on_entitlement_403: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_recover_with_credential_pool_rotates_on_xai_spending_limit_403: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_recover_with_credential_pool_skips_refresh_on_bare_403_for_xai_oauth: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_recover_with_credential_pool_still_refreshes_genuine_auth_failure: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_for_bad_credentials_wke_suffix: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_for_wke_suffix_in_normalized_shape: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_for_any_wke_unauthenticated_variant[[WKE=unauthenticated:bad-credentials]]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_for_any_wke_unauthenticated_variant[[WKE=unauthenticated:expired-token]]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_for_any_wke_unauthenticated_variant[[WKE=unauthenticated:revoked]]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_for_any_wke_unauthenticated_variant[[WKE=unauthenticated:some-future-reason]]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_false_via_oauth2_validation_phrase_alone: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_wke_signal_overrides_entitlement_keywords: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_is_entitlement_failure_case_insensitive_wke_match: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_recover_with_credential_pool_refreshes_on_xai_bad_credentials_403: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_recover_with_credential_pool_still_blocks_real_entitlement: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_grok_4_3_context_length_is_1m: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_grok_4_still_resolves_to_256k: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_grok_composer_context_length_is_200k: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_codex_xai_oauth_recovery::test_transport_round_trip_drops_foreign_reasoning: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_commit_memory_session_context_engine::test_commit_memory_session_notifies_context_engine: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_commit_memory_session_context_engine::test_commit_memory_session_with_no_messages_passes_empty_list: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_commit_memory_session_context_engine::test_commit_memory_session_no_memory_manager_still_notifies_context_engine: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_commit_memory_session_context_engine::test_commit_memory_session_no_context_engine_still_notifies_memory_manager: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_commit_memory_session_context_engine::test_commit_memory_session_tolerates_memory_manager_failure: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_commit_memory_session_context_engine::test_commit_memory_session_tolerates_context_engine_failure: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_boundary_hook.TestCompressionBoundaryHook::test_on_session_start_called_with_compression_boundary: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_boundary_hook.TestCompressionBoundaryHook::test_no_hook_when_no_session_db: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_boundary_hook.TestCompressionBoundaryHook::test_hook_failure_does_not_break_compression: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_boundary_hook.TestSessionCompressEvent::test_event_emitted_on_compression: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_boundary_hook.TestSessionCompressEvent::test_no_callback_is_safe: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_boundary_hook.TestSessionCompressEvent::test_callback_exception_does_not_break_compression: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_persistence.TestFlushAfterCompression::test_flush_after_compression_with_long_history: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_persistence.TestFlushAfterCompression::test_flush_with_stale_history_loses_messages: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_compression_persistence.TestFlushAfterCompression::test_in_place_compression_rebaseline_prevents_duplicate_compacted_rows: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_compression_persistence.TestFlushAfterCompression::test_rotation_child_session_flushes_full_compressed_transcript_with_markers: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_concurrent_interrupt::test_concurrent_preflight_interrupt_skips_all: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_concurrent_interrupt::test_clear_interrupt_clears_worker_tids: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_dict_tool_call_args::test_tool_call_validation_accepts_dict_arguments: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_exit_cleanup_interrupt.TestCronJobCleanup::test_keyboard_interrupt_in_end_session_does_not_skip_close: failed on setup with "ModuleNotFoundError: No module named 'httpx'"
+   [ENV ] tests.run_agent.test_exit_cleanup_interrupt.TestCronJobCleanup::test_keyboard_interrupt_in_close_does_not_propagate: failed on setup with "ModuleNotFoundError: No module named 'httpx'"
+   [ENV ] tests.run_agent.test_fallback_credential_isolation.TestFallbackCredentialIsolation::test_fallback_attaches_matching_pool_after_clear: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_fallback_reasoning_override.TestFallbackReasoningOverride::test_fallback_recovery_restores_primary_reasoning: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_hook_bus_canary::test_hooks_filter_private_content: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_identity_flush.TestIdentityFlush::test_repair_shrunk_messages_below_history_length_still_persists_assistant: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_identity_flush.TestIdentityFlush::test_overlapping_turn_stale_cursor_does_not_drop_assistant: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_identity_flush.TestIdentityFlush::test_repeated_flush_same_turn_writes_once: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_identity_flush.TestIdentityFlush::test_cursor_reset_starts_new_turn_identity_window: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_identity_flush.TestIdentityFlush::test_flush_does_not_retain_object_ids_across_turns: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_identity_flush.TestIdentityFlush::test_stale_seed_id_from_prior_flush_cannot_suppress_new_message: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_in_place_compaction.TestInPlaceCompaction::test_in_place_keeps_same_session_id: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_in_place_compaction.TestInPlaceCompaction::test_in_place_alternation_preserved: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_in_place_compaction.TestInPlaceCompaction::test_in_place_skips_redundant_preflush: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_in_place_compaction.TestInPlaceCompaction::test_rotation_still_preflushes: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_in_place_compaction.TestRotationFallbackWhenFlagOff::test_rotation_when_flag_off: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_in_place_compaction.TestInPlaceSignalForGateway::test_signal_set_on_in_place_unset_on_rotation: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_interrupt_propagation.TestInterruptPropagationToChild::test_child_clear_interrupt_at_start_clears_thread: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_interrupt_propagation.TestInterruptPropagationToChild::test_concurrent_interrupt_propagation: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_interrupt_propagation.TestInterruptPropagationToChild::test_interrupt_during_child_api_call_detected: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_interrupt_propagation.TestInterruptPropagationToChild::test_parent_interrupt_sets_child_flag: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_interrupt_propagation.TestInterruptPropagationToChild::test_prestart_interrupt_binds_to_execution_thread: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_invalid_context_length_warning::test_valid_integer_context_length_no_warning: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_invalid_context_length_warning::test_string_k_suffix_context_length_warns: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_invalid_context_length_warning::test_string_numeric_context_length_works: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_invalid_context_length_warning::test_custom_providers_invalid_context_length_warns: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_invalid_context_length_warning::test_custom_providers_valid_context_length: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_iteration_budget_race::test_iteration_budget_used_is_thread_safe: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_iteration_budget_race::test_iteration_budget_consume_returns_false_when_exhausted: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_iteration_budget_race::test_iteration_budget_refund_restores_consume: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_iteration_budget_race::test_iteration_budget_used_reflects_consume_and_refund: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_iteration_budget_race::test_iteration_budget_remaining: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_journal_canary::test_real_journal_canary_absence_across_all_5_exit_paths[settle]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_real_journal_canary_absence_across_all_5_exit_paths[done]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_real_journal_canary_absence_across_all_5_exit_paths[cap]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_real_journal_canary_absence_across_all_5_exit_paths[provider-exception-mid-private]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_real_journal_canary_absence_across_all_5_exit_paths[failed-trajectory-dump]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_t4_per_channel_mutations[A_B_DB]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_t4_per_channel_mutations[C_Trajectory]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_t4_per_channel_mutations[D_MessageHooks]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_t4_per_channel_mutations[E_ToolHooks]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_t4_per_channel_mutations[I_Stdout]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_journal_canary::test_t4_positive_control: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_jsondecodeerror_retryable.TestAgentLoopSourceStillHasCarveOut::test_run_agent_excludes_jsondecodeerror_from_local_validation: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_jsondecodeerror_retryable.TestAgentLoopSourceHasNoneTypeCarveOut::test_conversation_loop_excludes_nonetype_not_iterable_from_local_validation: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_memory_provider_init::test_blank_memory_provider_does_not_auto_enable_honcho: AttributeError: module 'agent' has no attribute 'model_metadata'
+   [ENV ] tests.run_agent.test_memory_provider_init::test_aiagent_forwards_user_id_alt_to_memory_provider: AttributeError: module 'agent' has no attribute 'model_metadata'
+   [ENV ] tests.run_agent.test_memory_provider_init::test_aiagent_forwards_warning_callback_to_cli_memory_provider: AttributeError: module 'agent' has no attribute 'model_metadata'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_interrupted_turn_does_not_sync: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_interrupted_turn_skips_even_when_response_is_full: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_completed_turn_syncs_and_queues_prefetch: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_completed_turn_syncs_messages_when_present: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_completed_skill_turn_keeps_original_message_for_memory_manager: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_no_final_response_skips: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_no_original_user_message_skips: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_no_memory_manager_is_a_no_op: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_exception_is_swallowed: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_prefetch_exception_is_swallowed: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_multimodal_user_message_is_flattened: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_multimodal_response_is_flattened: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_multimodal_with_no_text_at_all_skips: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_matrix[False-resp-user-True]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_matrix[True-resp-user-False]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_matrix[False-None-user-False]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_matrix[False-resp-None-False]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_matrix[True-None-user-False]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_matrix[True-resp-None-False]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_matrix[False-None-None-False]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_memory_sync_interrupted.TestSyncExternalMemoryForTurn::test_sync_matrix[True-None-None-False]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_message_hook_canary::test_real_registered_hooks_filter_canary[happy]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_message_hook_canary::test_real_registered_hooks_filter_canary[provider_exception]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_message_hook_canary::test_real_registered_hooks_filter_canary[failed_trajectory]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_message_hook_canary::test_per_site_mutation_fail_to_pass[pre_llm_history-conversation_history-pre_llm_call]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_message_hook_canary::test_per_site_mutation_fail_to_pass[post_llm_history-conversation_history-post_llm_call]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_message_hook_canary::test_per_site_mutation_fail_to_pass[pre_api_history-conversation_history-pre_api_request]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_message_hook_canary::test_per_site_mutation_fail_to_pass[pre_api_req_msgs-request_messages-pre_api_request]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_message_hook_canary::test_per_site_mutation_fail_to_pass[pre_api_request_body-request-pre_api_request]: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_moa_streaming::test_create_streams_aggregator_when_requested: ImportError: import error in agent.moa_loop: No module named 'httpx'
+   [ENV ] tests.run_agent.test_moa_streaming::test_create_non_stream_path_unchanged: ImportError: import error in agent.moa_loop: No module named 'httpx'
+   [ENV ] tests.run_agent.test_moa_streaming::test_create_forwards_stream_read_timeout: ImportError: import error in agent.moa_loop: No module named 'httpx'
+   [ENV ] tests.run_agent.test_moa_streaming::test_create_respects_caller_stream_options: ImportError: import error in agent.moa_loop: No module named 'httpx'
+   [ENV ] tests.run_agent.test_moa_streaming::test_create_does_not_forward_timeout_when_not_streaming: ImportError: import error in agent.moa_loop: No module named 'httpx'
+   [ENV ] tests.run_agent.test_moa_streaming::test_call_llm_stream_returns_raw_stream_and_skips_validation: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_moa_streaming::test_call_llm_non_stream_still_validates: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_no_messages_returns_false: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_no_tool_messages_returns_false: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_tool_message_with_string_content_unchanged: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_tool_message_list_without_image_unchanged: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_tool_message_list_with_image_downgrades: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_tool_message_image_only_gets_placeholder: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_records_provider_model_in_session_cache: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_only_tool_messages_get_downgraded: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestStripImagePartsHelper::test_skips_recording_when_no_model_id: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestToolResultContentShortCircuit::test_returns_text_summary_for_xiaomi_proactively: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestToolResultContentShortCircuit::test_returns_text_summary_when_model_in_cache: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestToolResultContentShortCircuit::test_xiaomi_any_model_gets_text_summary: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_multimodal_tool_content_recovery.TestToolResultContentShortCircuit::test_missing_cache_attribute_falls_through: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_nous_429_fallback_reentry.TestSourceUsesReentrantAssignment::test_genuine_branch_does_not_skip_to_max_retries: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_phase_e2e::test_private_phase_via_loaded_plugin: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_plugin_context_engine_init::test_plugin_engine_gets_context_length_on_init: AttributeError: module 'agent' has no attribute 'model_metadata'
+   [ENV ] tests.run_agent.test_plugin_context_engine_init::test_active_context_engine_tools_survive_explicit_platform_toolsets: AttributeError: module 'agent' has no attribute 'model_metadata'
+   [ENV ] tests.run_agent.test_plugin_context_engine_init::test_plugin_engine_update_model_args: AttributeError: module 'agent' has no attribute 'model_metadata'
+   [ENV ] tests.run_agent.test_plugin_context_engine_init::test_codex_gpt55_autoraise_suppressed_for_plugin_engine: AttributeError: module 'agent' has no attribute 'model_metadata'
+   [ENV ] tests.run_agent.test_plugin_context_engine_init::test_codex_gpt55_autoraise_still_applies_to_builtin_compressor: AttributeError: module 'agent' has no attribute 'context_compressor'
+   [ENV ] tests.run_agent.test_plugin_context_engine_init::test_codex_gpt55_autoraise_applies_when_plugin_engine_missing: AttributeError: module 'agent' has no attribute 'context_compressor'
+   [ENV ] tests.run_agent.test_public_reopen::test_public_reopen_persists_post_private_content: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_real_handler_canary::test_canary_real_handler[happy]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_real_handler_canary::test_canary_real_handler[provider_exception]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_real_handler_canary::test_canary_real_handler[failed_trajectory]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_real_interrupt_subagent.TestRealSubagentInterrupt::test_interrupt_child_during_api_call: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_real_loop_canary::test_canary_matrix[happy]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_real_loop_canary::test_canary_matrix[provider_exception]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_real_loop_canary::test_canary_matrix[failed_trajectory]: ModuleNotFoundError: No module named 'requests'
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestExistingBehaviorStillWorks::test_lowercase_already_matches: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestExistingBehaviorStillWorks::test_uppercase_simple: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestExistingBehaviorStillWorks::test_dash_to_underscore: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestExistingBehaviorStillWorks::test_space_to_underscore: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestExistingBehaviorStillWorks::test_fuzzy_near_miss: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestExistingBehaviorStillWorks::test_unknown_returns_none: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestClassLikeEmissions::test_camel_case_no_suffix: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestClassLikeEmissions::test_camel_case_with_underscore_tool_suffix: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestClassLikeEmissions::test_camel_case_with_Tool_class_suffix: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestClassLikeEmissions::test_double_tacked_class_and_snake_suffix: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestClassLikeEmissions::test_simple_name_with_tool_suffix: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestClassLikeEmissions::test_simple_name_with_dash_tool_suffix: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestClassLikeEmissions::test_camel_case_preserves_multi_word_match: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestClassLikeEmissions::test_mixed_separators_and_suffix: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestEdgeCases::test_empty_string: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestEdgeCases::test_only_tool_suffix: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestEdgeCases::test_none_passed_as_name: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestEdgeCases::test_very_long_name_does_not_match_by_accident: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_terminal_with_xml_attribute_pollution: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_execute_code_with_xml_attribute_pollution: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_session_search_with_xml_attribute_pollution: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_camel_case_tool_with_xml_pollution: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_tool_name_with_trailing_quote_only: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_tool_name_with_angle_bracket_pollution: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_tool_name_with_single_quote_pollution: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_clean_tool_name_unaffected_by_sanitizer: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_space_separated_name_still_normalizes: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_pollution_with_unknown_tool_root_still_fails: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_repair_tool_call_name.TestVolcEngineXmlPollution::test_leading_quote_falls_through_to_fuzzy_match: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_seam_contracts::test_contract_phase_private_marker_value_and_presence: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_seam_contracts::test_contract_public_only_filter_behavior: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_seam_contracts::test_contract_message_persistence_flows_through_unlocked_flush: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_seam_contracts::test_contract_save_trajectory_uses_public_only_filter: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_seam_contracts::test_contract_fail_red_demonstration: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_seam_handshake::test_seam_inert_no_plugin: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_seam_handshake::test_mid_registration_failure_coherent: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_session_db_isolation::test_trajectory_excludes_private_messages[True]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_session_db_isolation::test_trajectory_excludes_private_messages[False]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_session_db_isolation::test_real_session_db_skips_private_marker: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_session_db_isolation::test_private_and_closing_private_flush_guards: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_session_db_isolation::test_trajectory_marker_is_generic: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_interrupt_retry.TestStreamInterruptBeforeRetry::test_interrupt_prevents_stream_retry: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_interrupt_retry.TestStreamInterruptBeforeRetry::test_interrupt_before_first_attempt: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_interrupt_retry.TestStreamInterruptBeforeRetry::test_normal_retry_still_works_without_interrupt: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_interrupt_retry.TestStreamInterruptBeforeRetry::test_stale_stream_attempt_cannot_emit_late_chunks_after_retry: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_single_writer_65991.TestSingleWriterSink::test_superseded_writer_deltas_are_dropped: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_single_writer_65991.TestSingleWriterSink::test_current_writer_is_never_fenced: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_single_writer_65991.TestSingleWriterSink::test_non_claiming_thread_is_not_a_writer: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_single_writer_65991.TestSingleWriterLoop::test_consume_loop_stops_when_superseded_mid_stream: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_single_writer_65991.TestCodexSingleWriter::test_codex_stream_claims_writer_and_stops_when_superseded: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_stream_single_writer_65991.TestCodexSingleWriter::test_codex_stream_undisturbed_when_sole_writer: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingAccumulator::test_text_only_response: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingAccumulator::test_native_gemini_endpoint_omits_stream_options: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingAccumulator::test_gemini_openai_compat_shim_keeps_stream_options: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingAccumulator::test_openai_compatible_streaming_keeps_stream_options: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingAccumulator::test_tool_call_response: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingAccumulator::test_tool_name_not_duplicated_when_resent_per_chunk: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingAccumulator::test_tool_call_extra_content_preserved: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingAccumulator::test_mixed_content_and_tool_calls: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingCallbacks::test_deltas_fire_in_order: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingCallbacks::test_on_first_delta_fires_once: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingCallbacks::test_chat_stream_refreshes_activity_on_every_chunk: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingCallbacks::test_tool_only_does_not_fire_callback: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingCallbacks::test_text_suppressed_when_tool_calls_present: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_stream_not_supported_sets_flag_and_raises: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_non_transport_error_propagates: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_response_object_disables_streaming_and_returns_final_response: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_completed_response_no_usable_choices_returned_not_iterated[empty]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_completed_response_no_usable_choices_returned_not_iterated[none]: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_stream_error_propagates_original: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_exhausted_transient_stream_error_propagates: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_zero_chunk_stream_retried_as_transient: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_sse_connection_lost_retried_as_transient: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestStreamingFallback::test_sse_non_connection_error_propagates_immediately: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestReasoningStreaming::test_reasoning_callback_fires: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestHasStreamConsumers::test_no_consumers: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestHasStreamConsumers::test_delta_callback_set: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestHasStreamConsumers::test_stream_callback_set: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestCodexStreamCallbacks::test_codex_text_delta_fires_callback: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestCodexStreamCallbacks::test_codex_stream_refreshes_activity_on_every_event: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestCodexStreamCallbacks::test_codex_remote_protocol_error_retries_then_raises: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestCodexStreamCallbacks::test_codex_create_stream_fallback_refreshes_activity_on_every_event: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestAnthropicStreamCallbacks::test_anthropic_stream_refreshes_activity_on_every_event: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestAnthropicStreamCallbacks::test_anthropic_stream_parser_valueerror_retries_before_delivery: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestAnthropicStreamCallbacks::test_generic_anthropic_valueerror_still_propagates_without_stream_retry: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestAnthropicStreamCallbacks::test_anthropic_zero_event_stream_retried_as_transient: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestAnthropicStreamCallbacks::test_anthropic_eventless_sdk_assertion_normalized_to_empty_stream: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestPartialToolCallWarning::test_partial_tool_call_surfaces_warning: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestPartialToolCallWarning::test_partial_text_only_no_warning: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestSilentRetryMidToolCall::test_silent_retry_recovers_tool_call: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestSilentRetryMidToolCall::test_silent_retry_exhausted_falls_back_to_stub: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestSilentRetryMidToolCall::test_no_silent_retry_for_text_only_stall: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestCopilotACPStreamingDecision::test_provider_name_triggers_non_streaming: AttributeError: module 'agent' has no attribute 'copilot_acp_client'
+   [ENV ] tests.run_agent.test_streaming.TestCopilotACPStreamingDecision::test_acp_base_url_triggers_non_streaming: AttributeError: module 'agent' has no attribute 'copilot_acp_client'
+   [ENV ] tests.run_agent.test_streaming.TestCopilotACPStreamingDecision::test_acp_tcp_url_triggers_non_streaming: AttributeError: module 'agent' has no attribute 'copilot_acp_client'
+   [ENV ] tests.run_agent.test_streaming.TestCopilotACPStreamingDecision::test_non_acp_provider_allows_streaming: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_streaming.TestBedrockReasoningStaleFloor::test_bedrock_reasoning_models_resolve_floor[us.anthropic.claude-opus-4-6-v1:0-240.0]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_streaming.TestBedrockReasoningStaleFloor::test_bedrock_reasoning_models_resolve_floor[us.anthropic.claude-sonnet-4-5-v1:0-180.0]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_streaming.TestBedrockReasoningStaleFloor::test_bedrock_reasoning_models_resolve_floor[us.anthropic.claude-sonnet-4-6-v1:0-180.0]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_streaming.TestBedrockReasoningStaleFloor::test_bedrock_reasoning_models_resolve_floor[eu.anthropic.claude-sonnet-4-5-v1:0-180.0]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_streaming.TestBedrockReasoningStaleFloor::test_non_reasoning_bedrock_models_return_none[us.anthropic.claude-3-5-haiku-20241022-v1:0]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_streaming.TestBedrockReasoningStaleFloor::test_non_reasoning_bedrock_models_return_none[us.amazon.nova-lite-v1:0]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_streaming.TestBedrockReasoningStaleFloor::test_non_reasoning_bedrock_models_return_none[]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_streaming.TestBedrockReasoningStaleFloor::test_non_reasoning_bedrock_models_return_none[None]: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_switch_model_reasoning_override.TestSwitchModelReasoningOverride::test_primary_runtime_includes_reasoning_config: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_switch_model_reasoning_override.TestSwitchModelReasoningOverride::test_reasoning_config_resolves_to_override_on_switch: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_switch_model_reasoning_override.TestSwitchModelReasoningOverride::test_reasoning_config_falls_back_to_global: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_switch_model_reasoning_override.TestSwitchModelReasoningOverride::test_restore_primary_runtime_restores_reasoning: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_switch_model_reasoning_override.TestSwitchModelReasoningOverride::test_switch_model_global_fallback_with_yaml_false: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_tls_fd_recycle_corruption::test_force_close_tcp_sockets_shutdown_only_no_close: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_tls_fd_recycle_corruption::test_force_close_tcp_sockets_uses_shut_rdwr: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_tls_fd_recycle_corruption::test_force_close_tcp_sockets_swallows_oserror_on_shutdown: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_tls_fd_recycle_corruption::test_force_close_tcp_sockets_handles_multiple_pool_entries: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_tls_fd_recycle_corruption::test_agent_abort_request_openai_client_does_not_call_client_close: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_tls_fd_recycle_corruption::test_agent_abort_request_openai_client_null_client_is_noop: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_tls_fd_recycle_corruption::test_fd_recycle_window_closed_by_shutdown_only: ModuleNotFoundError: No module named 'httpx'
+   [ENV ] tests.run_agent.test_tool_executor_contextvar_propagation::test_run_agent_concurrent_executor_wraps_submit_with_copy_context: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_tool_hook_canary::test_tool_call_hooks_suppressed_in_private_phase: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_tool_hook_canary::test_public_positive_control_fires_tool_hooks: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_tool_hook_canary::test_per_site_mutation_neutralize_gate_causes_canary_leak: failed on setup with "ModuleNotFoundError: No module named 'dotenv'"
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestProviderSupportsVisionToolMessages::test_xiaomi_returns_false: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestProviderSupportsVisionToolMessages::test_xiaomi_alias_mimo_returns_false: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestProviderSupportsVisionToolMessages::test_unknown_provider_defaults_true: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestProviderSupportsVisionToolMessages::test_openrouter_defaults_true: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestProviderSupportsVisionToolMessages::test_anthropic_defaults_true: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestProviderSupportsVisionToolMessages::test_empty_provider_defaults_true: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestToolResultContentProactiveDowngrade::test_xiaomi_downgrades_to_text_summary: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestToolResultContentProactiveDowngrade::test_xiaomi_non_multimodal_passes_through: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestToolResultContentProactiveDowngrade::test_openrouter_vision_keeps_list_content: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestToolResultContentProactiveDowngrade::test_non_vision_model_gets_text_summary: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestToolResultContentProactiveDowngrade::test_xiaomi_computer_use_gets_text_summary: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestToolResultContentProactiveDowngrade::test_xiaomi_no_image_parts_returns_content: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_vision_tool_messages.TestToolResultContentProactiveDowngrade::test_reactive_cache_still_works: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_wait_state_visibility::test_emit_wait_notice_updates_spinner_and_activity: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_wait_state_visibility::test_emit_wait_notice_without_callback_still_touches_activity: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_wait_state_visibility::test_emit_wait_notice_swallows_callback_errors: ModuleNotFoundError: No module named 'dotenv'
+   [ENV ] tests.run_agent.test_wait_state_visibility::test_nonstream_wait_loop_emits_explained_notice: ModuleNotFoundError: No module named 'httpx'
+========================================================================
+ CI GATE RESULT  : FAILED (820 failures / collection error)
+========================================================================
+
