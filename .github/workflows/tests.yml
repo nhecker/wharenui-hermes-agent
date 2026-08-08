@@ -7,6 +7,7 @@ on:
     branches: ["*"]
   schedule:
     - cron: "0 3 * * *"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,6 +20,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
+      # The blocking gate imports plugin canaries; check out the plugin explicitly so runner collection matches dev.
+      - name: Checkout plugin (sibling inside workspace)
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: nhecker/wharenui-hermes-agent-plugin
+          ref: 0215a22babec95613cf5252c0f9c69677c41f35b
+          path: ./wharenui-hermes-agent-plugin
       - name: Set up Python 3.13
         uses: actions/setup-python@v5.4.0
         with:
@@ -30,6 +38,8 @@ jobs:
           pip install -e .[test,dev,web,acp]
           pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
       - name: Run Tier 1 gate
+        env:
+          WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
           python3 .github/scripts/run_tests.py --selector tests/run_agent --mode xdist --min-collected 2174
 
@@ -67,7 +77,7 @@ jobs:
   fork-without-plugin:
     name: "Fork without plugin (non-blocking pre-merge canary)"
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
