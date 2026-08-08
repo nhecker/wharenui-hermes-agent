@@ -130,3 +130,42 @@ jobs:
           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
           python3 -m pytest tests/run_agent/test_seam_handshake.py -v
+
+  measure-baseline:
+    name: "Measure T2 Baseline"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.13"
+          cache: "pip"
+      - run: |
+          python3 -m pip install --upgrade pip
+          pip install -e .[test,dev,web,acp]
+          pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
+      - name: Measure
+        run: |
+          echo "Running 1"
+          python3 -m pytest tests/agent -p no:randomly -q --tb=no > run1.log || true
+          echo "Running 2"
+          python3 -m pytest tests/agent -p no:randomly -q --tb=no > run2.log || true
+          echo "Running 3"
+          python3 -m pytest tests/agent -p no:randomly -q --tb=no > run3.log || true
+          grep "^FAILED" run1.log | awk '{print $2}' | sort > fails1.txt
+          grep "^FAILED" run2.log | awk '{print $2}' | sort > fails2.txt
+          grep "^FAILED" run3.log | awk '{print $2}' | sort > fails3.txt
+          echo "Run 1 size: $(wc -l < fails1.txt)"
+          echo "Run 2 size: $(wc -l < fails2.txt)"
+          echo "Run 3 size: $(wc -l < fails3.txt)"
+          comm -12 fails1.txt fails2.txt > int12.txt
+          comm -12 int12.txt fails3.txt > intersection.txt
+          cat fails1.txt fails2.txt fails3.txt | sort -u > union.txt
+          echo "Intersection size: $(wc -l < intersection.txt)"
+          echo "Union size: $(wc -l < union.txt)"
+          echo "--- INTERSECTION ---"
+          cat intersection.txt
+          echo "--- UNION ---"
+          cat union.txt
+          echo "--- RUN 1 WALLCLOCK ---"
+          grep "in " run1.log | tail -n 1
