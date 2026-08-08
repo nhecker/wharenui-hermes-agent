@@ -807,7 +807,7 @@ def test_private_read_canary_leakage_and_fail_red(all_channels_harness, capsys):
     agent.tools.append({"function": {"name": "private_read"}})
 
     plugin_path = Path(wharenui_plugin.__file__).resolve().parent.parent
-    canary_path = str(plugin_path / "tests" / "fixtures" / "canary.md")
+    canary_path = str(plugin_path / "wharenui_plugin" / "fixtures" / "canary.md")
     canary_content = "CANARY_PRIVATE_READ_9X8Y7Z"
 
     tool_arg = json.dumps({"path": canary_path})
