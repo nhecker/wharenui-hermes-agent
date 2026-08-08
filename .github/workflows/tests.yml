@@ -41,7 +41,7 @@ jobs:
         env:
           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/run_agent --mode xdist --min-collected 2174
+          python3 .github/scripts/run_tests.py --selector tests/run_agent --mode xdist --min-collected 2186
 
   privacy-gate:
     name: "Privacy floor (subset)"

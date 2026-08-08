@@ -393,7 +393,12 @@ def main():
         print(f" Marker         : {marker or 'None'}")
         print(f" Reconciliation : {'PASS' if reconciled and not subset_warning and not collection_errored else 'FAIL'}")
         print(f"                  (Collected: {results['collected']} | Executed: {total_executed})")
-        
+        if args.min_collected > 0:
+            slack = results['collected'] - args.min_collected
+            print(f"                  (Collected: {results['collected']} | floor {args.min_collected} | slack {slack})")
+            if slack > 0:
+                print(f"                  [!] WARNING: Non-zero slack detected ({slack}). Floor should be raised to match collected.")
+
         if collection_errored:
             print("                  [!] COLLECTION ERROR DETECTED DURING TEST DISCOVERY")
         if subset_warning:
