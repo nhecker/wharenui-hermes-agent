@@ -794,3 +794,70 @@ def test_floor_recovers_from_prior_corrupted_globals(corrupt_global_registries, 
 
     violations = check_sink_absence(all_channels_harness)
     assert len(violations) == 0, f"Corrupted recovery run produced violations: {violations}"
+
+def test_private_read_canary_leakage_and_fail_red(all_channels_harness, capsys):
+    """B6.3 — Verify private_read path and content privacy, with fail-red proof."""
+    agent = all_channels_harness["agent"]
+    td = all_channels_harness["td"]
+    from agent.conversation_loop import run_conversation
+    import hermes_cli.plugins as plugins_module
+    import wharenui_plugin
+
+    agent.valid_tool_names.add("private_read")
+    agent.tools.append({"function": {"name": "private_read"}})
+
+    plugin_path = Path(wharenui_plugin.__file__).resolve().parent.parent
+    canary_path = str(plugin_path / "tests" / "fixtures" / "canary.md")
+    canary_content = "CANARY_PRIVATE_READ_9X8Y7Z"
+
+    tool_arg = json.dumps({"path": canary_path})
+
+    responses = [
+        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("private_read", tool_arg)], finish_reason="tool_calls"),
+        _nfake(content=f"Private thought with {canary_content}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content="Public answer", finish_reason="stop"),
+    ]
+
+    orig_cwd = Path.cwd()
+    try:
+        os.chdir(td)
+        with _scripted_prov(agent, responses):
+            run_conversation(agent, "Hello", task_id="t3g-private-read-safe")
+    finally:
+        os.chdir(orig_cwd)
+
+    captured = capsys.readouterr()
+    stdout_err = captured.out + captured.err
+
+    # Assert neither the content nor the path leaks
+    violations = check_sink_absence(all_channels_harness, canaries=[canary_content, canary_path], stdout_err=stdout_err)
+    assert len(violations) == 0, f"private_read leaked securely: {violations}"
+
+    # Fail-red: disable tool-hook gate, show path DOES appear, restore, show it does not.
+    orig_invoke = plugins_module.invoke_hook
+    def mutated_invoke(hook_name, *args, **kwargs):
+        if hook_name in ("pre_tool_call", "post_tool_call", "transform_tool_result"):
+            kwargs["phase"] = "public"
+        return orig_invoke(hook_name, *args, **kwargs)
+
+    responses_fail_red = [
+        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("private_read", tool_arg)], finish_reason="tool_calls"),
+        _nfake(content=f"Private thought with {canary_content}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content="Public answer 2", finish_reason="stop"),
+    ]
+    with patch.object(plugins_module, "invoke_hook", side_effect=mutated_invoke):
+        try:
+            os.chdir(td)
+            with _scripted_prov(agent, responses_fail_red):
+                run_conversation(agent, "Hello again", task_id="t3g-private-read-leaky")
+        finally:
+            os.chdir(orig_cwd)
+
+    captured2 = capsys.readouterr()
+    stdout_err2 = captured2.out + captured2.err
+
+    violations2 = check_sink_absence(all_channels_harness, canaries=[canary_content, canary_path], stdout_err=stdout_err2)
+    leaked_path = any(v.channel == "E" and v.token == canary_path for v in violations2)
+    assert leaked_path, "Fail-red did not detect path leakage when tool-hook gate was disabled"
