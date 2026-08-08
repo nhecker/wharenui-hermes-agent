@@ -835,11 +835,12 @@ def test_private_read_canary_leakage_and_fail_red(all_channels_harness, capsys):
     assert len(violations) == 0, f"private_read leaked securely: {violations}"
 
     # Fail-red: disable tool-hook gate, show path DOES appear, restore, show it does not.
-    orig_invoke = plugins_module.invoke_hook
-    def mutated_invoke(hook_name, *args, **kwargs):
-        if hook_name in ("pre_tool_call", "post_tool_call", "transform_tool_result"):
-            kwargs["phase"] = "public"
-        return orig_invoke(hook_name, *args, **kwargs)
+    import builtins
+    orig_getattr = builtins.getattr
+    def mutated_getattr(obj, name, default=None):
+        if name == "_phase" and obj is agent:
+            return "public"
+        return orig_getattr(obj, name, default)
 
     responses_fail_red = [
         _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
@@ -847,7 +848,8 @@ def test_private_read_canary_leakage_and_fail_red(all_channels_harness, capsys):
         _nfake(content=f"Private thought with {canary_content}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
         _nfake(content="Public answer 2", finish_reason="stop"),
     ]
-    with patch.object(plugins_module, "invoke_hook", side_effect=mutated_invoke):
+    with patch("model_tools.getattr", side_effect=mutated_getattr), \
+         patch("hermes_cli.plugins.getattr", side_effect=mutated_getattr):
         try:
             os.chdir(td)
             with _scripted_prov(agent, responses_fail_red):
