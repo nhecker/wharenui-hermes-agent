@@ -107,8 +107,7 @@ def _setup_journal_env(home_dir):
     
     sign.sign_directories([hermes_dir], priv_key)
     
-    master_key = crypto.generate_key()
-    (journal_dir / "master.key").write_bytes(master_key)
+    master_key = crypto.generate_key(journal_dir / "master.key")
     
     # create pinned entry
     e_pinned = entries.JournalEntry(content="pinned content", pinned=True)
