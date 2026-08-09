@@ -73,7 +73,7 @@ jobs:
         env:
           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 74 --mode serial
+          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 75 --mode serial
   fork-without-plugin:
     name: "Fork without plugin (non-blocking pre-merge canary)"
     runs-on: ubuntu-latest

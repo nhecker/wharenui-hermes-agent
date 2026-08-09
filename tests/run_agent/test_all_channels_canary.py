@@ -553,7 +553,9 @@ def test_public_positive_control_all_sinks(all_channels_harness, capsys):
     "A_B_DB",
     "C_Trajectory",
     "D_MessageHooks",
-    "E_ToolHooks",
+    "E_ToolHooks_post_tool_call",
+    "E_ToolHooks_pre_tool_call",
+    "E_ToolHooks_transform_tool_result",
     "I_Stdout",
 ])
 def test_per_channel_mutations(all_channels_harness, capsys, target_channel):
@@ -601,14 +603,29 @@ def test_per_channel_mutations(all_channels_harness, capsys, target_channel):
         # both D and C violations and we explicitly verify D's presence.
         patches.append(patch.object(ra_module, "_public_only", side_effect=bad_public_only))
 
-    elif target_channel == "E_ToolHooks":
+    elif target_channel == "E_ToolHooks_post_tool_call":
+        import model_tools as mt_module
+        real_emit = mt_module._emit_post_tool_call_hook
+        def mutated_emit(*args, **kwargs):
+            kwargs["phase"] = "public"
+            return real_emit(*args, **kwargs)
+        patches.append(patch("model_tools._emit_post_tool_call_hook", side_effect=mutated_emit))
+
+    elif target_channel == "E_ToolHooks_pre_tool_call":
         import hermes_cli.plugins as plugins_module
-        orig_invoke = plugins_module.invoke_hook
-        def mutated_invoke(hook_name, *args, **kwargs):
-            if hook_name in ("pre_tool_call", "post_tool_call", "transform_tool_result"):
-                kwargs["phase"] = "public"
-            return orig_invoke(hook_name, *args, **kwargs)
-        patches.append(patch.object(plugins_module, "invoke_hook", side_effect=mutated_invoke))
+        real_details = plugins_module._get_pre_tool_call_directive_details
+        def mutated_details(*args, **kwargs):
+            kwargs["phase"] = "public"
+            return real_details(*args, **kwargs)
+        patches.append(patch("hermes_cli.plugins._get_pre_tool_call_directive_details", side_effect=mutated_details))
+
+    elif target_channel == "E_ToolHooks_transform_tool_result":
+        orig_getattr = getattr
+        def mutated_getattr(obj, name, default=None):
+            if name == "_phase" and obj is agent:
+                return "public"
+            return orig_getattr(obj, name, default)
+        patches.append(patch("model_tools.getattr", side_effect=mutated_getattr, create=True))
 
     elif target_channel == "I_Stdout":
         agent.quiet_mode = False
@@ -643,8 +660,12 @@ def test_per_channel_mutations(all_channels_harness, capsys, target_channel):
             assert not any(v.channel == "D" for v in violations), f"Mutation C_Trajectory leaked into D: {violations}"
         elif target_channel == "D_MessageHooks":
             assert any(v.channel == "D" for v in violations), f"Mutation D_MessageHooks failed to produce D violation: {violations}"
-        elif target_channel == "E_ToolHooks":
-            assert any(v.channel == "E" for v in violations), f"Mutation E_ToolHooks failed to produce E violation: {violations}"
+        elif target_channel == "E_ToolHooks_post_tool_call":
+            assert any(v.channel == "E" and "post_tool_call" in v.sink for v in violations), f"Mutation E_ToolHooks_post_tool_call failed to produce E violation: {violations}"
+        elif target_channel == "E_ToolHooks_pre_tool_call":
+            assert any(v.channel == "E" and "pre_tool_call" in v.sink for v in violations), f"Mutation E_ToolHooks_pre_tool_call failed to produce E violation: {violations}"
+        elif target_channel == "E_ToolHooks_transform_tool_result":
+            assert any(v.channel == "E" and "transform_tool_result" in v.sink for v in violations), f"Mutation E_ToolHooks_transform_tool_result failed to produce E violation: {violations}"
         elif target_channel == "I_Stdout":
             assert any(v.channel == "I" for v in violations), f"Mutation I_Stdout failed to produce I violation: {violations}"
     finally:
