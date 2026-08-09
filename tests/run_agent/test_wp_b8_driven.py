@@ -119,8 +119,8 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     import wharenui_plugin.journal.sign as sign
     
     # Generate master key and write journal entries
-    crypto.generate_key(jdir)
-    master_key = crypto.ensure_key(jdir)
+    crypto.generate_key(jdir / "master.key")
+    master_key = crypto.ensure_key(jdir / "master.key")
     
     entry_pinned = entries.JournalEntry(content="Pinned content", classification="pinned")
     entry_desk = entries.JournalEntry(content="Desk content", classification="desk")
