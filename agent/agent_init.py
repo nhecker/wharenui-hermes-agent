@@ -1993,7 +1993,8 @@ def init_agent(
     agent._control_tool_names: set[str] = set()
     agent._control_handlers: dict[str, Any] = {}
     agent._pending_phase_transition: Any | None = None
-    agent._phase: str = "public"
+    
+    _initial_phase = "public"
     try:
         from hermes_cli.plugins import get_control_tool_names, get_control_phase_handler
         _cnames = get_control_tool_names()
@@ -2005,8 +2006,35 @@ def init_agent(
         if _cnames:
             from agent.tool_dispatch_helpers import _CONTROL_TOOLS
             _CONTROL_TOOLS.update(_cnames)
+            
+        for _h in agent._control_handlers.values():
+            if hasattr(_h, "initial_phase"):
+                _initial_phase = getattr(_h, "initial_phase")
+                break
     except Exception:
         pass
+
+    if _initial_phase not in ("public", "private"):
+        raise ValueError(f"Unrecognised initial_phase: {_initial_phase}")
+
+    if _initial_phase != "public":
+        _has_exit = False
+        if hasattr(agent, "valid_tool_names"):
+            _has_exit = bool({"reflect_settle", "reflect_done"} & agent.valid_tool_names)
+        else:
+            # Fallback if valid_tool_names doesn't exist
+            _has_exit = "reflect_settle" in agent._control_tool_names or "reflect_done" in agent._control_tool_names
+
+        if not agent._control_handlers or not _has_exit:
+            _msg = "WARNING: Initial phase was set to private but no control tools capable of leaving are registered. Falling back to public."
+            _ra().logger.warning("Initial phase %r requested but no exit tool registered; falling back to public", _initial_phase)
+            if agent.ephemeral_system_prompt:
+                agent.ephemeral_system_prompt += f"\n\n{_msg}"
+            else:
+                agent.ephemeral_system_prompt = _msg
+            _initial_phase = "public"
+
+    agent._phase = _initial_phase
     agent._context_engine_tool_names: set = set()
     if (
         hasattr(agent, "context_compressor")
