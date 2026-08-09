@@ -59,8 +59,9 @@ def _scripted_prov(agent, responses):
     captured_messages = []
     
     def _fake_api_call(*args, **kwargs):
-        if "messages" in kwargs:
-            captured_messages.append(kwargs["messages"])
+        kw = args[0] if args and isinstance(args[0], dict) else (kwargs.get("api_kwargs") or kwargs)
+        if "messages" in kw:
+            captured_messages.append(kw["messages"])
         try: return next(it)
         except StopIteration: raise RuntimeError("test: out of scripted responses")
     with patch.object(agent, "_get_transport", return_value=mt),\
