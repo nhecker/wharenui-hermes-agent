@@ -320,9 +320,17 @@ def run_baseline_worktree(ref, selectors, mode, marker, extra_args):
 def _normalize_node_id(node_id: str) -> str:
     """Normalize a node ID to the JUnit classname::name format."""
     if "/" in node_id and ".py::" in node_id:
-        parts = node_id.split("::", 1)
-        path_part = parts[0].replace("/", ".").removesuffix(".py")
-        return path_part + "." + parts[1] if len(parts) == 2 else path_part
+        path_part, rest = node_id.split(".py::", 1)
+        path_part = path_part.replace("/", ".")
+        
+        bracket_idx = rest.find("[")
+        colon_idx = rest.find("::")
+        
+        if colon_idx != -1 and (bracket_idx == -1 or colon_idx < bracket_idx):
+            class_name, func_part = rest.split("::", 1)
+            return f"{path_part}.{class_name}::{func_part}"
+        else:
+            return f"{path_part}::{rest}"
     return node_id
 
 
@@ -469,11 +477,33 @@ def main():
             curr_collected = set(_normalize_node_id(n) for n in collected_nodes)
             new_tests = sorted(curr_collected - baseline_collected) if baseline_collected else []
             newly_failing = sorted(curr_fail_set - baseline_failures - set(new_tests))
-            newly_fixed = sorted(baseline_failures - curr_fail_set)
             disappeared = sorted(
                 node for node in baseline_failures
                 if node not in curr_collected
             )
+            newly_fixed = sorted(baseline_failures - curr_fail_set - set(disappeared))
+            
+            new_tests_set = set(new_tests)
+            newly_failing_set = set(newly_failing)
+            newly_fixed_set = set(newly_fixed)
+            disappeared_set = set(disappeared)
+
+            buckets = {
+                "newly-failing": newly_failing_set,
+                "newly-fixed": newly_fixed_set,
+                "new": new_tests_set,
+                "disappeared": disappeared_set
+            }
+            for name1, set1 in buckets.items():
+                for name2, set2 in buckets.items():
+                    if name1 >= name2:
+                        continue
+                    overlap = set1 & set2
+                    if overlap:
+                        print(f"\nFATAL: Bucket constraint violated! Node appears in both '{name1}' and '{name2}':")
+                        for node in overlap:
+                            print(f"  {node}")
+                        sys.exit(1)
 
             print("-" * 72)
             print(f" Baseline File  : {args.baseline_file}")
