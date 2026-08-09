@@ -22,5 +22,4 @@ class SubturnResult:
 
 
 class PhaseHandler(Protocol):
-    initial_phase: str
     def run(self, agent: Any, messages: list, effective_task_id: str) -> Optional["ControlOutcome"]: ...
