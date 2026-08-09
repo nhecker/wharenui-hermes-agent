@@ -139,14 +139,17 @@ def test_b8_1_drive_full_private_phase(_plugin_loaded, temp_home, capsys):
         agent.client = MagicMock()
     
     agent._ensure_db_session()
+    from hermes_cli.plugins import get_control_tool_names, get_control_phase_handler
+    agent._control_tool_names = set(get_control_tool_names())
+    agent._control_handlers = {name: get_control_phase_handler(name) for name in agent._control_tool_names}
     agent.save_trajectories = True
-    for t in ["reflect_pause", "reflect_settle", "reflect_done", "journal_write"]:
+    for t in ["reflect_pause", "reflect_settle", "reflect_done", "journal_append"]:
         agent.valid_tool_names.add(t)
     agent.tools = [{"function": {"name": t}} for t in agent.valid_tool_names]
     
     resp = [
         _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
-        _nfake(tool_calls=[_tcfake("journal_write", json.dumps({"content": "written in private"}))], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("journal_append", json.dumps({"content": "written in private"}))], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
         _nfake(content="Public reply.", finish_reason="stop")
     ]
@@ -220,6 +223,9 @@ def test_b8_2_seam_states(_plugin_loaded, temp_home):
             agent.client = MagicMock()
         
         agent._ensure_db_session()
+        from hermes_cli.plugins import get_control_tool_names, get_control_phase_handler
+        agent._control_tool_names = set(get_control_tool_names())
+        agent._control_handlers = {name: get_control_phase_handler(name) for name in agent._control_tool_names}
         agent.tools = [{"function": {"name": "reflect_pause"}}, {"function": {"name": "reflect_settle"}}]
         
         resp = [
@@ -309,6 +315,9 @@ def test_b8_3_swallowing_try_except(_plugin_loaded, temp_home):
         agent.client = MagicMock()
     
     agent._ensure_db_session()
+    from hermes_cli.plugins import get_control_tool_names, get_control_phase_handler
+    agent._control_tool_names = set(get_control_tool_names())
+    agent._control_handlers = {name: get_control_phase_handler(name) for name in agent._control_tool_names}
     agent.tools = [{"function": {"name": "reflect_pause"}}, {"function": {"name": "reflect_settle"}}]
     
     resp = [
