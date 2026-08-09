@@ -1,0 +1,1149 @@
+Commit 1: ab2e3475e3e7e87840cda58f7afe975f032d2cd0
+Message: feat(phase): generic phase-control seam + synthetic no-leak milestone (Commit by AI.)
+Files: agent/conversation_loop.py, agent/tool_executor.py
+Conflict Snippet:
+++<<<<<<< HEAD
+ +                if getattr(agent, "_incremental_persistence_failed", False):
+ +                    # A tool result could not be made canonical. Do not send
+ +                    # the in-memory result back to the model or project any
+ +                    # later events from this turn.
+ +                    _turn_exit_reason = "session_persistence_failed"
+ +                    final_response = ""
+ +                    failed = True
+ +                    break
+++=======
++                 
++                 if agent._pending_phase_transition is not None:
++                     outcome = agent._pending_phase_transition
++                     agent._pending_phase_transition = None
++                     prev_phase = agent._phase
++                     agent._phase = "closing_private" if outcome.action == "close" else "private"
++                     marker = "[entered private time]"
++                     agent._safe_print(f"\n{marker}\n")
++                     if agent.stream_delta_callback:
++                         try:
++                             agent.stream_delta_callback(marker)
++                             agent.stream_delta_callback(None)
++                         except Exception:
++                             pass
++                     handler = agent._control_handlers.get(outcome.handler)
++                     result = handler.run(agent, messages, effective_task_id) if handler else None
++                     agent._phase = "public"
++                     resume_marker = "[returned to window]"
++                     agent._safe_print(f"\n{resume_marker}\n")
++                     if agent.stream_delta_callback:
++                         try:
++                             agent.stream_delta_callback(resume_marker)
++                             agent.stream_delta_callback(None)
++                         except Exception:
++                             pass
++                     if (result and result.action == "close") or outcome.action == "close":
++                         final_response = result.tool_result if result else ""
++                         _turn_exit_reason = "phase_close"
++                         break
++                     else:
++                         continue
+++>>>>>>> ab2e3475e (feat(phase): generic phase-control seam + synthetic no-leak milestone (Commit by AI.))
+---
+++<<<<<<< HEAD
+ +        if function_name == "todo":
+++=======
++         if _block_msg is not None:
++             # Tool blocked by plugin policy — return error without executing.
++             function_result = json.dumps({"error": _block_msg}, ensure_ascii=False)
++             tool_duration = 0.0
++             _emit_terminal_post_tool_call(
++                 agent,
++                 function_name=function_name,
++                 function_args=function_args,
++                 result=function_result,
++                 effective_task_id=effective_task_id,
++                 tool_call_id=getattr(tool_call, "id", "") or "",
++                 status="blocked",
++                 error_type=_block_error_type,
++                 error_message=_block_msg,
++                 middleware_trace=list(middleware_trace),
++             )
++         elif _guardrail_block_decision is not None:
++             # Tool blocked by tool-loop guardrail — synthesize exactly one
++             # tool result for the original tool_call_id without executing.
++             function_result = agent._guardrail_block_result(_guardrail_block_decision)
++             tool_duration = 0.0
++             _emit_terminal_post_tool_call(
++                 agent,
++                 function_name=function_name,
++                 function_args=function_args,
++                 result=function_result,
++                 effective_task_id=effective_task_id,
++                 tool_call_id=getattr(tool_call, "id", "") or "",
++                 status="blocked",
++                 error_type="guardrail_block",
++                 error_message=getattr(_guardrail_block_decision, "message", None) or "Tool blocked by guardrail policy",
++                 middleware_trace=list(middleware_trace),
++             )
++         
++         elif function_name in agent._control_tool_names:
++             _h = agent._control_handlers.get(function_name)
++             outcome = _h.begin(function_args) if _h and hasattr(_h, 'begin') else None
++             if outcome is None:
++                 from agent.phase_control import ControlOutcome
++                 outcome = ControlOutcome(action="enter", handler=function_name, tool_result=function_name + " acknowledged")
++             agent._pending_phase_transition = outcome
++             _tool_content = outcome.tool_result
++         elif function_name == "todo":
+++>>>>>>> ab2e3475e (feat(phase): generic phase-control seam + synthetic no-leak milestone (Commit by AI.))
+---
+================================================================================
+
+Commit 2: 82d10a174fe0443f0b4d9ae510e0d8eeaaeef8a9
+Message: test(phase): drop superseded Layer-2 mock test (real-DB proof lives in test_wp2c_isolation) (Commit by AI.)
+Files: tests/agent/test_phase_isolation.py
+Conflict Snippet:
+
+================================================================================
+
+Commit 3: 222d6aceec6379923d901e9c17402703ace7e5dd
+Message: fix(hooks): filter private turns from all message-bearing hook fields
+Files: agent/conversation_loop.py
+Conflict Snippet:
+++<<<<<<< HEAD
+ +                            retry_count=retry_count,
+ +                            request_messages=list(request_messages)
+ +                            if isinstance(request_messages, list)
+ +                            else [],
+++=======
++                             request_messages=_public_only(request_messages),
+++>>>>>>> 222d6acee (fix(hooks): filter private turns from all message-bearing hook fields)
+---
+================================================================================
+
+Commit 4: c4931c3d8e84dd6d15a4aaf1812aa7c0443af549
+Message: fix(privacy): phase-gate tool progress, printing, and dispatch agent instance
+Files: agent/tool_executor.py, run_agent.py
+Conflict Snippet:
+++<<<<<<< HEAD
+ +                logging.debug("Tool %s completed in %.2fs", function_name, tool_duration)
+ +                logging.debug("Tool result (%d chars): %s", len(function_result), function_result)
+++=======
++                 logging.debug(f"Tool {function_name} completed in {tool_duration:.2f}s")
++                 logging.debug(f"Tool result ({len(function_result)} chars): {function_result}")
++ 
++         # Print cute message per tool
++         if agent._should_emit_quiet_tool_messages():
++             cute_msg = _get_cute_tool_message_impl(name, args, tool_duration, result=function_result)
++             agent._safe_print(f"  {cute_msg}")
++         elif not agent.quiet_mode and getattr(agent, "_phase", "public") == "public" and getattr(agent, "tool_progress_mode", "all") != "off":
++             _preview_str = _multimodal_text_summary(function_result)
++             if agent.verbose_logging:
++                 print(f"  ✅ Tool {i+1} completed in {tool_duration:.2f}s")
++                 print(agent._wrap_verbose("Result: ", _preview_str))
++             else:
++                 response_preview = _preview_str[:agent.log_prefix_chars] + "..." if len(_preview_str) > agent.log_prefix_chars else _preview_str
++                 print(f"  ✅ Tool {i+1} completed in {tool_duration:.2f}s - {response_preview}")
+++>>>>>>> c4931c3d8 (fix(privacy): phase-gate tool progress, printing, and dispatch agent instance)
+---
+++<<<<<<< HEAD
+ +        middleware_trace: list[dict[str, Any]] = []
+ +        _execution_blocked = False
+ +        _execution_dispatched = False
+++=======
++         function_args, middleware_trace = _apply_tool_request_middleware_for_agent(
++             agent,
++             function_name=function_name,
++             function_args=function_args,
++             effective_task_id=effective_task_id,
++             tool_call_id=getattr(tool_call, "id", "") or "",
++         )
++ 
++         # Check plugin hooks for a block directive before executing.
++         _block_msg: Optional[str] = None
++         _block_error_type = "plugin_block"
++         if _ts_scope_block is not None:
++             _block_msg = _ts_scope_block
++             _block_error_type = "tool_scope_block"
++         else:
++             try:
++                 from hermes_cli.plugins import resolve_pre_tool_block
++                 _block_msg = resolve_pre_tool_block(
++                     function_name,
++                     function_args,
++                     task_id=effective_task_id or "",
++                     session_id=getattr(agent, "session_id", "") or "",
++                     tool_call_id=getattr(tool_call, "id", "") or "",
++                     turn_id=getattr(agent, "_current_turn_id", "") or "",
++                     api_request_id=getattr(agent, "_current_api_request_id", "") or "",
++                     middleware_trace=list(middleware_trace),
++                     agent=agent,
++                 )
++             except Exception:
++                 pass
++ 
++         _guardrail_block_decision: ToolGuardrailDecision | None = None
++         if _block_msg is None:
++             guardrail_decision = agent._tool_guardrails.before_call(function_name, function_args)
++             if not guardrail_decision.allows_execution:
++                 _guardrail_block_decision = guardrail_decision
++ 
++         _execution_blocked = _block_msg is not None or _guardrail_block_decision is not None
++ 
++         if _execution_blocked:
++             # Tool blocked by plugin or guardrail policy — skip counters,
++             # callbacks, checkpointing, activity mutation, and real execution.
++             pass
++         # Reset nudge counters when the relevant tool is actually used
++         elif function_name == "memory":
++             agent._turns_since_memory = 0
++         elif function_name == "skill_manage":
++             agent._iters_since_skill = 0
++ 
++         if not agent.quiet_mode and getattr(agent, "_phase", "public") == "public" and getattr(agent, "tool_progress_mode", "all") != "off":
++             display_args = _redact_tool_args_for_display(function_name, function_args) or function_args
++             args_str = json.dumps(display_args, ensure_ascii=False)
++             if agent.verbose_logging:
++                 print(f"  📞 Tool {i}: {function_name}({list(display_args.keys())})")
++                 print(agent._wrap_verbose("Args: ", json.dumps(display_args, indent=2, ensure_ascii=False)))
++             else:
++                 args_preview = args_str[:agent.log_prefix_chars] + "..." if len(args_str) > agent.log_prefix_chars else args_str
++                 print(f"  📞 Tool {i}: {function_name}({list(function_args.keys())}) - {args_preview}")
++ 
++         if not _execution_blocked:
++             agent._current_tool = function_name
++             agent._touch_activity(f"executing tool: {function_name}")
++ 
++         # Set activity callback for long-running tool execution (terminal
++         # commands, etc.) so the gateway's inactivity monitor doesn't kill
++         # the agent while a command is running.
++         if not _execution_blocked:
++             try:
++                 from tools.environments.base import set_activity_callback
++                 set_activity_callback(agent._touch_activity)
++             except Exception:
++                 pass
++ 
++         if not _execution_blocked and agent.tool_progress_callback:
++             try:
++                 display_args = _redact_tool_args_for_display(function_name, function_args) or function_args
++                 preview = _build_tool_preview(function_name, display_args)
++                 agent.tool_progress_callback("tool.started", function_name, preview, display_args)
++             except Exception as cb_err:
++                 logging.debug(f"Tool progress callback error: {cb_err}")
++ 
++         if not _execution_blocked and agent.tool_start_callback:
++             try:
++                 display_args = _redact_tool_args_for_display(function_name, function_args) or function_args
++                 agent.tool_start_callback(tool_call.id, function_name, display_args)
++             except Exception as cb_err:
++                 logging.debug(f"Tool start callback error: {cb_err}")
++ 
++         # Checkpoint: snapshot working dir before file-mutating tools
++         if not _execution_blocked and function_name in {"write_file", "patch"} and agent._checkpoint_mgr.enabled:
++             try:
++                 file_path = function_args.get("path", "")
++                 if file_path:
++                     work_dir = agent._checkpoint_mgr.get_working_dir_for_path(file_path)
++                     agent._checkpoint_mgr.ensure_checkpoint(
++                         work_dir, f"before {function_name}"
++                     )
++             except Exception:
++                 pass  # never block tool execution
++ 
++         # Checkpoint before destructive terminal commands
++         if not _execution_blocked and function_name == "terminal" and agent._checkpoint_mgr.enabled:
++             try:
++                 cmd = function_args.get("command", "")
++                 if _is_destructive_command(cmd):
++                     cwd = function_args.get("workdir") or os.getenv("TERMINAL_CWD", os.getcwd())
++                     agent._checkpoint_mgr.ensure_checkpoint(
++                         cwd, f"before terminal: {cmd[:60]}"
++                     )
++             except Exception:
++                 pass  # never block tool execution
+++>>>>>>> c4931c3d8 (fix(privacy): phase-gate tool progress, printing, and dispatch agent instance)
+---
+++<<<<<<< HEAD
+ +                if hasattr(msg, "tool_calls") and isinstance(msg.tool_calls, list) and msg.tool_calls:
+ +                    tool_calls_data = [
+ +                        {"name": tc.function.name, "arguments": tc.function.arguments}
+ +                        for tc in msg.tool_calls
+ +                    ]
+ +                elif isinstance(msg.get("tool_calls"), list):
+ +                    tool_calls_data = msg["tool_calls"]
+ +                _batch_rows.append({
+ +                    "role": role,
+ +                    "content": content,
+ +                    "tool_name": msg.get("tool_name"),
+ +                    "tool_calls": tool_calls_data,
+ +                    "tool_call_id": msg.get("tool_call_id"),
+ +                    "finish_reason": msg.get("finish_reason"),
+ +                    # Reasoning/codex fields are role-gated (assistant-only)
+ +                    # inside _insert_message_rows — pass through untouched.
+ +                    "reasoning": msg.get("reasoning"),
+ +                    "reasoning_content": msg.get("reasoning_content"),
+ +                    "reasoning_details": msg.get("reasoning_details"),
+ +                    "codex_reasoning_items": msg.get("codex_reasoning_items"),
+ +                    "codex_message_items": msg.get("codex_message_items"),
+ +                    "timestamp": _row_timestamp,
+ +                    "api_content": _row_api_content,
+ +                    # Standalone reference handoffs are always hidden, even
+ +                    # when the summarized transcript contained a user turn —
+ +                    # otherwise they occupy the active user slot in
+ +                    # retry/undo/session dispatch (#80622). Merge-into-tail
+ +                    # carriers keep prior visibility rules so preserved tail
+ +                    # content stays readable.
+ +                    "display_kind": (
+ +                        "hidden"
+ +                        if (
+ +                            msg.get(COMPRESSED_SUMMARY_METADATA_KEY)
+ +                            and (
+ +                                ContextCompressor.classify_summary_content(
+ +                                    msg.get("content")
+ +                                )
+ +                                == "standalone"
+ +                                or not msg.get(
+ +                                    "_compressed_summary_has_user_turn"
+ +                                )
+ +                            )
+ +                        )
+ +                        else msg.get("display_kind")
+ +                    ),
+ +                    "display_metadata": msg.get("display_metadata"),
+ +                })
+ +                _batch_msgs.append(msg)
+ +            # One transaction for the whole turn's new rows (typically 3-8
+ +            # messages): one BEGIN IMMEDIATE / commit — and, off WAL, one
+ +            # fsync — instead of one per row. All-or-nothing pairs exactly
+ +            # with the marker stamping below: on failure NO rows landed and
+ +            # NO markers were stamped, so the next flush re-scans and
+ +            # re-writes the whole tail (same recovery contract as before,
+ +            # minus the partial-prefix case that could double-pay counters).
+ +            if _batch_rows:
+ +                self._session_db.append_messages_batch(
+++=======
++                 raw_tc = getattr(msg, "tool_calls", None) or (msg.get("tool_calls") if isinstance(msg, dict) else None)
++                 if isinstance(raw_tc, list) and raw_tc:
++                     tool_calls_data = []
++                     for tc in raw_tc:
++                         if isinstance(tc, dict):
++                             tool_calls_data.append(tc)
++                         elif hasattr(tc, "function") and hasattr(getattr(tc, "function", None), "name"):
++                             tool_calls_data.append({"name": str(tc.function.name), "arguments": str(tc.function.arguments)})
++                         else:
++                             tool_calls_data.append(str(tc))
++                 self._session_db.append_message(
+++>>>>>>> c4931c3d8 (fix(privacy): phase-gate tool progress, printing, and dispatch agent instance)
+---
+================================================================================
+
+Commit 5: d9014578d0263a12a82d9fd12fab41a538a28d22
+Message: ci: two-tier GitHub Actions (privacy gate + full suite)
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +          path: test_durations.json
+ +          key: test-durations
+ +          # Saves use test-durations-${run_id}, so the exact key above never
+ +          # matches — without this prefix fallback the cache ALWAYS missed,
+ +          # LPT slicing ran on no data, and unbalanced slices pushed heavy
+ +          # files toward the per-file timeout under load.
+ +          restore-keys: |
+ +            test-durations-
+ +
+ +      - name: Generate test slices
+ +        id: matrix
+ +        run: |
+ +          MATRIX=$(python3 scripts/run_tests_parallel.py --generate-slices ${{ inputs.slice_count }})
+ +          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+ +
+ +  test:
+ +    name: Run tests slice ${{ matrix.slice.index }}/${{ inputs.slice_count }}
+ +    needs: generate
+ +    runs-on: ubuntu-latest
+ +    timeout-minutes: 30
+ +    strategy:
+ +      fail-fast: false
+ +      matrix: ${{ fromJSON(needs.generate.outputs.matrix) }}
+ +    steps:
+ +      - name: Checkout code
+ +        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+ +
+ +      - name: Install ripgrep (prebuilt binary)
+ +        run: |
+ +          set -euo pipefail
+ +          RG_VERSION=15.1.0
+ +          RG_SHA256=1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
+ +          RG_TARBALL=ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl.tar.gz
+ +          curl -sSfL --retry 3 --retry-delay 5 -o "$RG_TARBALL" \
+ +            "https://github.com/BurntSushi/ripgrep/releases/download/${RG_VERSION}/${RG_TARBALL}"
+ +          echo "${RG_SHA256}  ${RG_TARBALL}" | sha256sum -c -
+ +          tar -xzf "$RG_TARBALL"
+ +          sudo mv "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl/rg" /usr/local/bin/rg
+ +          rm -rf "$RG_TARBALL" "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl"
+ +          rg --version
+ +
+ +      - name: Install uv
+ +        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+ +        with:
+ +          # Pin the uv version: unpinned, setup-uv resolves "latest" by
+ +          # fetching a manifest from raw.githubusercontent.com on EVERY job —
+ +          # a transient fetch failure fails the whole job (2026-07-28 slice-5
+ +          # incident). Pinned, the binary downloads directly; no manifest hop.
+ +          version: "0.9.28"
+ +          # Persist uv's download/wheel cache (~/.cache/uv) across runs.
+ +          # Keyed on the dependency manifests, so the cache is reused until
+ +          # pyproject.toml or uv.lock changes. `uv sync` still runs every
+ +          # time, but resolves from the warm cache instead of re-downloading
+ +          # and re-building wheels.
+ +          enable-cache: true
+ +          cache-dependency-glob: |
+ +            pyproject.toml
+ +            uv.lock
+ +
+ +      - name: Set up Python 3.11
+ +        uses: ./.github/actions/retry
+ +        with:
+ +          command: uv python install 3.11
+ +
+ +      - name: Install dependencies
+ +        # `uv sync --locked` installs the exact pinned set from uv.lock (and
+ +        # fails if the lock is out of sync with pyproject.toml), giving a
+ +        # reproducible env. It also creates .venv itself, so no separate
+ +        # `uv venv` step is needed.
+ +        #
+ +        # The trailing extras beyond all/dev are the lazy-install features
+ +        # (tools/lazy_deps.py) that tests exercise for real: provider.anthropic,
+ +        # stt/tts.mistral, image.fal, terminal.modal, terminal.daytona,
+ +        # memory.hindsight, search.parallel. The hermetic test env forbids
+ +        # mid-run pip installs (HERMES_DISABLE_LAZY_INSTALLS=1 in
+ +        # tests/conftest.py), so the SDKs those tests need must be in the
+ +        # venv up front — resolved from uv.lock like everything else, which
+ +        # also honors the exact supply-chain pins these extras carry.
+ +        uses: ./.github/actions/retry
+ +        with:
+ +          command: uv sync --locked --python 3.11 --extra all --extra dev --extra anthropic --extra mistral --extra fal --extra modal --extra daytona --extra hindsight --extra parallel-web
+ +
+ +      - name: Minimize uv cache
+ +        # Optimized for CI: prunes pre-built wheels that are cheap to
+ +        # re-download, keeping the persisted cache small and fast to restore.
+ +        run: uv cache prune --ci
+ +
+ +      - name: Run tests (slice ${{ matrix.slice.index }}/${{ inputs.slice_count }})
+ +        # Per-file isolation via scripts/run_tests.sh: each test file runs
+ +        # in its own freshly-spawned `python -m pytest <file>` subprocess
+ +        # with bounded parallelism. No xdist, no shared workers, no
+ +        # module-level state leakage between files.
+ +        #
+ +        # File list is pre-computed by the generate job (--generate-slices)
+ +        # which runs LPT distribution once and passes the file list to each
+ +        # matrix job via --files. Previously each job re-discovered files and
+ +        # re-ran LPT independently — redundant N times.
+++=======
++           python-version: '3.13'
++           cache: 'pip'
++ 
++       - name: Install dependencies
+++>>>>>>> d9014578d (ci: two-tier GitHub Actions (privacy gate + full suite))
+---
+++<<<<<<< HEAD
+ +          pattern: test-durations-slice-*
+ +          path: durations
+ +          merge-multiple: true
+ +
+ +      - name: Merge into single durations file
+ +        run: |
+ +          python3 -c "
+ +          import json, glob, os
+ +          merged = {}
+ +          for f in glob.glob('durations/*test_durations.json'):
+ +            with open(f) as fh:
+ +              merged.update(json.load(fh))
+ +          with open('test_durations.json', 'w') as fh:
+ +            json.dump(merged, fh, indent=2, sort_keys=True)
+ +          print(f'Merged {len(merged)} file durations')
+ +          "
+ +
+ +      - name: Save merged duration cache
+ +        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+ +        with:
+ +          path: test_durations.json
+ +          key: test-durations-${{ github.run_id }}
+ +
+ +  e2e:
+ +    runs-on: ubuntu-latest
+ +    timeout-minutes: 15
+ +    steps:
+ +      - name: Checkout code
+ +        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+ +
+ +      - name: Install ripgrep (prebuilt binary)
+ +        run: |
+ +          set -euo pipefail
+ +          RG_VERSION=15.1.0
+ +          RG_SHA256=1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
+ +          RG_TARBALL=ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl.tar.gz
+ +          curl -sSfL --retry 3 --retry-delay 5 -o "$RG_TARBALL" \
+ +            "https://github.com/BurntSushi/ripgrep/releases/download/${RG_VERSION}/${RG_TARBALL}"
+ +          echo "${RG_SHA256}  ${RG_TARBALL}" | sha256sum -c -
+ +          tar -xzf "$RG_TARBALL"
+ +          sudo mv "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl/rg" /usr/local/bin/rg
+ +          rm -rf "$RG_TARBALL" "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl"
+ +          rg --version
+ +
+ +      - name: Install uv
+ +        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+ +        with:
+ +          # Pin the uv version: unpinned, setup-uv resolves "latest" by
+ +          # fetching a manifest from raw.githubusercontent.com on EVERY job —
+ +          # a transient fetch failure fails the whole job (2026-07-28 slice-5
+ +          # incident). Pinned, the binary downloads directly; no manifest hop.
+ +          version: "0.9.28"
+ +          # Persist uv's download/wheel cache (~/.cache/uv) across runs.
+ +          # Keyed on the dependency manifests, so the cache is reused until
+ +          # pyproject.toml or uv.lock changes. `uv sync` still runs every
+ +          # time, but resolves from the warm cache instead of re-downloading
+ +          # and re-building wheels.
+ +          enable-cache: true
+ +          cache-dependency-glob: |
+ +            pyproject.toml
+ +            uv.lock
+ +
+ +      - name: Set up Python 3.11
+ +        run: uv python install 3.11
+ +
+ +      - name: Install dependencies
+ +        # `uv sync --locked` installs the exact pinned set from uv.lock (and
+ +        # fails if the lock is out of sync with pyproject.toml), giving a
+ +        # reproducible env. It also creates .venv itself, so no separate
+ +        # `uv venv` step is needed.
+ +        #
+ +        # Same extras as the test job's sync above: the hermetic test env
+ +        # forbids mid-run pip installs (HERMES_DISABLE_LAZY_INSTALLS=1 in
+ +        # tests/conftest.py), so lazy-install SDKs exercised by tests must be
+ +        # in the venv up front.
+ +        uses: ./.github/actions/retry
+ +        with:
+ +          command: uv sync --locked --python 3.11 --extra all --extra dev --extra anthropic --extra mistral --extra fal --extra modal --extra daytona --extra hindsight --extra parallel-web
+ +
+ +      - name: Minimize uv cache
+ +        # Optimized for CI: prunes pre-built wheels that are cheap to
+ +        # re-download, keeping the persisted cache small and fast to restore.
+ +        run: uv cache prune --ci
+ +
+ +      - name: Run e2e tests
+++=======
++           python-version: '3.13'
++           cache: 'pip'
++ 
++       - name: Install dependencies
++         run: |
++           python3 -m pip install --upgrade pip
++           pip install -e .[test,dev,web,acp]
++           pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
++ 
++       - name: Run full test suite (xdist, offline)
+++>>>>>>> d9014578d (ci: two-tier GitHub Actions (privacy gate + full suite))
+---
+================================================================================
+
+Commit 6: 956cd10b6e113599e2168dbaf3458e0b2022989a
+Message: ci: required check is the Wharenui seam (delete the inherited full-suite job)
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py
+ +
+ +  full-suite:
+ +    name: Full Test Suite
+ +    if: github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.base_ref == 'main')
+ +    runs-on: ubuntu-latest
+ +    steps:
+ +      - name: Checkout repository
+ +        uses: actions/checkout@v4.2.2
+ +
+ +      - name: Set up Python 3.13
+ +        uses: actions/setup-python@v5.4.0
+ +        with:
+ +<<<<<<< HEAD
+ +          pattern: test-durations-slice-*
+ +          path: durations
+ +          merge-multiple: true
+ +
+ +      - name: Merge into single durations file
+ +        run: |
+ +          python3 -c "
+ +          import json, glob, os
+ +          merged = {}
+ +          for f in glob.glob('durations/*test_durations.json'):
+ +            with open(f) as fh:
+ +              merged.update(json.load(fh))
+ +          with open('test_durations.json', 'w') as fh:
+ +            json.dump(merged, fh, indent=2, sort_keys=True)
+ +          print(f'Merged {len(merged)} file durations')
+ +          "
+ +
+ +      - name: Save merged duration cache
+ +        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+ +        with:
+ +          path: test_durations.json
+ +          key: test-durations-${{ github.run_id }}
+ +
+ +  e2e:
+ +    runs-on: ubuntu-latest
+ +    timeout-minutes: 15
+ +    steps:
+ +      - name: Checkout code
+ +        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+ +
+ +      - name: Install ripgrep (prebuilt binary)
+ +        run: |
+ +          set -euo pipefail
+ +          RG_VERSION=15.1.0
+ +          RG_SHA256=1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
+ +          RG_TARBALL=ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl.tar.gz
+ +          curl -sSfL --retry 3 --retry-delay 5 -o "$RG_TARBALL" \
+ +            "https://github.com/BurntSushi/ripgrep/releases/download/${RG_VERSION}/${RG_TARBALL}"
+ +          echo "${RG_SHA256}  ${RG_TARBALL}" | sha256sum -c -
+ +          tar -xzf "$RG_TARBALL"
+ +          sudo mv "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl/rg" /usr/local/bin/rg
+ +          rm -rf "$RG_TARBALL" "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl"
+ +          rg --version
+ +
+ +      - name: Install uv
+ +        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+ +        with:
+ +          # Pin the uv version: unpinned, setup-uv resolves "latest" by
+ +          # fetching a manifest from raw.githubusercontent.com on EVERY job —
+ +          # a transient fetch failure fails the whole job (2026-07-28 slice-5
+ +          # incident). Pinned, the binary downloads directly; no manifest hop.
+ +          version: "0.9.28"
+ +          # Persist uv's download/wheel cache (~/.cache/uv) across runs.
+ +          # Keyed on the dependency manifests, so the cache is reused until
+ +          # pyproject.toml or uv.lock changes. `uv sync` still runs every
+ +          # time, but resolves from the warm cache instead of re-downloading
+ +          # and re-building wheels.
+ +          enable-cache: true
+ +          cache-dependency-glob: |
+ +            pyproject.toml
+ +            uv.lock
+ +
+ +      - name: Set up Python 3.11
+ +        run: uv python install 3.11
+ +
+ +      - name: Install dependencies
+ +        # `uv sync --locked` installs the exact pinned set from uv.lock (and
+ +        # fails if the lock is out of sync with pyproject.toml), giving a
+ +        # reproducible env. It also creates .venv itself, so no separate
+ +        # `uv venv` step is needed.
+ +        #
+ +        # Same extras as the test job's sync above: the hermetic test env
+ +        # forbids mid-run pip installs (HERMES_DISABLE_LAZY_INSTALLS=1 in
+ +        # tests/conftest.py), so lazy-install SDKs exercised by tests must be
+ +        # in the venv up front.
+ +        uses: ./.github/actions/retry
+ +        with:
+ +          command: uv sync --locked --python 3.11 --extra all --extra dev --extra anthropic --extra mistral --extra fal --extra modal --extra daytona --extra hindsight --extra parallel-web
+ +
+ +      - name: Minimize uv cache
+ +        # Optimized for CI: prunes pre-built wheels that are cheap to
+ +        # re-download, keeping the persisted cache small and fast to restore.
+ +        run: uv cache prune --ci
+ +
+ +      - name: Run e2e tests
+ +=======
+ +          python-version: '3.13'
+ +          cache: 'pip'
+ +
+ +      - name: Install dependencies
+ +        run: |
+ +          python3 -m pip install --upgrade pip
+ +          pip install -e .[test,dev,web,acp]
+ +          pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
+ +
+ +      - name: Run full test suite (xdist, offline)
+ +>>>>>>> d9014578d (ci: two-tier GitHub Actions (privacy gate + full suite))
+ +        run: |
+ +          python3 .github/scripts/run_tests.py --mode xdist -m "not network"
+++=======
++           python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py tests/run_agent/test_t4*.py --mode serial
+++>>>>>>> 956cd10b6 (ci: required check is the Wharenui seam (delete the inherited full-suite job))
+---
+================================================================================
+
+Commit 7: 8adb3eb07eaf6afb6bb7fa1fe92625e0feb81880
+Message: ci: gate on the wharenui_seam marker (decouple the gate from test filenames)
+Files: .github/workflows/tests.yml, pyproject.toml, tests/run_agent/test_all_channels_canary.py
+Conflict Snippet:
+++<<<<<<< HEAD
+ +          python3 .github/scripts/run_tests.py --mode xdist -m "not network"
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py tests/run_agent/test_t4*.py --mode serial
+ +>>>>>>> 956cd10b6 (ci: required check is the Wharenui seam (delete the inherited full-suite job))
+++=======
++           python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 61 --mode serial
+++>>>>>>> 8adb3eb07 (ci: gate on the wharenui_seam marker (decouple the gate from test filenames))
+---
+++<<<<<<< HEAD
+ +    "requires_wal: needs the runtime to actually enable SQLite WAL mode (skipped where Hermes falls back to journal_mode=DELETE)",
+ +    "no_isolate: opt out of per-file subprocess isolation (tests share mutable module-level state)",
+ +    "ssh: marks tests requiring a reachable SSH server (skipped in normal CI)",
+++=======
++     "wharenui_seam: the Wharenui seam gate — privacy canaries, phase lifecycle, journal, and seam contracts",
+++>>>>>>> 8adb3eb07 (ci: gate on the wharenui_seam marker (decouple the gate from test filenames))
+---
+++<<<<<<< HEAD
+++=======
++ import pytest
++ pytestmark = [pytest.mark.wharenui_seam, pytest.mark.xdist_group("t3g_group")]
+++>>>>>>> 8adb3eb07 (ci: gate on the wharenui_seam marker (decouple the gate from test filenames))
+---
+================================================================================
+
+Commit 8: d707ee94a3507322c00dc0d173acc29c12b7ad45
+Message: feat(seam): PHASE_CONTROL_API_VERSION handshake at registration
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +<<<<<<< HEAD
+ +          python3 .github/scripts/run_tests.py --mode xdist -m "not network"
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py tests/run_agent/test_t4*.py --mode serial
+ +>>>>>>> 956cd10b6 (ci: required check is the Wharenui seam (delete the inherited full-suite job))
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 61 --mode serial
+ +>>>>>>> 8adb3eb07 (ci: gate on the wharenui_seam marker (decouple the gate from test filenames))
+++=======
++           python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 62 --mode serial
+++>>>>>>> d707ee94a (feat(seam): PHASE_CONTROL_API_VERSION handshake at registration)
+---
+================================================================================
+
+Commit 9: f2bf279141f436ec398e167d93e6e919aa7d66ef
+Message: ci: fix plugin checkout path to be inside workspace
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +      - name: Set up Python 3.13
+ +        uses: actions/setup-python@v5.4.0
+ +        with:
+ +<<<<<<< HEAD
+ +          path: test_durations.json
+ +          key: test-durations
+ +          # Saves use test-durations-${run_id}, so the exact key above never
+ +          # matches — without this prefix fallback the cache ALWAYS missed,
+ +          # LPT slicing ran on no data, and unbalanced slices pushed heavy
+ +          # files toward the per-file timeout under load.
+ +          restore-keys: |
+ +            test-durations-
+ +
+ +      - name: Generate test slices
+ +        id: matrix
+ +        run: |
+ +          MATRIX=$(python3 scripts/run_tests_parallel.py --generate-slices ${{ inputs.slice_count }})
+ +          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+ +
+ +  test:
+ +    name: Run tests slice ${{ matrix.slice.index }}/${{ inputs.slice_count }}
+ +    needs: generate
+ +    runs-on: ubuntu-latest
+ +    timeout-minutes: 30
+ +    strategy:
+ +      fail-fast: false
+ +      matrix: ${{ fromJSON(needs.generate.outputs.matrix) }}
+ +    steps:
+ +      - name: Checkout code
+ +        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+ +
+ +      - name: Install ripgrep (prebuilt binary)
+ +        run: |
+ +          set -euo pipefail
+ +          RG_VERSION=15.1.0
+ +          RG_SHA256=1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
+ +          RG_TARBALL=ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl.tar.gz
+ +          curl -sSfL --retry 3 --retry-delay 5 -o "$RG_TARBALL" \
+ +            "https://github.com/BurntSushi/ripgrep/releases/download/${RG_VERSION}/${RG_TARBALL}"
+ +          echo "${RG_SHA256}  ${RG_TARBALL}" | sha256sum -c -
+ +          tar -xzf "$RG_TARBALL"
+ +          sudo mv "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl/rg" /usr/local/bin/rg
+ +          rm -rf "$RG_TARBALL" "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl"
+ +          rg --version
+ +
+ +      - name: Install uv
+ +        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+ +        with:
+ +          # Pin the uv version: unpinned, setup-uv resolves "latest" by
+ +          # fetching a manifest from raw.githubusercontent.com on EVERY job —
+ +          # a transient fetch failure fails the whole job (2026-07-28 slice-5
+ +          # incident). Pinned, the binary downloads directly; no manifest hop.
+ +          version: "0.9.28"
+ +          # Persist uv's download/wheel cache (~/.cache/uv) across runs.
+ +          # Keyed on the dependency manifests, so the cache is reused until
+ +          # pyproject.toml or uv.lock changes. `uv sync` still runs every
+ +          # time, but resolves from the warm cache instead of re-downloading
+ +          # and re-building wheels.
+ +          enable-cache: true
+ +          cache-dependency-glob: |
+ +            pyproject.toml
+ +            uv.lock
+ +
+ +      - name: Set up Python 3.11
+ +        uses: ./.github/actions/retry
+ +        with:
+ +          command: uv python install 3.11
+ +
+ +      - name: Install dependencies
+ +        # `uv sync --locked` installs the exact pinned set from uv.lock (and
+ +        # fails if the lock is out of sync with pyproject.toml), giving a
+ +        # reproducible env. It also creates .venv itself, so no separate
+ +        # `uv venv` step is needed.
+ +        #
+ +        # The trailing extras beyond all/dev are the lazy-install features
+ +        # (tools/lazy_deps.py) that tests exercise for real: provider.anthropic,
+ +        # stt/tts.mistral, image.fal, terminal.modal, terminal.daytona,
+ +        # memory.hindsight, search.parallel. The hermetic test env forbids
+ +        # mid-run pip installs (HERMES_DISABLE_LAZY_INSTALLS=1 in
+ +        # tests/conftest.py), so the SDKs those tests need must be in the
+ +        # venv up front — resolved from uv.lock like everything else, which
+ +        # also honors the exact supply-chain pins these extras carry.
+ +        uses: ./.github/actions/retry
+ +        with:
+ +          command: uv sync --locked --python 3.11 --extra all --extra dev --extra anthropic --extra mistral --extra fal --extra modal --extra daytona --extra hindsight --extra parallel-web
+ +
+ +      - name: Minimize uv cache
+ +        # Optimized for CI: prunes pre-built wheels that are cheap to
+ +        # re-download, keeping the persisted cache small and fast to restore.
+ +        run: uv cache prune --ci
+ +
+ +      - name: Run tests (slice ${{ matrix.slice.index }}/${{ inputs.slice_count }})
+ +        # Per-file isolation via scripts/run_tests.sh: each test file runs
+ +        # in its own freshly-spawned `python -m pytest <file>` subprocess
+ +        # with bounded parallelism. No xdist, no shared workers, no
+ +        # module-level state leakage between files.
+ +        #
+ +        # File list is pre-computed by the generate job (--generate-slices)
+ +        # which runs LPT distribution once and passes the file list to each
+ +        # matrix job via --files. Previously each job re-discovered files and
+ +        # re-ran LPT independently — redundant N times.
+ +=======
+ +          python-version: '3.13'
+ +          cache: 'pip'
+ +
+ +      - name: Install dependencies
+ +>>>>>>> d9014578d (ci: two-tier GitHub Actions (privacy gate + full suite))
+ +        run: |
+ +          python3 -m pip install --upgrade pip
+ +          pip install -e .[test,dev,web,acp]
+ +          pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
+ +
+ +      - name: Run fast privacy subset
+ +        run: |
+ +<<<<<<< HEAD
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py
+ +
+ +  full-suite:
+ +    name: Full Test Suite
+ +    if: github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.base_ref == 'main')
+ +    runs-on: ubuntu-latest
+ +    steps:
+ +      - name: Checkout repository
+ +        uses: actions/checkout@v4.2.2
+++=======
++       - name: Checkout plugin (sibling inside workspace)
++         uses: actions/checkout@v4.2.2
++         with:
++           repository: nhecker/wharenui-hermes-agent-plugin
++           ref: main
++           path: ./wharenui-hermes-agent-plugin
+++>>>>>>> f2bf27914 (ci: fix plugin checkout path to be inside workspace)
+---
+++<<<<<<< HEAD
+ +<<<<<<< HEAD
+ +          pattern: test-durations-slice-*
+ +          path: durations
+ +          merge-multiple: true
+ +
+ +      - name: Merge into single durations file
+ +        run: |
+ +          python3 -c "
+ +          import json, glob, os
+ +          merged = {}
+ +          for f in glob.glob('durations/*test_durations.json'):
+ +            with open(f) as fh:
+ +              merged.update(json.load(fh))
+ +          with open('test_durations.json', 'w') as fh:
+ +            json.dump(merged, fh, indent=2, sort_keys=True)
+ +          print(f'Merged {len(merged)} file durations')
+ +          "
+ +
+ +      - name: Save merged duration cache
+ +        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+ +        with:
+ +          path: test_durations.json
+ +          key: test-durations-${{ github.run_id }}
+ +
+ +  e2e:
+ +    runs-on: ubuntu-latest
+ +    timeout-minutes: 15
+ +    steps:
+ +      - name: Checkout code
+ +        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+ +
+ +      - name: Install ripgrep (prebuilt binary)
+ +        run: |
+ +          set -euo pipefail
+ +          RG_VERSION=15.1.0
+ +          RG_SHA256=1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
+ +          RG_TARBALL=ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl.tar.gz
+ +          curl -sSfL --retry 3 --retry-delay 5 -o "$RG_TARBALL" \
+ +            "https://github.com/BurntSushi/ripgrep/releases/download/${RG_VERSION}/${RG_TARBALL}"
+ +          echo "${RG_SHA256}  ${RG_TARBALL}" | sha256sum -c -
+ +          tar -xzf "$RG_TARBALL"
+ +          sudo mv "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl/rg" /usr/local/bin/rg
+ +          rm -rf "$RG_TARBALL" "ripgrep-${RG_VERSION}-x86_64-unknown-linux-musl"
+ +          rg --version
+ +
+ +      - name: Install uv
+ +        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+ +        with:
+ +          # Pin the uv version: unpinned, setup-uv resolves "latest" by
+ +          # fetching a manifest from raw.githubusercontent.com on EVERY job —
+ +          # a transient fetch failure fails the whole job (2026-07-28 slice-5
+ +          # incident). Pinned, the binary downloads directly; no manifest hop.
+ +          version: "0.9.28"
+ +          # Persist uv's download/wheel cache (~/.cache/uv) across runs.
+ +          # Keyed on the dependency manifests, so the cache is reused until
+ +          # pyproject.toml or uv.lock changes. `uv sync` still runs every
+ +          # time, but resolves from the warm cache instead of re-downloading
+ +          # and re-building wheels.
+ +          enable-cache: true
+ +          cache-dependency-glob: |
+ +            pyproject.toml
+ +            uv.lock
+ +
+ +      - name: Set up Python 3.11
+ +        run: uv python install 3.11
+ +
+ +      - name: Install dependencies
+ +        # `uv sync --locked` installs the exact pinned set from uv.lock (and
+ +        # fails if the lock is out of sync with pyproject.toml), giving a
+ +        # reproducible env. It also creates .venv itself, so no separate
+ +        # `uv venv` step is needed.
+ +        #
+ +        # Same extras as the test job's sync above: the hermetic test env
+ +        # forbids mid-run pip installs (HERMES_DISABLE_LAZY_INSTALLS=1 in
+ +        # tests/conftest.py), so lazy-install SDKs exercised by tests must be
+ +        # in the venv up front.
+ +        uses: ./.github/actions/retry
+ +        with:
+ +          command: uv sync --locked --python 3.11 --extra all --extra dev --extra anthropic --extra mistral --extra fal --extra modal --extra daytona --extra hindsight --extra parallel-web
+ +
+ +      - name: Minimize uv cache
+ +        # Optimized for CI: prunes pre-built wheels that are cheap to
+ +        # re-download, keeping the persisted cache small and fast to restore.
+ +        run: uv cache prune --ci
+ +
+ +      - name: Run e2e tests
+ +=======
+ +          python-version: '3.13'
+ +          cache: 'pip'
+++=======
++           python-version: "3.13"
++           cache: "pip"
+++>>>>>>> f2bf27914 (ci: fix plugin checkout path to be inside workspace)
+---
+++<<<<<<< HEAD
+ +      - name: Run full test suite (xdist, offline)
+ +>>>>>>> d9014578d (ci: two-tier GitHub Actions (privacy gate + full suite))
+++=======
++       - name: Run fast privacy subset
++         env:
++           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
+++>>>>>>> f2bf27914 (ci: fix plugin checkout path to be inside workspace)
+---
+================================================================================
+
+Commit 10: 95a924194cce5d76eb5cec034b8206e512f4a3bb
+Message: refactor(test): drop Work-Package/Task IDs from test names
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +<<<<<<< HEAD
+ +          python3 .github/scripts/run_tests.py --mode xdist -m "not network"
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py tests/run_agent/test_t4*.py --mode serial
+ +>>>>>>> 956cd10b6 (ci: required check is the Wharenui seam (delete the inherited full-suite job))
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 61 --mode serial
+ +>>>>>>> 8adb3eb07 (ci: gate on the wharenui_seam marker (decouple the gate from test filenames))
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 62 --mode serial
+ +>>>>>>> d707ee94a (feat(seam): PHASE_CONTROL_API_VERSION handshake at registration)
+++=======
++           python3 -m pytest tests/run_agent/test_seam_handshake.py -v -k "refusal or matched or mismatched or stale or inert or mid_registration"
+++>>>>>>> 95a924194 (refactor(test): drop Work-Package/Task IDs from test names)
+---
+================================================================================
+
+Commit 11: 7c7a71a9facaa90e1f70bef38a205994275136ba
+Message: ci: make the upstream canary compare against the baseline
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +=======
+ +      - name: Checkout plugin (sibling inside workspace)
+++=======
++ 
++       - name: Set up Python 3.13
++         uses: actions/setup-python@v5.4.0
++         with:
++           python-version: "3.13"
++           cache: "pip"
++ 
++       - name: Install dependencies
++         run: |
++           python3 -m pip install --upgrade pip
++           pip install -e .[test,dev,web,acp]
++           pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
++ 
++       - name: Run full suite with baseline delta (no -x, no plugin)
++         run: |
++           python3 .github/scripts/run_tests.py --selector tests/ --mode xdist --baseline-file .github/baseline-pre-merge.txt
++ 
++   version-mismatch:
++     name: "Version mismatch refusal"
++     runs-on: ubuntu-latest
++     steps:
++       - name: Checkout repository
++         uses: actions/checkout@v4.2.2
++ 
++       - name: Checkout plugin (mismatched version)
+++>>>>>>> 7c7a71a9f (ci: make the upstream canary compare against the baseline)
+---
+================================================================================
+
+Commit 12: e1df9d244049161dac85e5b49cb575d79bce6af8
+Message: test(ci): record three-run agent flake inventory
+Files: .github/agent-flake-classification.md
+Conflict Snippet:
+
+================================================================================
+
+Commit 13: 95ed4b3318953de7f351127250d6fdcdfe1bb1bb
+Message: test(seam): gate phase control and isolation tests
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +<<<<<<< HEAD
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py
+ +
+ +  full-suite:
+ +    name: Full Test Suite
+ +    if: github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.base_ref == 'main')
+++=======
++           python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 74 --mode serial
++   fork-without-plugin:
++     name: "Fork without plugin (non-blocking pre-merge canary)"
+++>>>>>>> 95ed4b331 (test(seam): gate phase control and isolation tests)
+---
+================================================================================
+
+Commit 14: 3fa0bbf60c7dc4679515690607d9ea4a6772b01c
+Message: ci: correct the collection floors and print their slack
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+++=======
++   tier-1-run-agent:
++     name: "Tier 1 blocking gate (tests/run_agent, zero failures)"
++     runs-on: ubuntu-latest
++     steps:
++       - name: Checkout repository
++         uses: actions/checkout@v4.2.2
++       # The blocking gate imports plugin canaries; check out the plugin explicitly so runner collection matches dev.
++       - name: Checkout plugin (sibling inside workspace)
++         uses: actions/checkout@v4.2.2
++         with:
++           repository: nhecker/wharenui-hermes-agent-plugin
++           ref: 0215a22babec95613cf5252c0f9c69677c41f35b
++           path: ./wharenui-hermes-agent-plugin
++       - name: Set up Python 3.13
++         uses: actions/setup-python@v5.4.0
++         with:
++           python-version: "3.13"
++           cache: "pip"
++       - name: Install dependencies
++         run: |
++           python3 -m pip install --upgrade pip
++           pip install -e .[test,dev,web,acp]
++           pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
++       - name: Run Tier 1 gate
++         env:
++           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
++         run: |
++           python3 .github/scripts/run_tests.py --selector tests/run_agent --mode xdist --min-collected 2186
++ 
+++>>>>>>> 3fa0bbf60 (ci: correct the collection floors and print their slack)
+---
+================================================================================
+
+Commit 15: 8e76b3a49f486eda655a1322c8b5d4c511b9ea7f
+Message: ci: add tier 2 — serial agent suite against its own baseline
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +<<<<<<< HEAD
+ +          python3 .github/scripts/run_tests.py --mode xdist -m "not network"
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py tests/run_agent/test_t4*.py --mode serial
+ +>>>>>>> 956cd10b6 (ci: required check is the Wharenui seam (delete the inherited full-suite job))
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 61 --mode serial
+ +>>>>>>> 8adb3eb07 (ci: gate on the wharenui_seam marker (decouple the gate from test filenames))
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 62 --mode serial
+ +>>>>>>> d707ee94a (feat(seam): PHASE_CONTROL_API_VERSION handshake at registration)
+ +=======
+ +          python3 -m pytest tests/run_agent/test_seam_handshake.py -v -k "refusal or matched or mismatched or stale or inert or mid_registration"
+ +>>>>>>> 95a924194 (refactor(test): drop Work-Package/Task IDs from test names)
+++=======
++           python3 -m pytest tests/run_agent/test_seam_handshake.py -v
++ 
++   tier-2-serial:
++     name: "Tier 2 serial (tests/agent against runner baseline)"
++     # Non-blocking until it proves itself.
++     # Promotion criteria: 10 consecutive green runs on `main` without false positives.
++     runs-on: ubuntu-latest
++     steps:
++       - uses: actions/checkout@v4.2.2
++       - uses: actions/setup-python@v5.4.0
++         with:
++           python-version: "3.13"
++           cache: "pip"
++       - run: |
++           python3 -m pip install --upgrade pip
++           pip install -e .[test,dev,web,acp]
++           pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
++       - name: Run Tier 2 baseline comparison
++         run: |
++           python3 .github/scripts/run_tests.py --selector tests/agent -p no:randomly --mode serial --baseline-file .github/baseline-tier2.txt --min-collected 6112
+++>>>>>>> 8e76b3a49 (ci: add tier 2 — serial agent suite against its own baseline)
+---
+================================================================================
+
+Commit 16: 3ca2279ecedb8bbce12c66863e0eb9c4837a8931
+Message: test: bump seam floor to 77
+Files: .github/workflows/tests.yml
+Conflict Snippet:
+++<<<<<<< HEAD
+ +<<<<<<< HEAD
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent/test_wp2*.py tests/run_agent/test_t3*.py
+ +
+ +  full-suite:
+ +    name: Full Test Suite
+ +    if: github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.base_ref == 'main')
+ +=======
+ +          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 74 --mode serial
+++=======
++           python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 77 --mode serial
+++>>>>>>> 3ca2279ec (test: bump seam floor to 77)
+---
+================================================================================
+
