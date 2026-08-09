@@ -73,7 +73,7 @@ jobs:
         env:
           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 77 --mode serial
+          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 81 --mode serial
   fork-without-plugin:
     name: "Fork without plugin (non-blocking pre-merge canary)"
     runs-on: ubuntu-latest
@@ -96,8 +96,8 @@ jobs:
 
       - name: Run pre-merge population with baseline delta (non-blocking canary)
         run: |
-          echo "Excluded plugin-dependent seam files: 11"
-          python3 .github/scripts/run_tests.py --selector tests/agent tests/run_agent --mode xdist --baseline-file .github/baseline-pre-merge.txt --baseline-collected-file .github/baseline-pre-merge-collected.txt --ignore=tests/run_agent/test_all_channels_canary.py --ignore=tests/run_agent/test_hook_bus_canary.py --ignore=tests/run_agent/test_journal_canary.py --ignore=tests/run_agent/test_journal_persistence.py --ignore=tests/run_agent/test_message_hook_canary.py --ignore=tests/run_agent/test_phase_e2e.py --ignore=tests/run_agent/test_public_reopen.py --ignore=tests/run_agent/test_real_handler_canary.py --ignore=tests/run_agent/test_real_loop_canary.py --ignore=tests/run_agent/test_session_db_isolation.py --ignore=tests/run_agent/test_tool_hook_canary.py
+          echo "Excluded plugin-dependent seam files: 12"
+          python3 .github/scripts/run_tests.py --selector tests/agent tests/run_agent --mode xdist --baseline-file .github/baseline-pre-merge.txt --baseline-collected-file .github/baseline-pre-merge-collected.txt --ignore=tests/run_agent/test_all_channels_canary.py --ignore=tests/run_agent/test_hook_bus_canary.py --ignore=tests/run_agent/test_journal_canary.py --ignore=tests/run_agent/test_journal_persistence.py --ignore=tests/run_agent/test_message_hook_canary.py --ignore=tests/run_agent/test_phase_e2e.py --ignore=tests/run_agent/test_public_reopen.py --ignore=tests/run_agent/test_real_handler_canary.py --ignore=tests/run_agent/test_real_loop_canary.py --ignore=tests/run_agent/test_session_db_isolation.py --ignore=tests/run_agent/test_tool_hook_canary.py --ignore=tests/run_agent/test_wp_b8_driven.py
 
   version-mismatch:
     name: "Version mismatch refusal"
