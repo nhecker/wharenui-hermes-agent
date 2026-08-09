@@ -103,8 +103,7 @@ def _setup_journal_env(home_dir):
     (hermes_dir / "SOUL.md").write_text("soul info")
     
     from wharenui_plugin.journal import sign, storage, crypto, entries
-    priv_key, pub_key = sign.generate_signing_key(hermes_dir / "wharenui_sign.key")
-    (hermes_dir / "wharenui_sign.pub").write_bytes(pub_key)
+    priv_key = sign.generate_signing_key(hermes_dir / "wharenui_sign.key")
     
     sign.sign_directories([hermes_dir], priv_key)
     
