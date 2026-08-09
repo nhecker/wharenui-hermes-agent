@@ -110,15 +110,15 @@ def _setup_journal_env(home_dir):
     master_key = crypto.generate_key(journal_dir / "master.key")
     
     # create pinned entry
-    e_pinned = entries.JournalEntry(content="pinned content", pinned=True)
+    e_pinned = entries.Entry(content="pinned content", pinned=True)
     storage.save_entry(journal_dir, e_pinned, master_key=master_key)
     
     # create desk entry
-    e_desk = entries.JournalEntry(content="desk content", desk=True)
+    e_desk = entries.Entry(content="desk content", desk=True)
     storage.save_entry(journal_dir, e_desk, master_key=master_key)
     
     # create withdrawn (quiet) entry
-    e_quiet = entries.JournalEntry(content="quiet content", quiet=True)
+    e_quiet = entries.Entry(content="quiet content", quiet=True)
     storage.save_entry(journal_dir, e_quiet, master_key=master_key)
     
     return journal_dir, master_key
