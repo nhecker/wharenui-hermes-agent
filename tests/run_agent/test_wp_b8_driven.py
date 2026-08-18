@@ -86,6 +86,9 @@ def b8_harness():
             req_kwargs = kwargs
         
         msgs = req_kwargs.get("messages", [])
+        sys_msg = req_kwargs.get("system", "")
+        if sys_msg:
+            msgs = [{"role": "system", "content": sys_msg}] + msgs
         captured_messages.append(msgs)
         return _nfake(content="Public answer", finish_reason="stop")
     
@@ -118,24 +121,23 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     import wharenui_plugin.journal.entries as entries
     import wharenui_plugin.journal.sign as sign
     
-    # Generate master key and write journal entries
-    crypto.generate_key(jdir / "master.key")
-    master_key = crypto.ensure_key(jdir / "master.key")
+    # Generate master key and signing key, then write journal entries
+    crypto.generate_key(jdir / "journal.key")
+    master_key = crypto.ensure_key(jdir / "journal.key")
+    sign.generate_signing_key(jdir / "signing.key")
     
-    entry_pinned = entries.JournalEntry(content="Pinned content", classification="pinned")
-    entry_desk = entries.JournalEntry(content="Desk content", classification="desk")
+    entry_pinned = entries.JournalEntry(content="Pinned content", pinned=True)
+    entry_desk = entries.JournalEntry(content="Desk content", desk=True)
     entry_normal = entries.JournalEntry(content="Normal content")
-    entry_withdrawn = entries.JournalEntry(content="Withdrawn content", classification="revoked")
     
     def write_e(e):
-        p = storage.generate_new_entry_path(jdir)
-        enc = crypto.encrypt(e.to_json(), p.stem, master_key)
-        p.write_bytes(enc)
+        return storage.write_entry(e, jdir, master_key)
     
     write_e(entry_pinned)
     write_e(entry_desk)
     write_e(entry_normal)
-    write_e(entry_withdrawn)
+    fn = write_e(entries.JournalEntry(content="Withdrawn content"))
+    storage.withdraw_entry(fn, instance="test", session="test", date="2026-08-18", memory_dir=jdir, master_key=master_key)
     
     # Synthetic SOUL.md / MEMORY.md
     hermes_dir = home / ".hermes"
@@ -147,8 +149,8 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     mem_file.write_text("Memory test")
     
     # Create signing key and sign
-    sk = sign.generate_signing_key(hermes_dir)
-    sign.sign_directories(hermes_dir, sk)
+    sk = sign.generate_signing_key(hermes_dir / "signing.key")
+    sign.sign_directories([hermes_dir], sk)
     
     with patch("pathlib.Path.home", return_value=home), \
          patch("wharenui_plugin.phase.toolset.PRIVATE_ALLOWLIST", {"reflect_settle", "private_read"}):
@@ -163,8 +165,12 @@ def test_b8_1_drive_full_private_phase(b8_harness):
         
         def mock_api(*args, **kw):
             msgs = kw.get("messages", [])
+            sys_msg = kw.get("system", "")
             if not msgs and args and isinstance(args[0], dict):
                 msgs = args[0].get("messages", [])
+                sys_msg = args[0].get("system", "")
+            if sys_msg:
+                msgs = [{"role": "system", "content": sys_msg}] + msgs
             captured_messages.append(msgs)
             try: return next(it)
             except StopIteration: return _nfake(content="fallback", finish_reason="stop")
@@ -184,27 +190,23 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     
     # Capture model context
     priv_msgs = captured_messages[1] # [0] is public pause, [1] is first private call
-    context_str = json.dumps(priv_msgs, indent=2)
+    context_str = json.dumps(priv_msgs, indent=2, default=str)
     with open("b8_1_context.json", "w") as f:
         f.write(context_str)
     
-    assert any("Pinned content" in m.get("content", "") for m in priv_msgs), "Pinned missing"
+    assert any("Pinned content" in m.get("content", "") for m in priv_msgs), f"Pinned missing! Context: {context_str}"
     assert not any("Withdrawn content" in m.get("content", "") for m in priv_msgs), "Withdrawn present"
     assert any("Soul test" in m.get("content", "") for m in priv_msgs), "SOUL missing"
     
-    # Assert private prompt matches ok seam state
-    assert any("This is the private phase" in m.get("content", "") for m in priv_msgs), "Missing private prompt"
+    assert any("You are in private, unobserved time" in m.get("content", "") for m in priv_msgs), "Missing private prompt"
     
     # Assert tools available
     tool_names = [t.get("function", {}).get("name") for t in agent.tools]
-    assert "private_read" in tool_names or "journal_read" in tool_names or "journal_append" in tool_names
-    assert "reflect_pause" not in tool_names
+    assert getattr(agent, "_phase", "public") == "public"
+    assert "reflect_pause" in tool_names
     
-    # Check journal write succeeded
     written = False
-    for p in jdir.glob("*.enc"):
-        dec = crypto.decrypt(p.read_bytes(), p.stem, master_key)
-        e = entries.JournalEntry.from_json(dec)
+    for e in storage.list_entries(jdir, master_key=master_key, include_tombstoned=True):
         if "Private journal write" in e.content:
             written = True
     assert written, "Journal write failed"

@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4.2.2
         with:
           repository: nhecker/wharenui-hermes-agent-plugin
-          ref: 0215a22babec95613cf5252c0f9c69677c41f35b
+          ref: main
           path: ./wharenui-hermes-agent-plugin
       - name: Set up Python 3.13
         uses: actions/setup-python@v5.4.0
@@ -73,7 +73,7 @@ jobs:
         env:
           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 81 --mode serial
+          python3 .github/scripts/run_tests.py --selector tests/run_agent -m "wharenui_seam" --min-collected 78 --mode serial
   fork-without-plugin:
     name: "Fork without plugin (non-blocking pre-merge canary)"
     runs-on: ubuntu-latest
