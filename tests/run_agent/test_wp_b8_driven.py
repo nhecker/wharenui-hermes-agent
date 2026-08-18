@@ -188,8 +188,14 @@ def test_b8_1_drive_full_private_phase(b8_harness):
         finally:
             os.chdir(orig_cwd)
     
-    # Capture model context
-    priv_msgs = captured_messages[1] # [0] is public pause, [1] is first private call
+    # Capture model context robustly across environments
+    priv_msgs = None
+    for msgs in captured_messages:
+        if any('Pinned content' in m.get('content', '') or 'unobserved time' in m.get('content', '') for m in msgs):
+            priv_msgs = msgs
+            break
+    if priv_msgs is None and len(captured_messages) > 1:
+        priv_msgs = captured_messages[1]
     context_str = json.dumps(priv_msgs, indent=2, default=str)
     with open("b8_1_context.json", "w") as f:
         f.write(context_str)
