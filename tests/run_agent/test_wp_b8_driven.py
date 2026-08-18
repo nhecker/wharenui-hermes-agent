@@ -124,7 +124,7 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     # Generate master key and signing key, then write journal entries
     crypto.generate_key(jdir / "journal.key")
     master_key = crypto.ensure_key(jdir / "journal.key")
-    sign.generate_signing_key(jdir / "signing.key")
+    sk = sign.generate_signing_key(jdir / "signing.key")
     
     entry_pinned = entries.JournalEntry(content="Pinned content", pinned=True)
     entry_desk = entries.JournalEntry(content="Desk content", desk=True)
@@ -149,7 +149,7 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     mem_file.write_text("Memory test")
     
     # Create signing key and sign
-    sk = sign.generate_signing_key(hermes_dir / "signing.key")
+    # Sign directories with signing key
     sign.sign_directories([hermes_dir], sk)
     
     with patch("pathlib.Path.home", return_value=home), \
