@@ -121,7 +121,7 @@ def test_contract_phase_control_api_version():
         description="test",
         key="test",
         source="user",
-        kind="standalone",
+        kind="reflection",
         path=str(Path("/tmp")),
     )
     

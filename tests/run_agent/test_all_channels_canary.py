@@ -748,7 +748,7 @@ def test_real_registry_settle_done_dispatch(all_channels_harness):
 
     agent._phase = "private"
     res_settle = handle_function_call("reflect_settle", {}, agent=agent)
-    assert "Returning to window" in str(res_settle) or "settle" in str(res_settle)
+    assert "Recorded request to return to window" in str(res_settle) or "settle" in str(res_settle)
     assert getattr(agent, "_private_exit", None) is not None
     assert agent._private_exit.action == "resume"
 

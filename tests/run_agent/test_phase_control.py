@@ -40,7 +40,7 @@ class StubPhaseHandler:
                 action="close", handler="reflect_done", tool_result="Done reflecting."
             )
         return ControlOutcome(
-            action="resume", handler="reflect_settle", tool_result="Returned to window."
+            action="resume", handler="reflect_settle", tool_result="Recorded request to return to window."
         )
 
 
