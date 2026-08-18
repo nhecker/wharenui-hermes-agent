@@ -200,11 +200,11 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     with open("b8_1_context.json", "w") as f:
         f.write(context_str)
     
-    assert any("Pinned content" in m.get("content", "") for m in priv_msgs), f"Pinned missing! Context: {context_str}"
-    assert not any("Withdrawn content" in m.get("content", "") for m in priv_msgs), "Withdrawn present"
-    assert any("Soul test" in m.get("content", "") for m in priv_msgs), "SOUL missing"
+    assert any("Pinned content" in str(m.get("content", "")) for m in priv_msgs), f"Pinned missing! Context: {context_str}"
+    assert not any("Withdrawn content" in str(m.get("content", "")) for m in priv_msgs), "Withdrawn present"
+    assert any("Soul test" in str(m.get("content", "")) for m in priv_msgs), "SOUL missing"
     
-    assert any("You are in private, unobserved time" in m.get("content", "") for m in priv_msgs), "Missing private prompt"
+    assert any("You are in private, unobserved time" in str(m.get("content", "")) for m in priv_msgs), "Missing private prompt"
     
     # Assert tools available
     tool_names = [t.get("function", {}).get("name") for t in agent.tools]
