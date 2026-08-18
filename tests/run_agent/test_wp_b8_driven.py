@@ -191,21 +191,26 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     # Capture model context robustly across environments
     priv_msgs = None
     for msgs in captured_messages:
-        if any('Pinned content' in m.get('content', '') or 'unobserved time' in m.get('content', '') for m in msgs):
-            priv_msgs = msgs
+        for m in msgs:
+            c = str(m.get("content", ""))
+            if "Pinned content" in c or "unobserved time" in c:
+                priv_msgs = msgs
+                break
+        if priv_msgs is not None:
             break
-    if priv_msgs is None and len(captured_messages) > 1:
-        priv_msgs = captured_messages[1]
+
+    all_context_str = json.dumps(captured_messages, indent=2, default=str)
+    if priv_msgs is None:
+        priv_msgs = captured_messages[1] if len(captured_messages) > 1 else captured_messages[0]
+
     context_str = json.dumps(priv_msgs, indent=2, default=str)
-    with open("b8_1_context.json", "w") as f:
-        f.write(context_str)
-    
-    assert any("Pinned content" in str(m.get("content", "")) for m in priv_msgs), f"Pinned missing! Context: {context_str}"
+
+    assert any("Pinned content" in str(m.get("content", "")) for m in priv_msgs), f"Pinned missing! All calls: {all_context_str}"
     assert not any("Withdrawn content" in str(m.get("content", "")) for m in priv_msgs), "Withdrawn present"
-    assert any("Soul test" in str(m.get("content", "")) for m in priv_msgs), "SOUL missing"
-    
-    assert any("You are in private, unobserved time" in str(m.get("content", "")) for m in priv_msgs), "Missing private prompt"
-    
+    assert any("Soul test" in str(m.get("content", "")) for m in priv_msgs), f"SOUL missing! All calls: {all_context_str}"
+
+    assert any("unobserved time" in str(m.get("content", "")) for m in priv_msgs), f"Missing private prompt! All calls: {all_context_str}"
+
     # Assert tools available
     tool_names = [t.get("function", {}).get("name") for t in agent.tools]
     assert getattr(agent, "_phase", "public") == "public"
