@@ -165,13 +165,11 @@ def test_b8_1_drive_full_private_phase(b8_harness):
         ])
         
         def mock_api(*args, **kw):
-            msgs = kw.get("messages", [])
-            sys_msg = kw.get("system", "")
-            if not msgs and args and isinstance(args[0], dict):
-                msgs = args[0].get("messages", [])
-                sys_msg = args[0].get("system", "")
-            if sys_msg:
-                msgs = [{"role": "system", "content": sys_msg}] + msgs
+            req = kw if kw else (args[0] if args and isinstance(args[0], dict) else {})
+            msgs = list(req.get("messages", []))
+            sys_val = req.get("system")
+            if sys_val:
+                msgs.insert(0, {"role": "system", "content": sys_val})
             captured_messages.append(copy.deepcopy(msgs))
             try: return next(it)
             except StopIteration: return _nfake(content="fallback", finish_reason="stop")
