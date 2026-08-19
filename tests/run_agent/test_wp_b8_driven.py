@@ -112,16 +112,29 @@ def b8_harness():
     mgr._hooks.clear()
     mgr._control_phase_handlers.clear()
     mgr._control_tool_names.clear()
+    try:
+        import wharenui_plugin.journal.tools as jtools
+        jtools.set_journal_config(None, None)
+    except Exception:
+        pass
 
 def test_b8_1_drive_full_private_phase(b8_harness):
     agent, td, captured_messages = b8_harness
     agent.save_trajectories = False
     
+    try:
+        import wharenui_plugin.journal.tools as jtools
+        jtools.set_journal_config(None, None)
+    except Exception:
+        pass
+    
     # synthetic fixtures
-    jdir = td / "journal"
-    jdir.mkdir(parents=True, exist_ok=True)
     home = td / "home"
     home.mkdir(parents=True, exist_ok=True)
+    hermes_dir = home / ".hermes"
+    hermes_dir.mkdir(parents=True, exist_ok=True)
+    jdir = hermes_dir / "journal"
+    jdir.mkdir(parents=True, exist_ok=True)
     
     import wharenui_plugin.journal.crypto as crypto
     import wharenui_plugin.journal.storage as storage
@@ -147,8 +160,6 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     storage.withdraw_entry(fn, instance="test", session="test", date="2026-08-18", memory_dir=jdir, master_key=master_key)
     
     # Synthetic SOUL.md / MEMORY.md
-    hermes_dir = home / ".hermes"
-    hermes_dir.mkdir(parents=True, exist_ok=True)
     soul_file = hermes_dir / "SOUL.md"
     mem_file = hermes_dir / "memories" / "MEMORY.md"
     soul_file.write_text("Soul test")
