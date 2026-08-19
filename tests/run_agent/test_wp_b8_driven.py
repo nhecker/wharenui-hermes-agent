@@ -104,6 +104,9 @@ def b8_harness():
         
     db.close()
     shutil.rmtree(td, ignore_errors=True)
+    mgr._hooks.clear()
+    mgr._control_phase_handlers.clear()
+    mgr._control_tool_names.clear()
 
 def test_b8_1_drive_full_private_phase(b8_harness):
     agent, td, captured_messages = b8_harness
@@ -114,7 +117,6 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     jdir.mkdir(parents=True, exist_ok=True)
     home = td / "home"
     home.mkdir(parents=True, exist_ok=True)
-    os.environ["WHARENUI_JOURNAL_DIR"] = str(jdir)
     
     import wharenui_plugin.journal.crypto as crypto
     import wharenui_plugin.journal.storage as storage
@@ -153,6 +155,7 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     sign.sign_directories([hermes_dir], sk)
     
     with patch("pathlib.Path.home", return_value=home), \
+         patch.dict(os.environ, {"WHARENUI_JOURNAL_DIR": str(jdir)}), \
          patch("wharenui_plugin.phase.toolset.PRIVATE_ALLOWLIST", {"reflect_settle", "private_read"}):
         
         # Public pause -> private write -> private settle -> public finish
