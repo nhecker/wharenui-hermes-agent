@@ -163,7 +163,7 @@ def test_b8_1_drive_full_private_phase(b8_harness):
          patch("os.path.expanduser", side_effect=lambda p: str(home) if str(p).startswith("~") else str(p)), \
          patch.object(Path, "expanduser", lambda self: home if str(self).startswith("~") else self), \
          patch.dict(os.environ, {"WHARENUI_JOURNAL_DIR": str(jdir)}), \
-         patch("wharenui_plugin.phase.toolset.PRIVATE_ALLOWLIST", {"reflect_settle", "private_read"}):
+         patch("wharenui_plugin.phase.toolset.PRIVATE_ALLOWLIST", {"reflect_settle", "private_read", "journal_append"}):
         
         # Public pause -> private write -> private settle -> public finish
         it = iter([
