@@ -80,16 +80,15 @@ def b8_harness():
     captured_messages = []
     
     def fake_api_call(*args, **kwargs):
-        req_kwargs = kwargs
-        if not req_kwargs and args and isinstance(args[0], dict):
-            req_kwargs = args[0]
-        elif 'messages' in kwargs:
-            req_kwargs = kwargs
+        req_kwargs = {}
+        if args and isinstance(args[0], dict):
+            req_kwargs.update(args[0])
+        req_kwargs.update(kwargs)
         
-        msgs = req_kwargs.get("messages", [])
+        msgs = list(req_kwargs.get("messages", []))
         sys_msg = req_kwargs.get("system", "")
         if sys_msg:
-            msgs = [{"role": "system", "content": sys_msg}] + msgs
+            msgs.insert(0, {"role": "system", "content": sys_msg})
         captured_messages.append(copy.deepcopy(msgs))
         return _nfake(content="Public answer", finish_reason="stop")
     
@@ -150,7 +149,7 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     mem_file.write_text("Memory test")
     
     # Create signing key and sign
-    # Sign directories with signing key
+    shutil.copy(jdir / "signing.key", hermes_dir / "signing.key")
     sign.sign_directories([hermes_dir], sk)
     
     with patch("pathlib.Path.home", return_value=home), \
@@ -165,7 +164,10 @@ def test_b8_1_drive_full_private_phase(b8_harness):
         ])
         
         def mock_api(*args, **kw):
-            req = kw if kw else (args[0] if args and isinstance(args[0], dict) else {})
+            req = {}
+            if args and isinstance(args[0], dict):
+                req.update(args[0])
+            req.update(kw)
             msgs = list(req.get("messages", []))
             sys_val = req.get("system")
             if sys_val:
