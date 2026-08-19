@@ -1,3 +1,4 @@
+# Provenance: github-runner
 # Pre-merge failure baseline for wharenui-integration
 # Generated: 2026-08-07
 # Ref: wharenui-integration (HEAD at time of measurement)

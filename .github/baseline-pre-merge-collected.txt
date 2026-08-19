@@ -1,3 +1,5 @@
+# Provenance: github-runner
+# Pre-merge collected baseline for wharenui-integration
 tests/run_agent/test_commit_memory_session_context_engine.py::test_commit_memory_session_tolerates_context_engine_failure
 tests/run_agent/test_commit_memory_session_context_engine.py::test_commit_memory_session_notifies_context_engine
 tests/run_agent/test_commit_memory_session_context_engine.py::test_commit_memory_session_with_no_messages_passes_empty_list

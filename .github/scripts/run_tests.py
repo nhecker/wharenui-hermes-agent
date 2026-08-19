@@ -74,6 +74,9 @@ def parse_args():
     )
 
     parser.add_argument("--baseline-collected-file", metavar="PATH", default=None, help="Path to the baseline complete collected node-ID set.")
+    parser.add_argument("--allow-unprovenanced-baseline", action="store_true", default=False, help="Opt-in flag to accept baseline files missing runner provenance headers.")
+    parser.add_argument("--allow-baseline-growth", action="store_true", default=False, help="Opt-in flag to allow baseline failure set growth.")
+    parser.add_argument("--max-baseline-failures", type=int, default=0, help="Maximum allowed baseline failures ceiling.")
 
     return parser.parse_known_args()
 
@@ -459,11 +462,33 @@ def main():
             if not baseline_path.exists():
                 print("\nERROR: baseline file not found: " + str(baseline_path))
                 sys.exit(1)
+            
+            raw_content = baseline_path.read_text(encoding="utf-8")
+            lines = raw_content.splitlines()
+
+            # Verify runner provenance header
+            has_provenance = any(
+                line.strip().startswith("#") and (
+                    "provenance" in line.lower() or "github runner" in line.lower()
+                )
+                for line in lines
+            )
+            if not has_provenance and not getattr(args, "allow_unprovenanced_baseline", False):
+                print(f"\n[!] ERROR: Baseline file '{args.baseline_file}' lacks runner provenance header (e.g. '# Provenance: github-runner').")
+                print("    Refusing baseline without runner provenance. Pass --allow-unprovenanced-baseline to override.")
+                sys.exit(1)
+
             baseline_failures = set()
-            for line in baseline_path.read_text().splitlines():
+            for line in lines:
                 line = line.strip()
                 if line and not line.startswith("#"):
                     baseline_failures.add(_normalize_node_id(line))
+
+            max_allowed = getattr(args, "max_baseline_failures", 0)
+            if max_allowed > 0 and len(baseline_failures) > max_allowed and not getattr(args, "allow_baseline_growth", False):
+                print(f"\n[!] ERROR: Baseline failure count ({len(baseline_failures)}) exceeds maximum allowed ceiling ({max_allowed}).")
+                print("    Silent baseline growth is prohibited without explicit '--allow-baseline-growth' opt-in.")
+                sys.exit(1)
 
             baseline_collected = set()
             if args.baseline_collected_file:
