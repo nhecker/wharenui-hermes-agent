@@ -63,6 +63,7 @@ def b8_harness():
     ctx.plugin_module = wharenui_plugin
     from wharenui_plugin import register
     register(ctx)
+    saved_control_handlers = dict(mgr._control_phase_handlers)
     
     td = Path(tempfile.mkdtemp(prefix="hv-b8-"))
     db = SessionDB(db_path=td / "s.db")
@@ -75,6 +76,10 @@ def b8_harness():
         a.client = MagicMock()
     
     a._ensure_db_session()
+    a._saved_control_handlers = saved_control_handlers
+    for name, handler in saved_control_handlers.items():
+        a._control_tool_names.add(name)
+        a._control_handlers[name] = handler
     
     # We want to capture the messages passed to the API call
     captured_messages = []
@@ -184,8 +189,17 @@ def test_b8_1_drive_full_private_phase(b8_harness):
         agent._interruptible_api_call.side_effect = mock_api
         agent._interruptible_streaming_api_call.side_effect = mock_api
         
-        agent.tools = [{"function": {"name": "reflect_pause"}}, {"function": {"name": "reflect_settle"}}]
-        agent.valid_tool_names.update(["reflect_pause", "reflect_settle"])
+        # Ensure control phase handlers are bound
+        from hermes_cli.plugins import get_plugin_manager
+        pm = get_plugin_manager()
+        for name, handler in getattr(agent, "_saved_control_handlers", {}).items():
+            agent._control_tool_names.add(name)
+            agent._control_handlers[name] = handler
+            pm._control_phase_handlers[name] = handler
+            pm._control_tool_names.add(name)
+        
+        agent.tools = [{"function": {"name": "reflect_pause"}}, {"function": {"name": "reflect_settle"}}, {"function": {"name": "journal_append"}}]
+        agent.valid_tool_names.update(["reflect_pause", "reflect_settle", "journal_append"])
         
         orig_cwd = Path.cwd()
         try:
