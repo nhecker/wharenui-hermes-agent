@@ -152,9 +152,11 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     
     # Create signing key and sign
     shutil.copy(jdir / "signing.key", hermes_dir / "signing.key")
-    sign.sign_directories([hermes_dir], sk)
+    sign.sign_directories([hermes_dir, jdir], sk)
     
     with patch("pathlib.Path.home", return_value=home), \
+         patch("os.path.expanduser", side_effect=lambda p: str(home) if str(p).startswith("~") else str(p)), \
+         patch.object(Path, "expanduser", lambda self: home if str(self).startswith("~") else self), \
          patch.dict(os.environ, {"WHARENUI_JOURNAL_DIR": str(jdir)}), \
          patch("wharenui_plugin.phase.toolset.PRIVATE_ALLOWLIST", {"reflect_settle", "private_read"}):
         
