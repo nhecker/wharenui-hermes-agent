@@ -137,9 +137,6 @@ jobs:
 
   tier-2-serial:
     name: "Tier 2 serial (tests/agent against runner baseline)"
-    # Non-blocking until it proves itself.
-    continue-on-error: true
-    # Promotion criteria: 10 consecutive green runs on `main` without false positives.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
