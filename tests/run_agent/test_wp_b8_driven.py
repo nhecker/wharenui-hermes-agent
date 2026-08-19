@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import shutil
@@ -89,7 +90,7 @@ def b8_harness():
         sys_msg = req_kwargs.get("system", "")
         if sys_msg:
             msgs = [{"role": "system", "content": sys_msg}] + msgs
-        captured_messages.append(msgs)
+        captured_messages.append(copy.deepcopy(msgs))
         return _nfake(content="Public answer", finish_reason="stop")
     
     mt = MagicMock()
@@ -171,7 +172,7 @@ def test_b8_1_drive_full_private_phase(b8_harness):
                 sys_msg = args[0].get("system", "")
             if sys_msg:
                 msgs = [{"role": "system", "content": sys_msg}] + msgs
-            captured_messages.append(msgs)
+            captured_messages.append(copy.deepcopy(msgs))
             try: return next(it)
             except StopIteration: return _nfake(content="fallback", finish_reason="stop")
         
