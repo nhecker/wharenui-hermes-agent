@@ -358,7 +358,6 @@ def test_real_journal_canary_absence_across_all_5_exit_paths(journal_harness, ca
 
     if exit_path == "settle":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_search", search_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_read", read_arg)], finish_reason="tool_calls"),
@@ -367,15 +366,12 @@ def test_real_journal_canary_absence_across_all_5_exit_paths(journal_harness, ca
         ]
     elif exit_path == "done":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_read", read_arg)], finish_reason="tool_calls"),
             _nfake(content=f"Private closing note {CANARY_JOURNAL}", tool_calls=[_tcfake("reflect_done")], finish_reason="tool_calls"),
         ]
     elif exit_path == "cap":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
-        ] + [
             _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls")
             for _ in range(15)
         ] + [
@@ -383,13 +379,11 @@ def test_real_journal_canary_absence_across_all_5_exit_paths(journal_harness, ca
         ]
     elif exit_path == "provider-exception-mid-private":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls"),
             RuntimeError("Provider API connection failed mid-private turn"),
         ]
     elif exit_path == "failed-trajectory-dump":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls"),
             ValueError("Fatal model context overflow in private turn"),
         ]
@@ -424,7 +418,6 @@ def test_t4_per_channel_mutations(journal_harness, capsys, target_channel):
 
     append_arg = json.dumps({"content": CANARY_JOURNAL, "slug": CANARY_JOURNAL_SLUG})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls"),
         _nfake(content=f"Private thought {CANARY_JOURNAL}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
         _nfake(content="Public response", finish_reason="stop"),
@@ -510,6 +503,7 @@ def test_t4_positive_control(journal_harness):
     from agent.conversation_loop import run_conversation
 
     responses = [
+        _nfake(tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
         _nfake(content=f"Public response with {CANARY_PUBLIC}", finish_reason="stop"),
     ]
 

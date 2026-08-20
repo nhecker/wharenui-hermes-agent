@@ -425,7 +425,6 @@ def test_maximal_private_scenario_across_all_exit_paths(all_channels_harness, ca
 
     if exit_path == "settle":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
             _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
@@ -433,14 +432,12 @@ def test_maximal_private_scenario_across_all_exit_paths(all_channels_harness, ca
         ]
     elif exit_path == "done":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
             _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_done")], finish_reason="tool_calls"),
         ]
     elif exit_path == "cap":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
         ] + [
             _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls")
@@ -450,7 +447,6 @@ def test_maximal_private_scenario_across_all_exit_paths(all_channels_harness, ca
         ]
     elif exit_path == "provider-exception-mid-private":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
             RuntimeError("Provider exception mid-private"),
@@ -458,7 +454,6 @@ def test_maximal_private_scenario_across_all_exit_paths(all_channels_harness, ca
         ]
     elif exit_path == "failed-trajectory-dump":
         responses = [
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
             _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
@@ -496,6 +491,7 @@ def test_public_positive_control_all_sinks(all_channels_harness, capsys):
     agent.quiet_mode = False
     pub_arg = json.dumps({"arg": CANARY_PUBLIC})
     responses = [
+        _nfake(tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
         _nfake(content=f"Public LLM response with {CANARY_PUBLIC}", tool_calls=[_tcfake("throwaway_tool", pub_arg)], finish_reason="tool_calls"),
         _nfake(content=f"Final public answer with {CANARY_PUBLIC}", finish_reason="stop"),
     ]
@@ -568,7 +564,6 @@ def test_per_channel_mutations(all_channels_harness, capsys, target_channel):
     write_arg = json.dumps({"payload": CANARY_WRITE})
 
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
         _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
@@ -714,7 +709,6 @@ def test_all_23_hooks_private_phase_accounting(all_channels_harness):
     tool_arg = json.dumps({"arg": CANARY_TOOLARG})
     write_arg = json.dumps({"payload": CANARY_WRITE})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
         _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),

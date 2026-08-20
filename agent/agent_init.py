@@ -2810,6 +2810,8 @@ def init_agent(
     agent._control_handlers: dict[str, Any] = {}
     agent._pending_phase_transition: Any | None = None
     agent._phase: str = "public"
+    agent._initial_phase_handler: str | None = None
+    agent._initial_phase_completed: bool = False
     try:
         from hermes_cli.plugins import get_control_tool_names, get_control_phase_handler
         _cnames = get_control_tool_names()
@@ -2821,6 +2823,25 @@ def init_agent(
         if _cnames:
             from agent.tool_dispatch_helpers import _CONTROL_TOOLS
             _CONTROL_TOOLS.update(_cnames)
+
+        agent._initial_phase: str | None = None
+        # Generic initial-phase discovery and liveness guard
+        for _cn, _h in agent._control_handlers.items():
+            _declared_initial = getattr(_h, "initial_phase", None)
+            if _declared_initial and _declared_initial != "public":
+                # Liveness guard: verify handler has a callable run method
+                if not callable(getattr(_h, "run", None)):
+                    logger.warning(
+                        "Wharenui phase-control liveness guard: Initial phase '%s' declared by handler '%s' has no registered exit or runnable handler. Falling back safely to 'public'.",
+                        _declared_initial,
+                        _cn,
+                    )
+                    agent._initial_phase = None
+                    agent._initial_phase_handler = None
+                else:
+                    agent._initial_phase = _declared_initial
+                    agent._initial_phase_handler = _cn
+                break
     except Exception:
         pass
     agent._context_engine_tool_names: set = set()

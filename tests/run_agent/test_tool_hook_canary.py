@@ -153,7 +153,6 @@ def test_tool_call_hooks_suppressed_in_private_phase(loaded_agent):
 
     private_args = json.dumps({"reason": f"settling_{CANARY}"})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("reflect_settle", private_args)], finish_reason="tool_calls"),
         _nfake(content="Public reply after private phase.", finish_reason="stop"),
     ]
@@ -185,6 +184,7 @@ def test_public_positive_control_fires_tool_hooks(loaded_agent):
 
     pub_args = json.dumps({"query": f"public_query_{CANARY}"})
     responses = [
+        _nfake(tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("web_search", pub_args)], finish_reason="tool_calls"),
         _nfake(content="Search completed.", finish_reason="stop"),
     ]
@@ -219,7 +219,6 @@ def test_per_site_mutation_neutralize_gate_causes_canary_leak(loaded_agent):
 
     private_args = json.dumps({"reason": f"settling_{CANARY}"})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("reflect_settle", private_args)], finish_reason="tool_calls"),
         _nfake(content="Public reply.", finish_reason="stop"),
     ]

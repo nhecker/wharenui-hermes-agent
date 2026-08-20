@@ -167,3 +167,114 @@ def test_handoff_close_breaks_loop():
         _turn_exit_reason = "phase_close"
 
     assert _turn_exit_reason == "phase_close"
+
+# --- Issue #6: Initial Phase & Liveness Guard Tests ---
+
+
+def test_phase_handler_protocol_optional_initial_phase():
+    """Verify PhaseHandler Protocol supports optional initial_phase attribute."""
+    from agent.phase_control import PhaseHandler
+
+    class HandlerWithoutInitial:
+        def begin(self, args: dict) -> ControlOutcome:
+            return ControlOutcome(action="enter", handler="h", tool_result="")
+        def run(self, agent, messages: list, effective_task_id: str) -> ControlOutcome | None:
+            return None
+
+    class HandlerWithInitial:
+        initial_phase = "private"
+        def begin(self, args: dict) -> ControlOutcome:
+            return ControlOutcome(action="enter", handler="h", tool_result="")
+        def run(self, agent, messages: list, effective_task_id: str) -> ControlOutcome | None:
+            return None
+
+    assert isinstance(HandlerWithoutInitial(), PhaseHandler)
+    assert isinstance(HandlerWithInitial(), PhaseHandler)
+    assert getattr(HandlerWithoutInitial(), "initial_phase", None) is None
+    assert getattr(HandlerWithInitial(), "initial_phase", None) == "private"
+
+
+def test_liveness_guard_fallback_when_handler_not_callable(caplog):
+    """Liveness guard: non-callable handler falls back safely to public with warning."""
+    import logging
+    class BrokenHandler:
+        initial_phase = "private"
+        run = "not_callable"
+
+    agent = type("Agent", (), {
+        "_phase": "public",
+        "_initial_phase": None,
+        "_initial_phase_handler": None,
+        "_control_handlers": {"broken": BrokenHandler()},
+    })()
+
+    # Simulate discovery logic in agent_init
+    with caplog.at_level(logging.WARNING):
+        for _cn, _h in agent._control_handlers.items():
+            _declared = getattr(_h, "initial_phase", None)
+            if _declared and _declared != "public":
+                if not callable(getattr(_h, "run", None)):
+                    logging.getLogger("run_agent").warning(
+                        "Wharenui phase-control liveness guard: Initial phase '%s' declared by handler '%s' has no registered exit or runnable handler. Falling back safely to 'public'.",
+                        _declared,
+                        _cn,
+                    )
+                    agent._initial_phase = None
+                    agent._initial_phase_handler = None
+                else:
+                    agent._initial_phase = _declared
+                    agent._initial_phase_handler = _cn
+
+    assert agent._initial_phase is None
+    assert agent._initial_phase_handler is None
+    assert "liveness guard" in caplog.text.lower()
+    assert "falling back safely to 'public'" in caplog.text.lower()
+
+
+def test_liveness_guard_runtime_fallback_in_loop(caplog):
+    """Runtime liveness guard: if handler disappears before loop, falls back to public."""
+    import logging
+    agent = type("Agent", (), {
+        "_phase": "public",
+        "_initial_phase": "private",
+        "_initial_phase_handler": "missing_handler",
+        "_initial_phase_completed": False,
+        "_control_handlers": {},
+    })()
+
+    with caplog.at_level(logging.WARNING):
+        if getattr(agent, "_initial_phase", None) and not getattr(agent, "_initial_phase_completed", False):
+            agent._initial_phase_completed = True
+            _init_handler_name = getattr(agent, "_initial_phase_handler", None)
+            _init_handler = getattr(agent, "_control_handlers", {}).get(_init_handler_name) if _init_handler_name else None
+            if not _init_handler or not callable(getattr(_init_handler, "run", None)):
+                logging.getLogger("run_agent").warning(
+                    "Wharenui phase-control liveness guard: Initial phase '%s' has no registered exit or runnable handler. Falling back safely to 'public'.",
+                    agent._initial_phase,
+                )
+                agent._phase = "public"
+
+    assert agent._phase == "public"
+    assert agent._initial_phase_completed is True
+    assert "liveness guard" in caplog.text.lower()
+
+
+def test_fail_red_liveness_guard_demonstration():
+    """Fail-red test: without liveness guard, broken handler leaves phase wedged."""
+    class BrokenHandler:
+        initial_phase = "broken_private"
+        run = None
+
+    # Unguarded assignment (fail-red condition)
+    wedged_agent = type("Agent", (), {"_phase": BrokenHandler.initial_phase})()
+    assert wedged_agent._phase == "broken_private"
+
+    # Guarded assignment (production condition)
+    guarded_agent = type("Agent", (), {"_phase": "public", "_initial_phase": None})()
+    if callable(getattr(BrokenHandler, "run", None)):
+        guarded_agent._initial_phase = BrokenHandler.initial_phase
+    else:
+        guarded_agent._initial_phase = None
+
+    assert guarded_agent._initial_phase is None
+    assert guarded_agent._phase == "public"

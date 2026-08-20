@@ -208,10 +208,16 @@ def test_canary_matrix(condition, capsys):
     resp.append(_nfake(content="Public reply.", finish_reason="stop"))
 
     orig_cwd = Path.cwd()
+    result = None
     try:
         os.chdir(td)
         with _fakeprov(agent, resp):
-            result = run_conversation(agent, "hello", task_id=sid)
+            try:
+                result = run_conversation(agent, "hello", task_id=sid)
+            except Exception:
+                if condition != "provider_exception":
+                    raise
+                result = {"messages": agent._session_messages or []}
     finally:
         os.chdir(orig_cwd)
 

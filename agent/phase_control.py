@@ -1,6 +1,6 @@
 """Generic phase-control primitives for Hermes Agent."""
 from dataclasses import dataclass, field
-from typing import Any, Optional, Protocol
+from typing import Any, Optional, Protocol, runtime_checkable
 
 PHASE_CONTROL_API_VERSION = 1
 
@@ -21,5 +21,6 @@ class SubturnResult:
     finish_reason: str = "stop"
 
 
+@runtime_checkable
 class PhaseHandler(Protocol):
     def run(self, agent: Any, messages: list, effective_task_id: str) -> Optional["ControlOutcome"]: ...
