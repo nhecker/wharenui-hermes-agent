@@ -59,9 +59,9 @@ def session_db_harness():
     register(ctx)
 
     assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
-    assert "reflect_pause" in registry._tools, "reflect_pause missing from registry"
-    assert "reflect_settle" in registry._tools, "reflect_settle missing from registry"
-    assert "reflect_done" in registry._tools, "reflect_done missing from registry"
+    assert "reflect_pause" in registry.get_all_tool_names(), "reflect_pause missing from registry"
+    assert "reflect_settle" in registry.get_all_tool_names(), "reflect_settle missing from registry"
+    assert "reflect_done" in registry.get_all_tool_names(), "reflect_done missing from registry"
     assert model_tools.registry is registry, "model_tools.registry out of sync"
 
     yield

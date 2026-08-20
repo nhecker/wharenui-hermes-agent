@@ -205,11 +205,11 @@ def all_channels_harness():
     ts_module.PRIVATE_ALLOWLIST.update({"throwaway_tool", "throwaway_write"})
 
     assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
-    assert "reflect_pause" in registry._tools, "reflect_pause missing from registry"
-    assert "reflect_settle" in registry._tools, "reflect_settle missing from registry"
-    assert "reflect_done" in registry._tools, "reflect_done missing from registry"
-    assert "throwaway_tool" in registry._tools, "throwaway_tool missing from registry"
-    assert "throwaway_write" in registry._tools, "throwaway_write missing from registry"
+    assert "reflect_pause" in registry.get_all_tool_names(), "reflect_pause missing from registry"
+    assert "reflect_settle" in registry.get_all_tool_names(), "reflect_settle missing from registry"
+    assert "reflect_done" in registry.get_all_tool_names(), "reflect_done missing from registry"
+    assert "throwaway_tool" in registry.get_all_tool_names(), "throwaway_tool missing from registry"
+    assert "throwaway_write" in registry.get_all_tool_names(), "throwaway_write missing from registry"
     assert model_tools.registry is registry, "model_tools.registry out of sync"
 
     captured_hooks = []

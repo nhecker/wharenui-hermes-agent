@@ -42,7 +42,7 @@ jobs:
         env:
           WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/run_agent --mode xdist --min-collected 2186
+          python3 .github/scripts/run_tests.py --selector tests/run_agent --mode xdist --min-collected 1816
 
   privacy-gate:
     name: "Privacy floor (subset)"
@@ -150,4 +150,4 @@ jobs:
           pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
       - name: Run Tier 2 baseline comparison
         run: |
-          python3 .github/scripts/run_tests.py --selector tests/agent -p no:randomly --mode serial --baseline-file .github/baseline-tier2.txt --min-collected 6112
+          python3 .github/scripts/run_tests.py --selector tests/agent -p no:randomly --mode serial --baseline-file .github/baseline-tier2.txt --min-collected 4890

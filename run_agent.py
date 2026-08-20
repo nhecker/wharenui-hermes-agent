@@ -2107,7 +2107,6 @@ class AIAgent:
         # where the next live turn re-reads it as an instruction and the agent
         # "becomes" the curator. Hard-stop before any DB touch.
         if getattr(self, "_persist_disabled", False):
-        if getattr(self, "_persist_disabled", False):
             return None
         if getattr(self, "_phase", "public") != "public":
             return None
@@ -2302,27 +2301,51 @@ class AIAgent:
                             _txt.append("[screenshot]")
                     content = "\n".join(_txt) if _txt else None
                 tool_calls_data = None
-                if hasattr(msg, "tool_calls") and isinstance(msg.tool_calls, list) and msg.tool_calls:
-                    tool_calls_data = [
-                        {"name": tc.function.name, "arguments": tc.function.arguments}
-                        for tc in msg.tool_calls
-                    ]
-                elif isinstance(msg.get("tool_calls"), list):
-                    tool_calls_data = msg["tool_calls"]
+                raw_tc = getattr(msg, "tool_calls", None) or (msg.get("tool_calls") if isinstance(msg, dict) else None)
+                if isinstance(raw_tc, list) and raw_tc:
+                    tool_calls_data = []
+                    for tc in raw_tc:
+                        if isinstance(tc, dict):
+                            fn_dict = tc.get("function")
+                            fn_name = fn_dict.get("name") if isinstance(fn_dict, dict) else getattr(fn_dict, "name", "")
+                            fn_args = fn_dict.get("arguments") if isinstance(fn_dict, dict) else getattr(fn_dict, "arguments", "")
+                            tool_calls_data.append({
+                                "id": str(tc.get("id") or tc.get("call_id") or ""),
+                                "type": "function",
+                                "function": {"name": str(fn_name or ""), "arguments": str(fn_args or "")},
+                            })
+                        elif hasattr(tc, "function") and hasattr(getattr(tc, "function", None), "name"):
+                            tool_calls_data.append({
+                                "id": str(getattr(tc, "id", "")),
+                                "type": "function",
+                                "function": {"name": str(tc.function.name), "arguments": str(tc.function.arguments)},
+                            })
+                        else:
+                            tool_calls_data.append(str(tc))
+                def _safe_json_scalar(val):
+                    if isinstance(val, (str, int, float, bool)) or val is None:
+                        return val
+                    return str(val)
+
+                def _safe_json_list(val):
+                    if isinstance(val, list):
+                        return val
+                    return None
+
                 _batch_rows.append({
                     "role": role,
                     "content": content,
-                    "tool_name": msg.get("tool_name"),
+                    "tool_name": _safe_json_scalar(msg.get("tool_name")),
                     "tool_calls": tool_calls_data,
-                    "tool_call_id": msg.get("tool_call_id"),
-                    "finish_reason": msg.get("finish_reason"),
+                    "tool_call_id": _safe_json_scalar(msg.get("tool_call_id")),
+                    "finish_reason": _safe_json_scalar(msg.get("finish_reason")),
                     # Reasoning/codex fields are role-gated (assistant-only)
                     # inside _insert_message_rows — pass through untouched.
-                    "reasoning": msg.get("reasoning"),
-                    "reasoning_content": msg.get("reasoning_content"),
-                    "reasoning_details": msg.get("reasoning_details"),
-                    "codex_reasoning_items": msg.get("codex_reasoning_items"),
-                    "codex_message_items": msg.get("codex_message_items"),
+                    "reasoning": _safe_json_scalar(msg.get("reasoning")),
+                    "reasoning_content": _safe_json_scalar(msg.get("reasoning_content")),
+                    "reasoning_details": _safe_json_list(msg.get("reasoning_details")),
+                    "codex_reasoning_items": _safe_json_list(msg.get("codex_reasoning_items")),
+                    "codex_message_items": _safe_json_list(msg.get("codex_message_items")),
                     "timestamp": _row_timestamp,
                     "api_content": _row_api_content,
                     # Standalone reference handoffs are always hidden, even
@@ -2358,6 +2381,7 @@ class AIAgent:
             # re-writes the whole tail (same recovery contract as before,
             # minus the partial-prefix case that could double-pay counters).
             if _batch_rows:
+
                 self._session_db.append_messages_batch(
                     session_id=self.session_id,
                     messages=_batch_rows,

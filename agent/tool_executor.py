@@ -182,6 +182,7 @@ def _flush_session_db_after_tool_progress(
     messages: list,
     *,
     stage: str,
+) -> bool:
     # ponytail: skip mid-private tool-progress flushes so the write-loop
     # never sees accumulated private messages. Public flush after resume
     # is blocked by _PHASE_PRIVATE_MARKER (Layer 2).
@@ -622,6 +623,7 @@ def _run_agent_tool_execution_middleware(
                         api_request_id=getattr(agent, "_current_api_request_id", "")
                         or "",
                         middleware_trace=list(state["middleware_trace"]),
+                        agent=agent,
                     )
                     if modified_args is not None:
                         final_args = modified_args

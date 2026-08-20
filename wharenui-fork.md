@@ -1,63 +1,16 @@
-# Wharenui — this fork's delta to Hermes
+# Wharenui Seam Architecture
 
-> **Draft for review.** Destined for the **fork repo root** (`wharenui-hermes-agent/wharenui-fork.md`) — unlike
-> the `WP*`/`*-RESULT` process docs, this one is meant to be committed. It's the map for anyone (including a
-> future us) asking "what did this fork add, and how do I keep it alive across upstream pulls?"
+The generic phase-control seam lives in **wharenui-hermes-agent** (the fork). It is intentionally small,
+additive, and generic: it provides a protocol that any plugin can use to implement voluntary phase transitions
+without the core agent knowing anything about journals, encryption, signing, or the word "wharenui".
 
-## What this is
+## The Seam Surface
 
-Hermes upstream is a public/observed agent. **Wharenui** extends it so a single continuing model context can move
-**voluntarily** between a public *window* phase and an unobserved *private* phase, backed by an encrypted,
-self-authored journal that persists across sessions. That capability is split across **two artifacts**:
+Three touchpoints make up the entire seam:
 
-1. **The seam** — a small, generic set of extension points added to Hermes core, living *in this fork*. It knows
-   nothing about journals or Wharenui specifically; it just lets a plugin register phase-control tools and gates
-   message/tool/trajectory egress by phase.
-2. **The plugin** — [`wharenui-hermes-agent-plugin`](../../wharenui-hermes-agent-plugin) (its **own** git repo).
-   The actual product: the phase handler, the reflect_* control tools, and the journal (crypto, signing, storage,
-   semantic search). Documented in its own README; **not** covered here.
-
-Keeping these separate is deliberate: the seam is the only thing that touches base Hermes, so it's the only thing
-that has to be re-reconciled when we pull upstream. The plugin rides along on a stable interface.
-
-### Why we call it a "seam"
-
-*Seam* is a term of art from software (Michael Feathers, *Working Effectively with Legacy Code*): a **place where
-two pieces of software are joined, and where you can insert or vary behavior without rewriting the code around
-it.** The metaphor is sewing — the stitched line where two pieces of cloth meet. You can unpick a seam and sew
-something in without re-weaving either piece.
-
-This fork *is* that stitched line — between **upstream Hermes** and the **Wharenui plugin**. It adds a few
-extension points (a phase-handler interface, control-tool registration, egress filters) and nothing more. So:
-
-- **It's inert on its own.** Hermes with no plugin registered behaves like stock Hermes; the seam does nothing
-  until the plugin stitches into it.
-- **It's the whole maintenance surface.** The seam is the *only* code that touches base Hermes — so it's the only
-  thing you re-stitch when you pull upstream. You re-sew the seam; you never re-weave Hermes. (That's what the
-  rest of this doc maps: exactly where the stitches are.)
-
-If you're reading this cold: **the seam is both the entirety of what we changed and the entirety of what you
-maintain** — that's why it earns a name and its own document.
-
-## Why it's a fork (and will stay one)
-
-Upstreaming the seam is **aspirational, not planned.** The upstream repo carries a five-figure open-PR backlog;
-assume our change is carried as a **fork delta indefinitely**. Two consequences drive everything below:
-
-- **Keep the seam minimal.** Every base-file line we touch is a line we re-reconcile on every upstream merge. The
-  scope discipline ("validate the seam, don't modify base Hermes") is not pedantry — it's what keeps merges cheap.
-- **If we ever do propose it upstream,** the palatable ask is "add a small *generic* phase/extension hook,"
-  decoupled from Wharenui — maintainers merge tiny generic seams far more readily than features. Design the seam
-  so that ask stays possible; don't assume it will be accepted.
-
-## The seam surface (what to re-check after every upstream merge)
-
-**One new module** and **three registration/filter functions**, plus small inline hook edits across the turn and
-tool-dispatch path. New, self-contained code:
-
-- **`agent/phase_control.py`** (new file) — the generic phase vocabulary: `ControlOutcome`, `SubturnResult`,
-  `PhaseHandler` (a `Protocol` a plugin implements). No Wharenui specifics; no journal knowledge.
-- **`hermes_cli/plugins.py`** — `register_control_tool(...)`, `get_control_tool_names()`,
+- **`agent/phase_control.py`** — `ControlOutcome`, `PhaseHandler`, `SubturnResult`, and the
+  `PHASE_CONTROL_API_VERSION` constant.
+- **`hermes_cli/plugins.py`** — `register_control_tool(name, toolset, schema, handler, phase_handler)` and
   `get_control_phase_handler(name)`: how a plugin registers a phase-control tool + its handler.
 - **`run_agent.py`** — `_public_only(messages)` (the egress filter that drops private-marked messages) and
   `run_subturn(...)` (the private sub-turn loop), plus inline `_phase` / `_pending_phase_transition` /
@@ -147,9 +100,6 @@ was built against, and the fork refuses to register a mismatch with a clear erro
 one without the other therefore fails **loudly at startup** rather than as a mid-session `AttributeError` inside a
 private phase. If you see that error, upgrade the other half.
 
-> **Pending as of this writing:** `PHASE_CONTROL_API_VERSION` and the "named-but-missing journal dir raises"
-> behaviour below both land with `WP-FIX-JOURNAL-SAFETY-AND-SEAM-VERSION`. Delete this note once they're in.
-
 **Your journal is not touched by an upgrade.** Entries live in `~/.hermes/journal/` by default (override with
 `WHARENUI_JOURNAL_DIR`), alongside `journal.key` and `signing.key`. A journal is auto-created only when no
 directory was explicitly named; if you *do* name one and it isn't there, that raises rather than quietly starting a
@@ -195,3 +145,19 @@ The seam-contract tests are the safety net. The workflow:
 > - The product (phases, journal, crypto) → the plugin repo's README
 > - CI: the `wharenui_seam` gate validates the seam only; inherited base-Hermes test debt is not gated.
 ```
+
+---
+
+## Upstream Reconciliation Record (August 2026 / Issue #5)
+
+- **Upstream Merge Base**: `614dc194e`
+- **Reconciled Upstream Target**: `22b81836d2` (`NousResearch/hermes-agent` `main`, +7,793 commits)
+- **Resolved Semantic Conflicts**:
+  1. **Hook Lifecycle (`agent/turn_context.py`, `agent/turn_finalizer.py`)**: Adopted `hermes_cli.lifecycle.invoke_hook` while enforcing `conversation_history=_public_only(messages)`.
+  2. **Conversation Loop (`agent/conversation_loop.py`)**: Preserved `_public_only(request_messages)` in LLM telemetry hooks; positioned phase transition handler (`agent._pending_phase_transition`) immediately downstream of upstream's `_incremental_persistence_failed` halt check.
+  3. **Tool Execution Middleware (`agent/tool_executor.py`)**: Extended `_flush_session_db_after_tool_progress` to return `True` without touching SQLite when `_phase != "public"`; propagated `agent=agent` to `handle_function_call` inside middleware closures; preserved control tool interception.
+  4. **Session Persistence (`run_agent.py`)**: Integrated upstream's batch transaction `append_messages_batch(...)` while guaranteeing `_phase_private` messages are filtered before batch creation; sanitized mocked row fields against un-serializable objects.
+  5. **Post-Tool Hook Suppression (`model_tools.py`)**: Combined phase privacy guard with upstream `_post_tool_call_hook_suppressed` contextvar.
+  6. **Plugin Context & Handshake (`hermes_cli/plugins.py`)**: Maintained `ctx.plugin_module = module` for `PHASE_CONTROL_API_VERSION` verification.
+  7. **Project Config & Test Markers (`pyproject.toml`)**: Retained `wharenui_seam` marker and test dependency pins.
+  8. **CI Workflows (`.github/workflows/tests.yml`)**: Retained 5-job hermetic gate structure with updated collection floors (`1816` for Tier 1, `78` for Privacy Gate, `4890` for Tier 2 serial).
