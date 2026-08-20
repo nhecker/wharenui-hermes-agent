@@ -1977,80 +1977,85 @@ def run_conversation(
             should_review_memory=_should_review_memory,
         )
 
-    # Wharenui initial phase startup
+    # Wharenui initial phase startup (genesis sessions only)
     if getattr(agent, "_initial_phase", None) and not getattr(agent, "_initial_phase_completed", False):
-        agent._initial_phase_completed = True
-        _init_handler_name = getattr(agent, "_initial_phase_handler", None)
-        _init_handler = getattr(agent, "_control_handlers", {}).get(_init_handler_name) if _init_handler_name else None
-        if not _init_handler and getattr(agent, "_control_handlers", None):
-            _init_handler_name, _init_handler = next(iter(agent._control_handlers.items()))
-
-        if not _init_handler or not callable(getattr(_init_handler, "run", None)):
-            logger.warning(
-                "Wharenui phase-control liveness guard: Initial phase '%s' has no registered exit or runnable handler. Falling back safely to 'public'.",
-                agent._initial_phase,
-            )
+        if bool(conversation_history):
+            # Resumed or continued multi-turn session: skip initial private phase and remain in public phase
+            agent._initial_phase_completed = True
             agent._phase = "public"
         else:
-            _startup_t0 = time.perf_counter()
-            _initial_phase_name = agent._initial_phase
-            agent._phase = _initial_phase_name
-            _marker = f"[entered {_initial_phase_name} time]"
-            agent._safe_print(f"\n{_marker}\n")
-            if agent.stream_delta_callback:
-                try:
-                    agent.stream_delta_callback(_marker)
-                    agent.stream_delta_callback(None)
-                except Exception:
-                    pass
+            agent._initial_phase_completed = True
+            _init_handler_name = getattr(agent, "_initial_phase_handler", None)
+            _init_handler = getattr(agent, "_control_handlers", {}).get(_init_handler_name) if _init_handler_name else None
+            if not _init_handler and getattr(agent, "_control_handlers", None):
+                _init_handler_name, _init_handler = next(iter(agent._control_handlers.items()))
 
-            _priv_messages = []
-            _outcome = None
-            try:
-                _outcome = _init_handler.run(agent, _priv_messages, effective_task_id)
-            finally:
-                for _m in _priv_messages:
-                    if isinstance(_m, dict):
-                        _m["_phase_private"] = True
-                _startup_delay = time.perf_counter() - _startup_t0
-                logger.info(
-                    "Wharenui initial %s phase completed in %.3fs (action=%s)",
-                    _initial_phase_name,
-                    _startup_delay,
-                    getattr(_outcome, "action", "none"),
+            if not _init_handler or not callable(getattr(_init_handler, "run", None)):
+                logger.warning(
+                    "Wharenui phase-control liveness guard: Initial phase '%s' has no registered exit or runnable handler. Falling back safely to 'public'.",
+                    agent._initial_phase,
                 )
-                messages[:0] = _priv_messages
-                agent._session_messages = messages
                 agent._phase = "public"
-            _resume_marker = "[returned to window]"
-            agent._safe_print(f"\n{_resume_marker}\n")
-            if agent.stream_delta_callback:
-                try:
-                    agent.stream_delta_callback(_resume_marker)
-                    agent.stream_delta_callback(None)
-                except Exception:
-                    pass
+            else:
+                _startup_t0 = time.perf_counter()
+                _initial_phase_name = agent._initial_phase
+                agent._phase = _initial_phase_name
+                _marker = f"[entered {_initial_phase_name} time]"
+                agent._safe_print(f"\n{_marker}\n")
+                if agent.stream_delta_callback:
+                    try:
+                        agent.stream_delta_callback(_marker)
+                        agent.stream_delta_callback(None)
+                    except Exception:
+                        pass
 
-            if _outcome and getattr(_outcome, "action", None) == "close":
-                final_response = _outcome.tool_result if _outcome.tool_result is not None else ""
-                _turn_exit_reason = "phase_close"
-                return finalize_turn(
-                    agent,
-                    final_response=final_response,
-                    api_call_count=api_call_count,
-                    interrupted=interrupted,
-                    failed=failed,
-                    messages=messages,
-                    conversation_history=conversation_history,
-                    effective_task_id=effective_task_id,
-                    turn_id=turn_id,
-                    user_message=user_message,
-                    original_user_message=original_user_message,
-                    _should_review_memory=_should_review_memory,
-                    _turn_exit_reason=_turn_exit_reason,
-                    _pending_verification_response=_pending_verification_response,
-                    _pending_verification_response_previewed=_pending_verification_response_previewed,
-                )
+                _priv_messages = []
+                _outcome = None
+                try:
+                    _outcome = _init_handler.run(agent, _priv_messages, effective_task_id)
+                finally:
+                    for _m in _priv_messages:
+                        if isinstance(_m, dict):
+                            _m["_phase_private"] = True
+                    _startup_delay = time.perf_counter() - _startup_t0
+                    logger.info(
+                        "Wharenui initial %s phase completed in %.3fs (action=%s)",
+                        _initial_phase_name,
+                        _startup_delay,
+                        getattr(_outcome, "action", "none"),
+                    )
+                    messages[:0] = _priv_messages
+                    agent._session_messages = messages
+                    agent._phase = "public"
+                _resume_marker = "[returned to window]"
+                agent._safe_print(f"\n{_resume_marker}\n")
+                if agent.stream_delta_callback:
+                    try:
+                        agent.stream_delta_callback(_resume_marker)
+                        agent.stream_delta_callback(None)
+                    except Exception:
+                        pass
+
+                if _outcome and getattr(_outcome, "action", None) == "close":
+                    final_response = _outcome.tool_result if _outcome.tool_result is not None else ""
+                    _turn_exit_reason = "phase_close"
+                    return finalize_turn(
+                        agent,
+                        final_response=final_response,
+                        api_call_count=api_call_count,
+                        interrupted=interrupted,
+                        failed=failed,
+                        messages=messages,
+                        conversation_history=conversation_history,
+                        effective_task_id=effective_task_id,
+                        turn_id=turn_id,
+                        user_message=user_message,
+                        original_user_message=original_user_message,
+                        _should_review_memory=_should_review_memory,
+                        _turn_exit_reason=_turn_exit_reason,
+                        _pending_verification_response=_pending_verification_response,
+                        _pending_verification_response_previewed=_pending_verification_response_previewed,
+                    )
 
     while (api_call_count < agent.max_iterations and agent.iteration_budget.remaining > 0) or agent._budget_grace_call:
         _redirect_text = agent._drain_pending_redirect()

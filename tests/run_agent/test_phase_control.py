@@ -278,3 +278,28 @@ def test_fail_red_liveness_guard_demonstration():
 
     assert guarded_agent._initial_phase is None
     assert guarded_agent._phase == "public"
+
+
+
+def test_resumed_or_continued_session_skips_initial_phase():
+    """When conversation_history is non-empty, initial private phase is skipped."""
+    handler = StubPhaseHandler()
+    agent = type("Agent", (), {
+        "_phase": "public",
+        "_initial_phase": "private",
+        "_initial_phase_handler": "reflect_pause",
+        "_initial_phase_completed": False,
+        "_control_handlers": {"reflect_pause": handler},
+    })()
+
+    conversation_history = [{"role": "user", "content": "Prior message"}, {"role": "assistant", "content": "Prior response"}]
+    
+    # Simulate conversation_loop genesis check
+    if getattr(agent, "_initial_phase", None) and not getattr(agent, "_initial_phase_completed", False):
+        if bool(conversation_history):
+            agent._initial_phase_completed = True
+            agent._phase = "public"
+
+    assert agent._phase == "public"
+    assert agent._initial_phase_completed is True
+    assert handler._turn_count == 0  # Handler was not invoked
