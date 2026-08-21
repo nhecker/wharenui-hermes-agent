@@ -20,12 +20,12 @@ on:
         default: false
       max_commits:
         description: "Maximum allowed upstream commits"
-        type: number
-        default: 500
+        type: string
+        default: "500"
       max_delta_lines:
         description: "Maximum allowed upstream diff delta lines"
-        type: number
-        default: 5000
+        type: string
+        default: "500"0
       skip_tests:
         description: "Skip test gate execution (not recommended for production)"
         type: boolean
