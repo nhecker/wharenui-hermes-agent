@@ -1,0 +1,128 @@
+name: Propose Upstream Sync
+
+# Automate safe proposals for recurring upstream updates (Issue #9)
+# Scheduled weekly and dispatchable on-demand.
+#
+# SECURITY & MERGE POLICY:
+# - NEVER directly pushes to wharenui-integration.
+# - Pushes only an isolated proposal branch: upstream-sync-<date>.
+# - Zero auto-merge and zero auto-approval paths exist.
+# - Strict refusal matrix halts on merge conflicts, seam modifications, oversized deltas, or red tests.
+
+on:
+  schedule:
+    - cron: "0 4 * * 1" # Every Monday at 04:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (validate without pushing branch or creating PR)"
+        type: boolean
+        default: false
+      max_commits:
+        description: "Maximum allowed upstream commits"
+        type: number
+        default: 500
+      max_delta_lines:
+        description: "Maximum allowed upstream diff delta lines"
+        type: number
+        default: 5000
+      skip_tests:
+        description: "Skip test gate execution (not recommended for production)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync-proposal
+  cancel-in-progress: false
+
+jobs:
+  propose-sync:
+    name: "Safe Upstream Sync Proposal"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork repository (full history)
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: wharenui-integration
+          fetch-depth: 0
+
+      - name: Checkout sibling plugin
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: nhecker/wharenui-hermes-agent-plugin
+          ref: main
+          path: ./wharenui-hermes-agent-plugin
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -e ./wharenui-hermes-agent-plugin
+          pip install -e .[test,dev,web,acp]
+          pip install anthropic==0.87.0 mcp==1.26.0 agent-client-protocol==0.9.0 python-multipart==0.0.27
+
+      - name: Configure Git Bot Identity
+        run: |
+          git config user.name "wharenui-sync-bot"
+          git config user.email "sync-bot@wharenui.local"
+
+      - name: Execute Safe Upstream Sync Pipeline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          WHARENUI_PLUGIN_DIR: ${{ github.workspace }}/wharenui-hermes-agent-plugin
+        run: |
+          FLAGS="--create-pr --json-output proposal-result.json"
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            FLAGS="--dry-run --json-output proposal-result.json"
+          fi
+          if [ -n "${{ github.event.inputs.max_commits }}" ]; then
+            FLAGS="$FLAGS --max-commits ${{ github.event.inputs.max_commits }}"
+          fi
+          if [ -n "${{ github.event.inputs.max_delta_lines }}" ]; then
+            FLAGS="$FLAGS --max-delta-lines ${{ github.event.inputs.max_delta_lines }}"
+          fi
+          if [ "${{ github.event.inputs.skip_tests }}" = "true" ]; then
+            FLAGS="$FLAGS --skip-tests"
+          fi
+
+          echo "Executing: python3 .github/scripts/propose_upstream_sync.py $FLAGS"
+          python3 .github/scripts/propose_upstream_sync.py $FLAGS
+
+      - name: Post Execution Summary
+        if: always()
+        run: |
+          if [ -f proposal-result.json ]; then
+            python3 -c '
+import json, os
+with open("proposal-result.json") as f:
+    res = json.load(f)
+
+summary = f"""# 🛖 Upstream Sync Proposal Result
+
+- **Status**: `{res.get("status")}` (Exit code `{res.get("exit_code")}`)
+- **Summary**: {res.get("summary")}
+- **Branch**: `{res.get("branch_name") or "None"}`
+- **Pull Request**: {res.get("pr_url") or "None"}
+- **Refusal Reason**: {res.get("refusal_reason") or "None"}
+
+---
+### Zero Auto-Merge Policy
+All proposals require manual maintainer evaluation and approval. Direct pushes to `wharenui-integration` and auto-merge automation are disabled by design.
+"""
+summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
+if summary_file:
+    with open(summary_file, "a") as sf:
+        sf.write(summary)
+print(summary)
+'
+          fi

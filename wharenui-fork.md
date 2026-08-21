@@ -161,3 +161,29 @@ The seam-contract tests are the safety net. The workflow:
   6. **Plugin Context & Handshake (`hermes_cli/plugins.py`)**: Maintained `ctx.plugin_module = module` for `PHASE_CONTROL_API_VERSION` verification.
   7. **Project Config & Test Markers (`pyproject.toml`)**: Retained `wharenui_seam` marker and test dependency pins.
   8. **CI Workflows (`.github/workflows/tests.yml`)**: Retained 5-job hermetic gate structure with updated collection floors (`1816` for Tier 1, `78` for Privacy Gate, `4890` for Tier 2 serial).
+
+---
+
+## Safe Upstream Proposal Automation (Issue #9)
+
+Recurring upstream updates are checked automatically via scheduled GitHub Actions workflow (`.github/workflows/propose-upstream-sync.yml`) and CLI runner (`.github/scripts/propose_upstream_sync.py`).
+
+### 1. Dynamic Seam Surface Derivation
+Rather than hardcoding static file lists, the automation derives the active seam surface dynamically at runtime by:
+- Parsing `wharenui-fork.md` (section `## The Seam Surface` bullets and inline hook table).
+- Inspecting `agent/phase_control.py` AST for symbols and `PHASE_CONTROL_API_VERSION`.
+- Discovering seam contract and canary test files in `tests/run_agent/`.
+
+### 2. Safety Refusal Matrix
+The automation enforces strict safe halts and refuses proposal generation if any of the following conditions occur:
+- **Merge Conflicts**: Any non-clean merge immediately aborts and logs conflicted files.
+- **Seam Surface Modification**: If incoming upstream commits modify *any* file in the active seam surface, automatic proposals are refused (`REFUSED_SEAM_TOUCHED`), requiring manual developer reconciliation.
+- **Oversized Deltas**: Upstream updates exceeding commit thresholds (default `500`) or line thresholds (default `5000`) halt for human evaluation (`REFUSED_OVERSIZED_DELTA`).
+- **Red Test Gates**: Automated merge is validated in an isolated worktree against the `wharenui_seam` test gate; any test failures or collection errors halt proposal creation (`REFUSED_TESTS_FAILED`).
+- **Preconditions**: Validates trusted blocking Tier 2 baseline with runner provenance (`.github/baseline-tier2.txt`) and reconciliation documentation before running.
+
+### 3. Reviewable Proposal Workflow (Zero Auto-Merge Policy)
+- Clean runs create an isolated proposal branch (`upstream-sync-<date>`) and open a reviewable Pull Request.
+- `wharenui-integration` is **NEVER** pushed to directly by the automation.
+- **Zero auto-merge or auto-approval paths exist**: A human maintainer must evaluate the delta, audit the seam manifest, and manually merge the PR.
+
