@@ -897,7 +897,14 @@ class ChatCompletionsTransport(ProviderTransport):
         unified format) and reasoning_content (DeepSeek/Moonshot) are also
         preserved for downstream replay.
         """
-        choice = response.choices[0]
+        choices = getattr(response, "choices", None) if response else None
+        if not choices:
+            return NormalizedResponse(
+                content="",
+                tool_calls=[],
+                finish_reason="stop",
+            )
+        choice = choices[0]
         msg = getattr(choice, "message", None)
         # Poolside returns integer finish_reason (e.g. 24) instead of string
         _fr = getattr(choice, "finish_reason", None)

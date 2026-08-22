@@ -8505,7 +8505,12 @@ class AIAgent:
             response = self._interruptible_api_call(api_kwargs)
         except Exception:
             return SubturnResult(content=None, tool_calls_used=False, finish_reason="error")
-        normalized = self._get_transport().normalize_response(response)
+        if response is None:
+            return SubturnResult(content=None, tool_calls_used=False, finish_reason="error")
+        try:
+            normalized = self._get_transport().normalize_response(response)
+        except Exception:
+            return SubturnResult(content=None, tool_calls_used=False, finish_reason="error")
         assistant_msg = self._build_assistant_message(normalized, normalized.finish_reason)
         messages.append(assistant_msg)
         if normalized.tool_calls:
