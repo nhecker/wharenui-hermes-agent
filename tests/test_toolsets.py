@@ -189,6 +189,14 @@ class TestRegistryOwnedToolsets:
         assert get_toolset("test-live-toolset")["tools"] == ["test_live_toolset_tool"]
         assert resolve_toolset("test-live-toolset") == ["test_live_toolset_tool"]
 
+    def test_validate_toolset_triggers_plugin_discovery(self, monkeypatch):
+        discovered = []
+        def fake_ensure():
+            discovered.append(True)
+        monkeypatch.setattr("hermes_cli.plugins._ensure_plugins_discovered", fake_ensure)
+        validate_toolset("nonexistent_ts")
+        assert len(discovered) > 0, "validate_toolset should ensure plugins are discovered"
+
 
 class TestToolsetConsistency:
     """Verify structural integrity of the built-in TOOLSETS dict."""
