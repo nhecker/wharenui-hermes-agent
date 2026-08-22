@@ -1367,6 +1367,8 @@ def handle_function_call(
                 tool_request_middleware_trace=list(_tool_middleware_trace),
                 enabled_toolsets=enabled_toolsets,
                 disabled_toolsets=disabled_toolsets,
+                agent=agent,
+                phase=cur_phase,
             )
 
     cur_phase = phase if phase is not None else getattr(agent, "_phase", "public")

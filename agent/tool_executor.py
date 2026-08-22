@@ -2061,11 +2061,11 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
 
         tool_start_time = time.time()
 
-        _is_control = function_name in getattr(agent, "_control_tool_names", set())
+        _is_control = function_name in getattr(agent, "_control_handlers", {})
         _inner_control_name = None
         if not _is_control and function_name in ("tool_call", getattr(_ts, "TOOL_CALL_NAME", "tool_call")) and isinstance(function_args, dict):
             _inner = function_args.get("name")
-            if _inner and _inner in getattr(agent, "_control_tool_names", set()):
+            if _inner and _inner in getattr(agent, "_control_handlers", {}):
                 _inner_control_name = _inner
                 _inner_args = function_args.get("arguments")
                 if _inner_args is None:
@@ -2085,7 +2085,7 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
             outcome = _h.begin(function_args) if _h and hasattr(_h, "begin") else None
             if outcome is None:
                 from agent.phase_control import ControlOutcome
-                outcome = ControlOutcome(action="enter", handler=function_name, tool_result=function_name + " acknowledged")
+                outcome = ControlOutcome(action="enter", handler=ctrl_name, tool_result=f"{ctrl_name} acknowledged")
             agent._pending_phase_transition = outcome
             function_result = outcome.tool_result
             tool_duration = time.time() - tool_start_time
