@@ -16194,6 +16194,10 @@ class HermesCLI(CLIAgentSetupMixin, CLICommandsMixin, CLIBillingMixin):
             pending_message = None
             _show_interrupt_marker = False
             _interrupted_this_turn = bool(result and result.get("interrupted"))
+            _turn_exit_reason = result.get("turn_exit_reason") if result else None
+            self._last_turn_exit_reason = _turn_exit_reason
+            if _turn_exit_reason == "phase_close":
+                self._should_exit = True
             # Expose the flag for post-turn hooks (e.g. goal continuation)
             # so they can skip themselves when the turn was user-cancelled.
             self._last_turn_interrupted = _interrupted_this_turn
@@ -19630,10 +19634,16 @@ class HermesCLI(CLIAgentSetupMixin, CLICommandsMixin, CLIBillingMixin):
                         # Post-turn accounting line (display.turn_summary).
                         # Emitted after the response box, before the prompt
                         # returns, so it reads as a footer for the turn.
-                        self._turn_summary_emit()
                         self._interactive_turn = False
-
+                        self._turn_summary_emit()
                         app.invalidate()  # Refresh status line
+
+                        if getattr(self, "_should_exit", False) or getattr(getattr(self, "agent", None), "_last_turn_exit_reason", None) == "phase_close":
+                            _cprint("\n[dim italic][session ended][/dim italic]\n")
+                            self._should_exit = True
+                            if app.is_running:
+                                app.exit()
+                            break
 
                         # Post-turn terminal recovery (#33271): after an
                         # interrupt the prompt_toolkit renderer may have

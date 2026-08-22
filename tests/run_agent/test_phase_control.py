@@ -409,3 +409,81 @@ def test_bridge_tool_call_control_outcome_propagation_handle_function_call():
     assert agent._pending_phase_transition.handler == "enter_private"
     assert res == "reflecting..."
 
+
+def test_run_subturn_resolves_registry_schemas_when_not_in_agent_tools(monkeypatch):
+    """run_subturn retrieves tool schemas from registry even if agent.tools has them stripped."""
+    from run_agent import AIAgent
+    from tools.registry import registry
+    from unittest.mock import MagicMock
+
+    # Register a dummy tool in the live registry
+    registry.register(
+        name="test_subturn_private_tool",
+        toolset="wharenui",
+        schema={"name": "test_subturn_private_tool", "description": "test subturn schema", "parameters": {"type": "object", "properties": {}}},
+        handler=lambda **kw: "ok",
+    )
+
+    agent = MagicMock()
+    agent.tools = [{"type": "function", "function": {"name": "terminal"}}]  # private tool is omitted
+    agent.api_mode = "openai_chat_completions"
+    agent.model = "test-model"
+    agent.reasoning_config = None
+    agent._interruptible_api_call = MagicMock(return_value=MagicMock())
+    transport = MagicMock()
+    transport.build_kwargs.side_effect = lambda **kwargs: kwargs
+    norm = MagicMock()
+    norm.finish_reason = "stop"
+    norm.tool_calls = None
+    norm.content = "done"
+    transport.normalize_response.return_value = norm
+    agent._get_transport.return_value = transport
+    agent._build_assistant_message.return_value = {"role": "assistant", "content": "done"}
+
+    msgs = []
+    # Call run_subturn using AIAgent's method
+    AIAgent.run_subturn(agent, msgs, tool_names={"test_subturn_private_tool"})
+
+    # Verify that api_kwargs passed to _interruptible_api_call contains the schema from registry
+    assert agent._interruptible_api_call.called
+    call_args = agent._interruptible_api_call.call_args[0][0]
+    passed_tool_names = [t["function"]["name"] for t in call_args.get("tools", [])]
+    assert "test_subturn_private_tool" in passed_tool_names
+
+
+def test_finalize_turn_sets_last_turn_exit_reason_on_agent():
+    """finalize_turn records _last_turn_exit_reason on the agent instance."""
+    from agent.turn_finalizer import finalize_turn
+    from unittest.mock import MagicMock
+
+    agent = MagicMock()
+    agent.max_iterations = 10
+    agent.iteration_budget.remaining = 10
+    agent.valid_tool_names = set()
+    agent._skill_nudge_interval = 0
+    agent._iters_since_skill = 0
+    agent.session_id = "test-session"
+    agent._sync_external_memory_for_turn = MagicMock()
+    agent._tool_guardrail_halt_decision = None
+    agent._drain_pending_steer = MagicMock(return_value=None)
+
+    result = finalize_turn(
+        agent=agent,
+        final_response="Goodbye",
+        api_call_count=1,
+        interrupted=False,
+        failed=False,
+        messages=[],
+        conversation_history=[],
+        effective_task_id="tid",
+        turn_id="t1",
+        user_message="bye",
+        original_user_message="bye",
+        _should_review_memory=False,
+        _turn_exit_reason="phase_close",
+    )
+
+    assert result["turn_exit_reason"] == "phase_close"
+    assert agent._last_turn_exit_reason == "phase_close"
+
+

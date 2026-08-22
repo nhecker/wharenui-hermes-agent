@@ -727,6 +727,7 @@ def finalize_turn(
         ).get("service_tier"),
         "session_id": agent.session_id,
     }
+    agent._last_turn_exit_reason = _turn_exit_reason
     if agent._tool_guardrail_halt_decision is not None:
         result["guardrail"] = agent._tool_guardrail_halt_decision.to_metadata()
     # Persistence failures already set failed=True + an explanation in

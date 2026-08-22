@@ -8482,10 +8482,25 @@ class AIAgent:
     def run_subturn(self, messages, *, tool_names, task_id=None):
         from agent.chat_completion_helpers import build_api_kwargs
         from agent.phase_control import SubturnResult
-        filtered = [t for t in (self.tools or [])
-                    if (t.get("function", {}) or {}).get("name") in tool_names]
-        api_kwargs = build_api_kwargs(self, messages)
-        api_kwargs["tools"] = filtered or None
+        
+        tool_schemas = {}
+        for t in (self.tools or []):
+            fn_name = (t.get("function", {}) or {}).get("name")
+            if fn_name:
+                tool_schemas[fn_name] = t
+
+        try:
+            from tools.registry import registry
+            for name in tool_names:
+                if name not in tool_schemas:
+                    schema = registry.get_schema(name)
+                    if schema:
+                        tool_schemas[name] = {"type": "function", "function": schema}
+        except Exception:
+            pass
+
+        filtered = [tool_schemas[name] for name in tool_names if name in tool_schemas]
+        api_kwargs = build_api_kwargs(self, messages, tools_for_api=filtered)
         try:
             response = self._interruptible_api_call(api_kwargs)
         except Exception:
