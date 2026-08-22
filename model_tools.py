@@ -1306,6 +1306,24 @@ def handle_function_call(
                 )
             )
         if function_name == _ts_mod.TOOL_CALL_NAME:
+            _raw_inner = (function_args or {}).get("name") if isinstance(function_args, dict) else None
+            if _raw_inner and agent is not None and _raw_inner in getattr(agent, "_control_tool_names", set()):
+                _h = getattr(agent, "_control_handlers", {}).get(_raw_inner)
+                _raw_inner_args = (function_args or {}).get("arguments") or {}
+                if isinstance(_raw_inner_args, str):
+                    try:
+                        _raw_inner_args = json.loads(_raw_inner_args)
+                    except Exception:
+                        _raw_inner_args = {}
+                if not isinstance(_raw_inner_args, dict):
+                    _raw_inner_args = {}
+                outcome = _h.begin(_raw_inner_args) if _h and hasattr(_h, "begin") else None
+                if outcome is None:
+                    from agent.phase_control import ControlOutcome
+                    outcome = ControlOutcome(action="enter", handler=_raw_inner, tool_result=_raw_inner + " acknowledged")
+                agent._pending_phase_transition = outcome
+                return _return_bridge_result(outcome.tool_result)
+
             underlying_name, underlying_args, err = _ts_mod.resolve_underlying_call(function_args or {})
             if err or not underlying_name:
                 return _return_bridge_result(

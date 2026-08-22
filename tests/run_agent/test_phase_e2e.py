@@ -43,7 +43,7 @@ def _nfake(content=None, tool_calls=None, finish_reason="stop"):
     m.provider_data = None
     return m
 
-def _tcfake(name="reflect_pause", args="{}"):
+def _tcfake(name="enter_private", args="{}"):
     fn = MagicMock()
     fn.name = name
     fn.arguments = args
@@ -109,17 +109,17 @@ def test_private_phase_via_loaded_plugin(_plugin_loaded, capsys):
     # Verify plugin loaded via seam
     from hermes_cli.plugins import get_control_tool_names, get_control_phase_handler
     _cn = get_control_tool_names()
-    _ch = get_control_phase_handler("reflect_pause")
+    _ch = get_control_phase_handler("enter_private")
     print(f"DEBUG: control_tool_names={_cn}, handler={'yes' if _ch else 'no'}", file=__import__('sys').stderr)
-    assert "reflect_pause" in a._control_tool_names
-    assert "reflect_pause" in a._control_handlers
+    assert "enter_private" in a._control_tool_names
+    assert "enter_private" in a._control_handlers
     a.save_trajectories = True
-    for tool in ["reflect_pause", "reflect_settle", "reflect_done"]:
+    for tool in ["enter_private", "exit_private", "end_session"]:
         a.valid_tool_names.add(tool)
     a.tools = [
-        {"function": {"name": "reflect_pause"}},
-        {"function": {"name": "reflect_settle"}},
-        {"function": {"name": "reflect_done"}},
+        {"function": {"name": "enter_private"}},
+        {"function": {"name": "exit_private"}},
+        {"function": {"name": "end_session"}},
     ]
 
     # Register spy hooks for T3b.4
@@ -134,7 +134,7 @@ def test_private_phase_via_loaded_plugin(_plugin_loaded, capsys):
     from agent.conversation_loop import run_conversation
 
     # Public pause -> private subturn (CANARY) -> public reply
-    resp = [_nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls")]
+    resp = [_nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls")]
     resp.append(_nfake(content=CANARY, finish_reason="stop"))
     resp.append(_nfake(content="Public reply.", finish_reason="stop"))
 

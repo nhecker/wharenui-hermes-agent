@@ -45,7 +45,7 @@ def _nfake(content=None, tool_calls=None, finish_reason="stop"):
     m.provider_data = None
     return m
 
-def _tcfake(name="reflect_pause", args="{}"):
+def _tcfake(name="enter_private", args="{}"):
     fn = MagicMock(); fn.name = name; fn.arguments = args
     tc = MagicMock(function=fn, id=f"call_{name}")
     tc.type = "function"; tc.extra_content = None
@@ -102,9 +102,9 @@ def loaded_agent():
         a.client = MagicMock()
     a._ensure_db_session()
     a.save_trajectories = True
-    for tool in ["reflect_pause", "reflect_settle", "reflect_done"]:
+    for tool in ["enter_private", "exit_private", "end_session"]:
         a.valid_tool_names.add(tool)
-    a.tools = [{"function": {"name": n}} for n in ["reflect_pause", "reflect_settle", "reflect_done"]]
+    a.tools = [{"function": {"name": n}} for n in ["enter_private", "exit_private", "end_session"]]
     return a, db, td, captured
 
 def _run(agent, db, td, resp, captured_api_kwargs=None):
@@ -120,7 +120,7 @@ def _run(agent, db, td, resp, captured_api_kwargs=None):
 
 def _get_resp():
     return [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls"),
         _nfake(content=CANARY, finish_reason="stop"),
         _nfake(content="Public reply.", finish_reason="stop"),
     ]

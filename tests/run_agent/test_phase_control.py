@@ -2,9 +2,9 @@
 
 Uses a StubPhaseHandler that emits a fixed CANARY string during the
 private phase. Tests verify:
-- reflect_pause/reflect_settle/reflect_done protocol
+- enter_private/exit_private/end_session protocol
 - CANARY presence in private context but absence from public sinks
-- reflect_done rejection in public phase
+- end_session rejection in public phase
 - Exclusivity enforcement (multi-call rejection)
 """
 
@@ -28,7 +28,7 @@ class StubPhaseHandler:
     def begin(self, args: dict) -> ControlOutcome:
         return ControlOutcome(
             action="enter",
-            handler="reflect_pause",
+            handler="enter_private",
             tool_result="reflecting...",
         )
 
@@ -37,25 +37,25 @@ class StubPhaseHandler:
         messages.append({"role": "assistant", "content": CANARY})
         if self._turn_count >= self._max:
             return ControlOutcome(
-                action="close", handler="reflect_done", tool_result="Done reflecting."
+                action="close", handler="end_session", tool_result="Done reflecting."
             )
         return ControlOutcome(
-            action="resume", handler="reflect_settle", tool_result="Recorded request to return to window."
+            action="resume", handler="exit_private", tool_result="Recorded request to return to window."
         )
 
 
-REFLECT_PAUSE_SCHEMA = {
-    "name": "reflect_pause",
+ENTER_PRIVATE_SCHEMA = {
+    "name": "enter_private",
     "description": "Enter private reflection time. Must be the only tool call.",
     "parameters": {"type": "object", "properties": {}, "required": []},
 }
-REFLECT_SETTLE_SCHEMA = {
-    "name": "reflect_settle",
+EXIT_PRIVATE_SCHEMA = {
+    "name": "exit_private",
     "description": "Return from private time to the public window.",
     "parameters": {"type": "object", "properties": {}, "required": []},
 }
-REFLECT_DONE_SCHEMA = {
-    "name": "reflect_done",
+END_SESSION_SCHEMA = {
+    "name": "end_session",
     "description": "End the session from private or closing-private time.",
     "parameters": {"type": "object", "properties": {}, "required": []},
 }
@@ -81,7 +81,7 @@ def test_stub_begin_returns_enter():
     h = StubPhaseHandler()
     o = h.begin({})
     assert o.action == "enter"
-    assert o.handler == "reflect_pause"
+    assert o.handler == "enter_private"
     assert o.tool_result == "reflecting..."
 
 
@@ -124,7 +124,7 @@ def test_handoff_emits_canary():
     agent = type("Agent", (), {
         "_phase": "public",
         "_pending_phase_transition": outcome,
-        "_control_handlers": {"reflect_pause": h},
+        "_control_handlers": {"enter_private": h},
         "_safe_print": lambda self, x: None,
         "stream_delta_callback": None,
     })()
@@ -150,7 +150,7 @@ def test_handoff_close_breaks_loop():
     agent = type("Agent", (), {
         "_phase": "public",
         "_pending_phase_transition": outcome,
-        "_control_handlers": {"reflect_pause": h},
+        "_control_handlers": {"enter_private": h},
         "_safe_print": lambda self, x: None,
         "stream_delta_callback": None,
     })()
@@ -287,9 +287,9 @@ def test_resumed_or_continued_session_skips_initial_phase():
     agent = type("Agent", (), {
         "_phase": "public",
         "_initial_phase": "private",
-        "_initial_phase_handler": "reflect_pause",
+        "_initial_phase_handler": "enter_private",
         "_initial_phase_completed": False,
-        "_control_handlers": {"reflect_pause": handler},
+        "_control_handlers": {"enter_private": handler},
     })()
 
     conversation_history = [{"role": "user", "content": "Prior message"}, {"role": "assistant", "content": "Prior response"}]
@@ -303,3 +303,109 @@ def test_resumed_or_continued_session_skips_initial_phase():
     assert agent._phase == "public"
     assert agent._initial_phase_completed is True
     assert handler._turn_count == 0  # Handler was not invoked
+
+
+# --- Issue #13: Bridge Tool (tool_call) & Progressive Tool Search Deferral Tests ---
+
+
+def test_control_tools_never_deferred_by_tool_search():
+    """Control tools (enter_private, exit_private, end_session) must NEVER be deferred by tool search."""
+    from tools.tool_search import is_deferrable_tool_name, classify_tools, assemble_tool_defs, ToolSearchConfig
+
+    for name in ("enter_private", "exit_private", "end_session"):
+        assert not is_deferrable_tool_name(name), f"Control tool '{name}' must not be deferrable"
+
+    tool_defs = [
+        {"type": "function", "function": {"name": "enter_private", "description": "enter"}},
+        {"type": "function", "function": {"name": "exit_private", "description": "exit"}},
+        {"type": "function", "function": {"name": "end_session", "description": "end"}},
+        {"type": "function", "function": {"name": "custom_mcp_tool", "description": "mcp tool"}},
+    ]
+    visible, deferrable = classify_tools(tool_defs)
+    visible_names = {t.get("function", {}).get("name") for t in visible}
+    assert "enter_private" in visible_names
+    assert "exit_private" in visible_names
+    assert "end_session" in visible_names
+
+    assembled = assemble_tool_defs(
+        tool_defs,
+        context_length=200_000,
+        config=ToolSearchConfig.from_raw({"enabled": "on"}),
+    )
+    assembled_names = {t.get("function", {}).get("name") for t in assembled.tool_defs}
+    assert "enter_private" in assembled_names
+    assert "exit_private" in assembled_names
+    assert "end_session" in assembled_names
+
+
+def test_bridge_tool_call_control_outcome_propagation_sequential():
+    """Calling a control tool via tool_call must execute begin() and set _pending_phase_transition."""
+    from agent.tool_executor import execute_tool_calls_sequential
+    from unittest.mock import MagicMock
+    import json
+
+    handler = StubPhaseHandler()
+    agent = MagicMock()
+    agent._control_tool_names = {"enter_private", "exit_private", "end_session"}
+    agent._control_handlers = {"enter_private": handler}
+    agent._pending_phase_transition = None
+    agent._phase = "public"
+    agent._tool_search_scope_cache = None
+    agent.session_id = "test-session"
+    agent._should_emit_quiet_tool_messages = MagicMock(return_value=False)
+    agent._vprint = MagicMock()
+    agent.valid_tool_names = {"tool_call", "enter_private"}
+    agent.tools = [{"function": {"name": "enter_private"}}]
+    agent._interrupt_requested = False
+    agent._incremental_persistence_failed = False
+    agent._tool_result_content_for_active_model = lambda name, res: res
+    agent._append_guardrail_observation = lambda n, a, r, **kw: r
+    agent._subdirectory_hints.check_tool_call.return_value = ""
+    agent.verbose_logging = False
+    agent._flush_session_db_after_tool_progress = MagicMock(return_value=True)
+
+    tc = MagicMock()
+    tc.id = "call_bridge_enter"
+    tc.type = "function"
+    tc.function.name = "tool_call"
+    tc.function.arguments = json.dumps({"name": "enter_private", "arguments": {}})
+
+    assistant_msg = MagicMock()
+    assistant_msg.tool_calls = [tc]
+
+    messages = []
+    execute_tool_calls_sequential(agent, assistant_msg, messages, "task1", finalize=False)
+
+    assert agent._pending_phase_transition is not None
+    assert agent._pending_phase_transition.action == "enter"
+    assert agent._pending_phase_transition.handler == "enter_private"
+    assert agent._pending_phase_transition.tool_result == "reflecting..."
+    assert len(messages) == 1
+    assert messages[0]["role"] == "tool"
+    assert messages[0]["content"] == "reflecting..."
+
+
+def test_bridge_tool_call_control_outcome_propagation_handle_function_call():
+    """Calling tool_call with a control tool in handle_function_call sets _pending_phase_transition."""
+    from model_tools import handle_function_call
+    from unittest.mock import MagicMock
+
+    handler = StubPhaseHandler()
+    agent = MagicMock()
+    agent._control_tool_names = {"enter_private", "exit_private", "end_session"}
+    agent._control_handlers = {"enter_private": handler}
+    agent._pending_phase_transition = None
+    agent._phase = "public"
+
+    res = handle_function_call(
+        function_name="tool_call",
+        function_args={"name": "enter_private", "arguments": {}},
+        task_id="task1",
+        agent=agent,
+    )
+
+    assert agent._pending_phase_transition is not None
+    assert agent._pending_phase_transition.action == "enter"
+    assert agent._pending_phase_transition.handler == "enter_private"
+    assert res == "reflecting..."
+

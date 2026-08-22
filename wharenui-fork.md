@@ -23,6 +23,7 @@ diff and the seam-contract tests are authoritative for behavior):
 |---|---|
 | `agent/conversation_loop.py` | main loop: phase transition + private sub-turn entry |
 | `agent/tool_executor.py`, `agent/tool_dispatch_helpers.py` | routes control tools; applies the tool-hook egress gate (channel E) |
+| `tools/tool_search.py` | exempts control tools from progressive tool search deferral |
 | `agent/turn_context.py`, `agent/turn_finalizer.py` | per-turn phase state + finalization |
 | `agent/agent_init.py` | phase state initialization at agent construction |
 | `agent/agent_runtime_helpers.py` | message-flush / persistence + trajectory guards (channels A/B/C) |
@@ -36,7 +37,7 @@ diff and the seam-contract tests are authoritative for behavior):
 
 The plugin is **not** vendored into this repo. Tests and runtime put it on `sys.path` via, in order:
 `$WHARENUI_PLUGIN_DIR`, then a sibling `../wharenui-hermes-agent-plugin`, then `/root/work/...`. The plugin's
-`register(ctx)` calls `register_control_tool(...)` for each reflect_* tool. If the plugin dir isn't found, Hermes
+`register(ctx)` calls `register_control_tool(...)` for each control tool (`enter_private`, `exit_private`, `end_session`). If the plugin dir isn't found, Hermes
 runs as stock upstream — the seam is inert without a plugin registered.
 
 ## Install
@@ -61,7 +62,7 @@ hermes plugins enable wharenui
 
 **Don't use the hosted installer.** `curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash` from
 upstream's README installs **stock upstream Hermes**, which has no seam — so there is no private phase, and the
-`reflect_*` tools will not be registered at all. (The journal *can* still be used on stock Hermes as an explicit
+control tools will not be registered at all. (The journal *can* still be used on stock Hermes as an explicit
 **open notebook** — entries are written in the public transcript, the tools say so in their own descriptions, and
 each entry is stamped `seam: absent`. That mode is opt-in and never a fallback; if you wanted privacy, you want the
 fork.) There is no

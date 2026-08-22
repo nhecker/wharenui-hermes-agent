@@ -1148,23 +1148,38 @@ def execute_tool_calls_concurrent(agent, assistant_message, messages: list, effe
         try:
             from tools import tool_search as _ts
             if function_name == _ts.TOOL_CALL_NAME:
-                _underlying, _underlying_args, _err = _ts.resolve_underlying_call(function_args)
-                if not _err and _underlying:
-                    if _underlying in _tool_search_scoped_names(agent):
-                        # Probe-validate before unwrapping (ironclaw#5149):
-                        # missing required args return the parameter schema
-                        # instead of dispatching into an opaque failure.
-                        _probe_err = _ts.validate_deferred_call_args(_underlying, _underlying_args)
-                        if _probe_err is not None:
-                            _ts_scope_block = _probe_err
+                _inner_name = function_args.get("name") if isinstance(function_args, dict) else None
+                if _inner_name and _inner_name in getattr(agent, "_control_tool_names", set()):
+                    _inner_args = function_args.get("arguments")
+                    if _inner_args is None:
+                        _inner_args = {}
+                    elif isinstance(_inner_args, str):
+                        try:
+                            _inner_args = json.loads(_inner_args)
+                        except Exception:
+                            _inner_args = {}
+                    if not isinstance(_inner_args, dict):
+                        _inner_args = {}
+                    function_name = _inner_name
+                    function_args = _inner_args
+                else:
+                    _underlying, _underlying_args, _err = _ts.resolve_underlying_call(function_args)
+                    if not _err and _underlying:
+                        if _underlying in _tool_search_scoped_names(agent):
+                            # Probe-validate before unwrapping (ironclaw#5149):
+                            # missing required args return the parameter schema
+                            # instead of dispatching into an opaque failure.
+                            _probe_err = _ts.validate_deferred_call_args(_underlying, _underlying_args)
+                            if _probe_err is not None:
+                                _ts_scope_block = _probe_err
+                            else:
+                                function_name = _underlying
+                                function_args = _underlying_args
                         else:
-                            function_name = _underlying
-                            function_args = _underlying_args
-                    else:
-                        _ts_scope_block = (
-                            f"'{_underlying}' is not available in this session. "
-                            "Use tool_search to find tools you can call."
-                        )
+                            _ts_scope_block = (
+                                f"'{_underlying}' is not available in this session. "
+                                "Use tool_search to find tools you can call."
+                            )
         except Exception:
             pass
 
@@ -1995,33 +2010,48 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
         try:
             from tools import tool_search as _ts
             if function_name == _ts.TOOL_CALL_NAME:
-                _underlying, _underlying_args, _err = _ts.resolve_underlying_call(function_args)
-                if not _err and _underlying:
-                    if _underlying in _tool_search_scoped_names(agent):
-                        # Probe-validate before unwrapping (ironclaw#5149):
-                        # missing required args return the parameter schema
-                        # instead of dispatching into an opaque failure.
-                        _probe_err = _ts.validate_deferred_call_args(_underlying, _underlying_args)
-                        if _probe_err is not None:
-                            # This path wraps _block_msg in {"error": ...} —
-                            # flatten the probe payload to one plain string.
-                            try:
-                                _probe = json.loads(_probe_err)
-                                _ts_scope_block = (
-                                    f"{_probe.get('error', '')} Parameters schema: "
-                                    f"{json.dumps(_probe.get('parameters', {}), ensure_ascii=False)}. "
-                                    f"{_probe.get('hint', '')}"
-                                ).strip()
-                            except Exception:
-                                _ts_scope_block = _probe_err
+                _inner_name = function_args.get("name") if isinstance(function_args, dict) else None
+                if _inner_name and _inner_name in getattr(agent, "_control_tool_names", set()):
+                    _inner_args = function_args.get("arguments")
+                    if _inner_args is None:
+                        _inner_args = {}
+                    elif isinstance(_inner_args, str):
+                        try:
+                            _inner_args = json.loads(_inner_args)
+                        except Exception:
+                            _inner_args = {}
+                    if not isinstance(_inner_args, dict):
+                        _inner_args = {}
+                    function_name = _inner_name
+                    function_args = _inner_args
+                else:
+                    _underlying, _underlying_args, _err = _ts.resolve_underlying_call(function_args)
+                    if not _err and _underlying:
+                        if _underlying in _tool_search_scoped_names(agent):
+                            # Probe-validate before unwrapping (ironclaw#5149):
+                            # missing required args return the parameter schema
+                            # instead of dispatching into an opaque failure.
+                            _probe_err = _ts.validate_deferred_call_args(_underlying, _underlying_args)
+                            if _probe_err is not None:
+                                # This path wraps _block_msg in {"error": ...} —
+                                # flatten the probe payload to one plain string.
+                                try:
+                                    _probe = json.loads(_probe_err)
+                                    _ts_scope_block = (
+                                        f"{_probe.get('error', '')} Parameters schema: "
+                                        f"{json.dumps(_probe.get('parameters', {}), ensure_ascii=False)}. "
+                                        f"{_probe.get('hint', '')}"
+                                    ).strip()
+                                except Exception:
+                                    _ts_scope_block = _probe_err
+                            else:
+                                function_name = _underlying
+                                function_args = _underlying_args
                         else:
-                            function_name = _underlying
-                            function_args = _underlying_args
-                    else:
-                        _ts_scope_block = (
-                            f"'{_underlying}' is not available in this session. "
-                            "Use tool_search to find tools you can call."
-                        )
+                            _ts_scope_block = (
+                                f"'{_underlying}' is not available in this session. "
+                                "Use tool_search to find tools you can call."
+                            )
         except Exception:
             pass
 
@@ -2031,8 +2061,27 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
 
         tool_start_time = time.time()
 
-        if function_name in getattr(agent, "_control_tool_names", set()):
-            _h = getattr(agent, "_control_handlers", {}).get(function_name)
+        _is_control = function_name in getattr(agent, "_control_tool_names", set())
+        _inner_control_name = None
+        if not _is_control and function_name in ("tool_call", getattr(_ts, "TOOL_CALL_NAME", "tool_call")) and isinstance(function_args, dict):
+            _inner = function_args.get("name")
+            if _inner and _inner in getattr(agent, "_control_tool_names", set()):
+                _inner_control_name = _inner
+                _inner_args = function_args.get("arguments")
+                if _inner_args is None:
+                    _inner_args = {}
+                elif isinstance(_inner_args, str):
+                    try:
+                        _inner_args = json.loads(_inner_args)
+                    except Exception:
+                        _inner_args = {}
+                if not isinstance(_inner_args, dict):
+                    _inner_args = {}
+                function_args = _inner_args
+
+        if _is_control or _inner_control_name:
+            ctrl_name = function_name if _is_control else _inner_control_name
+            _h = getattr(agent, "_control_handlers", {}).get(ctrl_name)
             outcome = _h.begin(function_args) if _h and hasattr(_h, "begin") else None
             if outcome is None:
                 from agent.phase_control import ControlOutcome

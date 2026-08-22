@@ -52,7 +52,7 @@ def real_loop_harness():
     for tname, entry in list(registry._tools.items()):
         if not hasattr(entry, "toolset"):
             registry._tools.pop(tname, None)
-    for tname in ["reflect_pause", "reflect_settle", "reflect_done"]:
+    for tname in ["enter_private", "exit_private", "end_session"]:
         registry._tools.pop(tname, None)
 
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
@@ -60,10 +60,10 @@ def real_loop_harness():
     import wharenui_plugin; ctx.plugin_module = wharenui_plugin
     register(ctx)
 
-    assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
-    assert "reflect_pause" in registry.get_all_tool_names(), "reflect_pause missing from registry"
-    assert "reflect_settle" in registry.get_all_tool_names(), "reflect_settle missing from registry"
-    assert "reflect_done" in registry.get_all_tool_names(), "reflect_done missing from registry"
+    assert "enter_private" in mgr._control_phase_handlers, "enter_private handler missing from mgr"
+    assert "enter_private" in registry.get_all_tool_names(), "enter_private missing from registry"
+    assert "exit_private" in registry.get_all_tool_names(), "exit_private missing from registry"
+    assert "end_session" in registry.get_all_tool_names(), "end_session missing from registry"
     assert model_tools.registry is registry, "model_tools.registry out of sync"
 
     yield
@@ -99,7 +99,7 @@ def _nfake(content=None, tool_calls=None, finish_reason="stop"):
     return m
 
 
-def _tcfake(name="reflect_pause", args="{}"):
+def _tcfake(name="enter_private", args="{}"):
     """FIX (F1): assign .name AFTER construction — never via MagicMock(name=...)."""
     fn = MagicMock()
     fn.name = name
@@ -117,7 +117,7 @@ class StubPH:
 
     def begin(self, a):
         import agent.phase_control as P
-        return P.ControlOutcome(action="enter", handler="reflect_pause", tool_result="entered")
+        return P.ControlOutcome(action="enter", handler="enter_private", tool_result="entered")
 
     def run(self, a, msgs, tid):
         self._n += 1
@@ -125,7 +125,7 @@ class StubPH:
         if self._fail:
             raise RuntimeError("boom")
         import agent.phase_control as P
-        return P.ControlOutcome(action="resume", handler="reflect_settle", tool_result="back")
+        return P.ControlOutcome(action="resume", handler="exit_private", tool_result="back")
 
 
 @contextmanager
@@ -163,12 +163,12 @@ def _make(sid="wp2f-c"):
     a._ensure_db_session()
     a._phase = "public"
     a._pending_phase_transition = None
-    a._control_tool_names = {"reflect_pause", "reflect_settle", "reflect_done"}
+    a._control_tool_names = {"enter_private", "exit_private", "end_session"}
     a._control_handlers = {}
     a.save_trajectories = True
-    # FIX: reflect_pause must be in valid_tool_names or the loop rejects it
+    # FIX: enter_private must be in valid_tool_names or the loop rejects it
     # before the control intercept ever fires.
-    a.valid_tool_names.add("reflect_pause")
+    a.valid_tool_names.add("enter_private")
     return a, db, td
 
 
@@ -199,12 +199,12 @@ def test_canary_matrix(condition, capsys):
     sid = f"wp2f-{condition}"
     agent, db, td = _make(sid)
     handler = StubPH(fail=(condition == "provider_exception"))
-    agent._control_handlers["reflect_pause"] = handler
+    agent._control_handlers["enter_private"] = handler
 
     spy = {"sd": []}
     agent.stream_delta_callback = lambda t: spy["sd"].append(t)
 
-    resp = [_nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls")]
+    resp = [_nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls")]
     resp.append(_nfake(content="Public reply.", finish_reason="stop"))
 
     orig_cwd = Path.cwd()

@@ -50,7 +50,7 @@ def session_db_harness():
     for tname, entry in list(registry._tools.items()):
         if not hasattr(entry, "toolset"):
             registry._tools.pop(tname, None)
-    for tname in ["reflect_pause", "reflect_settle", "reflect_done"]:
+    for tname in ["enter_private", "exit_private", "end_session"]:
         registry._tools.pop(tname, None)
 
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
@@ -58,10 +58,10 @@ def session_db_harness():
     import wharenui_plugin; ctx.plugin_module = wharenui_plugin
     register(ctx)
 
-    assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
-    assert "reflect_pause" in registry.get_all_tool_names(), "reflect_pause missing from registry"
-    assert "reflect_settle" in registry.get_all_tool_names(), "reflect_settle missing from registry"
-    assert "reflect_done" in registry.get_all_tool_names(), "reflect_done missing from registry"
+    assert "enter_private" in mgr._control_phase_handlers, "enter_private handler missing from mgr"
+    assert "enter_private" in registry.get_all_tool_names(), "enter_private missing from registry"
+    assert "exit_private" in registry.get_all_tool_names(), "exit_private missing from registry"
+    assert "end_session" in registry.get_all_tool_names(), "end_session missing from registry"
     assert model_tools.registry is registry, "model_tools.registry out of sync"
 
     yield

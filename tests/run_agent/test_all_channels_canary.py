@@ -100,7 +100,7 @@ def _nfake(content=None, tool_calls=None, finish_reason="stop", reasoning_conten
     return m
 
 
-def _tcfake(name="reflect_settle", args="{}"):
+def _tcfake(name="exit_private", args="{}"):
     fn = MagicMock()
     fn.name = name
     fn.arguments = args
@@ -154,10 +154,9 @@ class LogCaptureHandler(logging.Handler):
 
 @pytest.fixture
 def all_channels_harness():
-    import model_tools
     from hermes_cli.plugins import get_plugin_manager, PluginContext, PluginManifest
+    import model_tools
     from wharenui_plugin import register
-    from wharenui_plugin.journal import tools as jtools
     import wharenui_plugin.phase.toolset as ts_module
     from tools.registry import registry
 
@@ -171,7 +170,7 @@ def all_channels_harness():
     orig_registry_tools = dict(registry._tools)
 
     mgr._hooks.clear()
-    for tname in ["reflect_pause", "reflect_settle", "reflect_done", "throwaway_tool", "throwaway_write"]:
+    for tname in ["enter_private", "exit_private", "end_session", "throwaway_tool", "throwaway_write"]:
         registry._tools.pop(tname, None)
 
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
@@ -204,10 +203,10 @@ def all_channels_harness():
     orig_allowlist = set(ts_module.PRIVATE_ALLOWLIST)
     ts_module.PRIVATE_ALLOWLIST.update({"throwaway_tool", "throwaway_write"})
 
-    assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
-    assert "reflect_pause" in registry.get_all_tool_names(), "reflect_pause missing from registry"
-    assert "reflect_settle" in registry.get_all_tool_names(), "reflect_settle missing from registry"
-    assert "reflect_done" in registry.get_all_tool_names(), "reflect_done missing from registry"
+    assert "enter_private" in mgr._control_phase_handlers, "enter_private handler missing from mgr"
+    assert "enter_private" in registry.get_all_tool_names(), "enter_private missing from registry"
+    assert "exit_private" in registry.get_all_tool_names(), "exit_private missing from registry"
+    assert "end_session" in registry.get_all_tool_names(), "end_session missing from registry"
     assert "throwaway_tool" in registry.get_all_tool_names(), "throwaway_tool missing from registry"
     assert "throwaway_write" in registry.get_all_tool_names(), "throwaway_write missing from registry"
     assert model_tools.registry is registry, "model_tools.registry out of sync"
@@ -241,7 +240,7 @@ def all_channels_harness():
     a._ensure_db_session()
     a.save_trajectories = True
 
-    tool_names = ["reflect_pause", "reflect_settle", "reflect_done", "throwaway_tool", "throwaway_write", "web_search", "terminal"]
+    tool_names = ["enter_private", "exit_private", "end_session", "throwaway_tool", "throwaway_write", "web_search", "terminal"]
     a.valid_tool_names.update(tool_names)
     a.tools = [{"function": {"name": n}} for n in tool_names]
 
@@ -403,14 +402,13 @@ def test_private_toolset_structural_guard(all_channels_harness):
     agent = all_channels_harness["agent"]
     p_tools = private_tools(agent.tools)
     p_names = {(t.get("function", {}) or {}).get("name") for t in p_tools}
-
     assert "terminal" not in p_names
     assert "write_file" not in p_names
     assert "web_search" not in p_names
     assert "delegate" not in p_names
     assert "execute_command" not in p_names
 
-    assert p_names.issubset({"reflect_settle", "reflect_done", "throwaway_tool", "throwaway_write"})
+    assert p_names.issubset({"exit_private", "end_session", "throwaway_tool", "throwaway_write"})
 
 
 @pytest.mark.parametrize("exit_path", ["settle", "done", "cap", "provider-exception-mid-private", "failed-trajectory-dump"])
@@ -427,14 +425,14 @@ def test_maximal_private_scenario_across_all_exit_paths(all_channels_harness, ca
         responses = [
             _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
-            _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+            _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
             _nfake(content="Public answer post settle", finish_reason="stop"),
         ]
     elif exit_path == "done":
         responses = [
             _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
-            _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_done")], finish_reason="tool_calls"),
+            _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("end_session")], finish_reason="tool_calls"),
         ]
     elif exit_path == "cap":
         responses = [
@@ -456,7 +454,7 @@ def test_maximal_private_scenario_across_all_exit_paths(all_channels_harness, ca
         responses = [
             _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
-            _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+            _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
             RuntimeError("Fatal error causing failed trajectory dump"),
         ]
 
@@ -491,7 +489,7 @@ def test_public_positive_control_all_sinks(all_channels_harness, capsys):
     agent.quiet_mode = False
     pub_arg = json.dumps({"arg": CANARY_PUBLIC})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content=f"Public LLM response with {CANARY_PUBLIC}", tool_calls=[_tcfake("throwaway_tool", pub_arg)], finish_reason="tool_calls"),
         _nfake(content=f"Final public answer with {CANARY_PUBLIC}", finish_reason="stop"),
     ]
@@ -566,7 +564,7 @@ def test_per_channel_mutations(all_channels_harness, capsys, target_channel):
     responses = [
         _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
-        _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content="Public response", finish_reason="stop"),
     ]
 
@@ -676,9 +674,9 @@ def test_stream_absence_structural_proof(all_channels_harness):
 
     tool_arg = json.dumps({"arg": CANARY_TOOLARG})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls"),
         _nfake(content=CANARY_TEXT, tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
-        _nfake(content="Private thought", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content="Private thought", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content="Public answer", finish_reason="stop"),
     ]
 
@@ -711,7 +709,7 @@ def test_all_23_hooks_private_phase_accounting(all_channels_harness):
     responses = [
         _nfake(tool_calls=[_tcfake("throwaway_tool", tool_arg)], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("throwaway_write", write_arg)], finish_reason="tool_calls"),
-        _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content=f"Private thought {CANARY_TEXT}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content="Public answer", finish_reason="stop"),
     ]
 
@@ -736,20 +734,20 @@ def test_all_23_hooks_private_phase_accounting(all_channels_harness):
 
 
 def test_real_registry_settle_done_dispatch(all_channels_harness):
-    """T3g.6 — Dispatch reflect_settle and reflect_done through the real registry path."""
+    """T3g.6 — Dispatch exit_private and end_session through the real registry path."""
     from model_tools import handle_function_call
     agent = all_channels_harness["agent"]
 
     agent._phase = "private"
-    res_settle = handle_function_call("reflect_settle", {}, agent=agent)
-    assert "Recorded request to return to window" in str(res_settle) or "settle" in str(res_settle)
+    res_settle = handle_function_call("exit_private", {}, agent=agent)
+    assert "Recorded request to return to window" in str(res_settle) or "settle" in str(res_settle) or "exit_private" in str(res_settle)
     assert getattr(agent, "_private_exit", None) is not None
     assert agent._private_exit.action == "resume"
 
     agent._phase = "private"
     agent._private_exit = None
-    res_done = handle_function_call("reflect_done", {}, agent=agent)
-    assert "Ending session" in str(res_done) or "session" in str(res_done) or "done" in str(res_done)
+    res_done = handle_function_call("end_session", {}, agent=agent)
+    assert "Ending session" in str(res_done) or "session" in str(res_done) or "done" in str(res_done) or "end_session" in str(res_done)
     assert getattr(agent, "_private_exit", None) is not None
     assert agent._private_exit.action == "close"
 
@@ -777,10 +775,10 @@ def corrupt_global_registries():
     orig_handlers = dict(mgr._control_phase_handlers)
 
     model_tools.registry = ToolRegistry()
-    registry._tools["reflect_pause"] = "CORRUPTED_ENTRY"
-    registry._tools["reflect_settle"] = None
+    registry._tools["enter_private"] = "CORRUPTED_ENTRY"
+    registry._tools["exit_private"] = None
     registry._tools["throwaway_write"] = "BAD_STATE"
-    mgr._control_phase_handlers["reflect_pause"] = "BAD_HANDLER"
+    mgr._control_phase_handlers["enter_private"] = "BAD_HANDLER"
     yield
     registry._tools.clear()
     registry._tools.update(orig_tools)
@@ -795,8 +793,8 @@ def test_floor_recovers_from_prior_corrupted_globals(corrupt_global_registries, 
     from agent.conversation_loop import run_conversation
 
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
-        _nfake(content=CANARY_TEXT, tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls"),
+        _nfake(content=CANARY_TEXT, tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content="Public recovery answer", finish_reason="stop"),
     ]
     orig_cwd = Path.cwd()
@@ -828,9 +826,9 @@ def test_private_read_canary_leakage_and_fail_red(all_channels_harness, capsys):
     tool_arg = json.dumps({"path": canary_path})
 
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("private_read", tool_arg)], finish_reason="tool_calls"),
-        _nfake(content=f"Private thought with {canary_content}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content=f"Private thought with {canary_content}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content="Public answer", finish_reason="stop"),
     ]
 
@@ -858,9 +856,9 @@ def test_private_read_canary_leakage_and_fail_red(all_channels_harness, capsys):
         return orig_getattr(obj, name, default)
 
     responses_fail_red = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("private_read", tool_arg)], finish_reason="tool_calls"),
-        _nfake(content=f"Private thought with {canary_content}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content=f"Private thought with {canary_content}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content="Public answer 2", finish_reason="stop"),
     ]
     with patch("model_tools.getattr", side_effect=mutated_getattr), \

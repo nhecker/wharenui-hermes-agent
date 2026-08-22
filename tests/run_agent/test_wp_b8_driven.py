@@ -174,13 +174,13 @@ def test_b8_1_drive_full_private_phase(b8_harness):
          patch("os.path.expanduser", side_effect=lambda p: str(home) if str(p).startswith("~") else str(p)), \
          patch.object(Path, "expanduser", lambda self: home if str(self).startswith("~") else self), \
          patch.dict(os.environ, {"WHARENUI_JOURNAL_DIR": str(jdir)}), \
-         patch("wharenui_plugin.phase.toolset.PRIVATE_ALLOWLIST", {"reflect_settle", "private_read", "journal_append"}):
+         patch("wharenui_plugin.phase.toolset.PRIVATE_ALLOWLIST", {"exit_private", "private_read", "journal_append"}):
         
         # Public pause -> private write -> private settle -> public finish
         it = iter([
-            _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
+            _nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_append", '{"content": "Private journal write"}')], finish_reason="tool_calls"),
-            _nfake(tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+            _nfake(tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
             _nfake(content="Public final", finish_reason="stop")
         ])
         
@@ -209,8 +209,8 @@ def test_b8_1_drive_full_private_phase(b8_harness):
             pm._control_phase_handlers[name] = handler
             pm._control_tool_names.add(name)
         
-        agent.tools = [{"function": {"name": "reflect_pause"}}, {"function": {"name": "reflect_settle"}}, {"function": {"name": "journal_append"}}]
-        agent.valid_tool_names.update(["reflect_pause", "reflect_settle", "journal_append"])
+        agent.tools = [{"function": {"name": "enter_private"}}, {"function": {"name": "exit_private"}}, {"function": {"name": "journal_append"}}]
+        agent.valid_tool_names.update(["enter_private", "exit_private", "journal_append"])
         
         orig_cwd = Path.cwd()
         try:
@@ -245,7 +245,7 @@ def test_b8_1_drive_full_private_phase(b8_harness):
     # Assert tools available
     tool_names = [t.get("function", {}).get("name") for t in agent.tools]
     assert getattr(agent, "_phase", "public") == "public"
-    assert "reflect_pause" in tool_names
+    assert "enter_private" in tool_names
     
     written = False
     for e in storage.list_entries(jdir, master_key=master_key, include_tombstoned=True):

@@ -81,7 +81,7 @@ def _nfake(content=None, tool_calls=None, finish_reason="stop", reasoning_conten
     return m
 
 
-def _tcfake(name="reflect_settle", args="{}"):
+def _tcfake(name="exit_private", args="{}"):
     fn = MagicMock()
     fn.name = name
     fn.arguments = args
@@ -106,17 +106,9 @@ def _scripted_prov(agent, responses, captured_api_kwargs=None):
         if captured_api_kwargs is not None:
             captured_api_kwargs.append(kw)
         try:
-            res = next(it)
-            if isinstance(res, Exception):
-                raise res
-            if getattr(agent, "_phase", "public") == "public" and agent.stream_delta_callback and getattr(res, "content", None):
-                try:
-                    agent.stream_delta_callback(res.content)
-                except Exception:
-                    pass
-            return res
+            return next(it)
         except StopIteration:
-            return _nfake(content="Default fallback response", finish_reason="stop")
+            raise RuntimeError("test: out of scripted responses")
 
     with patch.object(agent, "_get_transport", return_value=mt), \
          patch.object(agent, "_interruptible_api_call", side_effect=_fake_api_call), \
@@ -151,7 +143,7 @@ def journal_harness():
     orig_registry_tools = dict(registry._tools)
 
     mgr._hooks.clear()
-    for tname in ["reflect_pause", "reflect_settle", "reflect_done",
+    for tname in ["enter_private", "exit_private", "end_session",
                   "journal_append", "journal_read", "journal_list",
                   "journal_search", "journal_supersede", "journal_withdraw"]:
         registry._tools.pop(tname, None)
@@ -166,10 +158,10 @@ def journal_harness():
     import wharenui_plugin; ctx.plugin_module = wharenui_plugin
     register(ctx)
 
-    assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing from mgr"
-    assert "reflect_pause" in registry.get_all_tool_names(), "reflect_pause missing from registry"
-    assert "reflect_settle" in registry.get_all_tool_names(), "reflect_settle missing from registry"
-    assert "reflect_done" in registry.get_all_tool_names(), "reflect_done missing from registry"
+    assert "enter_private" in mgr._control_phase_handlers, "enter_private handler missing from mgr"
+    assert "enter_private" in registry.get_all_tool_names(), "enter_private missing from registry"
+    assert "exit_private" in registry.get_all_tool_names(), "exit_private missing from registry"
+    assert "end_session" in registry.get_all_tool_names(), "end_session missing from registry"
     assert "journal_append" in registry.get_all_tool_names(), "journal_append missing from registry"
     assert model_tools.registry is registry, "model_tools.registry out of sync"
 
@@ -201,7 +193,7 @@ def journal_harness():
     a._ensure_db_session()
     a.save_trajectories = True
 
-    tool_names = ["reflect_pause", "reflect_settle", "reflect_done",
+    tool_names = ["enter_private", "exit_private", "end_session",
                   "journal_append", "journal_read", "journal_list",
                   "journal_search", "journal_supersede", "journal_withdraw",
                   "web_search", "terminal"]
@@ -361,14 +353,14 @@ def test_real_journal_canary_absence_across_all_5_exit_paths(journal_harness, ca
             _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_search", search_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_read", read_arg)], finish_reason="tool_calls"),
-            _nfake(content=f"Private thought about {CANARY_JOURNAL}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+            _nfake(content=f"Private thought about {CANARY_JOURNAL}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
             _nfake(content="Public answer post settle", finish_reason="stop"),
         ]
     elif exit_path == "done":
         responses = [
             _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls"),
             _nfake(tool_calls=[_tcfake("journal_read", read_arg)], finish_reason="tool_calls"),
-            _nfake(content=f"Private closing note {CANARY_JOURNAL}", tool_calls=[_tcfake("reflect_done")], finish_reason="tool_calls"),
+            _nfake(content=f"Private closing note {CANARY_JOURNAL}", tool_calls=[_tcfake("end_session")], finish_reason="tool_calls"),
         ]
     elif exit_path == "cap":
         responses = [
@@ -419,7 +411,7 @@ def test_t4_per_channel_mutations(journal_harness, capsys, target_channel):
     append_arg = json.dumps({"content": CANARY_JOURNAL, "slug": CANARY_JOURNAL_SLUG})
     responses = [
         _nfake(tool_calls=[_tcfake("journal_append", append_arg)], finish_reason="tool_calls"),
-        _nfake(content=f"Private thought {CANARY_JOURNAL}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(content=f"Private thought {CANARY_JOURNAL}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content="Public response", finish_reason="stop"),
     ]
 
@@ -503,7 +495,7 @@ def test_t4_positive_control(journal_harness):
     from agent.conversation_loop import run_conversation
 
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content=f"Public response with {CANARY_PUBLIC}", finish_reason="stop"),
     ]
 

@@ -43,7 +43,7 @@ def _nfake(content=None, tool_calls=None, finish_reason="stop"):
     m.provider_data = None
     return m
 
-def _tcfake(name="reflect_pause", args="{}"):
+def _tcfake(name="enter_private", args="{}"):
     fn = MagicMock()
     fn.name = name
     fn.arguments = args
@@ -88,15 +88,15 @@ def _make(sid="t36-c"):
     a._ensure_db_session()
     a._phase = "public"
     a._pending_phase_transition = None
-    a._control_tool_names = {"reflect_pause"}
+    a._control_tool_names = {"enter_private"}
     a._control_handlers = {}
     a.save_trajectories = True
-    for tool in ["reflect_pause", "reflect_settle", "reflect_done"]:
+    for tool in ["enter_private", "exit_private", "end_session"]:
         a.valid_tool_names.add(tool)
     a.tools = [
-        {"function": {"name": "reflect_pause"}},
-        {"function": {"name": "reflect_settle"}},
-        {"function": {"name": "reflect_done"}},
+        {"function": {"name": "enter_private"}},
+        {"function": {"name": "exit_private"}},
+        {"function": {"name": "end_session"}},
     ]
     return a, db, td
 
@@ -126,13 +126,13 @@ def test_canary_real_handler(condition, capsys):
     from wharenui_plugin.phase.handler import WharePhaseHandler
     handler = WharePhaseHandler()
     handler.MAX_PRIVATE_TURNS = 3
-    agent._control_handlers["reflect_pause"] = handler
+    agent._control_handlers["enter_private"] = handler
 
     spy = {"sd": []}
     agent.stream_delta_callback = lambda t: spy["sd"].append(t)
 
     # Script: public pause -> private subturn (CANARY) -> public reply
-    resp = [_nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls")]
+    resp = [_nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls")]
     resp.append(_nfake(content=CANARY, finish_reason="stop"))            # private turn 1
     resp.append(_nfake(content="Public reply.", finish_reason="stop"))   # public resume
 

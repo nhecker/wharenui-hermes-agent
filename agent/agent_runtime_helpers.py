@@ -3140,7 +3140,16 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i
             pass
         return result
 
-    if function_name == "todo":
+    if function_name in getattr(agent, "_control_tool_names", set()):
+        def _execute(next_args: dict) -> Any:
+            _h = getattr(agent, "_control_handlers", {}).get(function_name)
+            outcome = _h.begin(next_args) if _h and hasattr(_h, "begin") else None
+            if outcome is None:
+                from agent.phase_control import ControlOutcome
+                outcome = ControlOutcome(action="enter", handler=function_name, tool_result=function_name + " acknowledged")
+            agent._pending_phase_transition = outcome
+            return _finish_agent_tool(outcome.tool_result, next_args)
+    elif function_name == "todo":
         def _execute(next_args: dict) -> Any:
             from tools.todo_tool import todo_tool as _todo_tool
             return _finish_agent_tool(

@@ -1,5 +1,5 @@
 """TQoL.1 — Public-reopen assertion.
-Asserts that after a private phase closes via reflect_settle, public persistence
+Asserts that after a private phase closes via exit_private, public persistence
 resumes and the post-private public content IS present in the session DB (channels A/B),
 while private canary content is excluded and pre-private public content remains intact.
 """
@@ -54,7 +54,7 @@ def _nfake(content=None, tool_calls=None, finish_reason="stop"):
     return m
 
 
-def _tcfake(name="reflect_pause", args="{}"):
+def _tcfake(name="enter_private", args="{}"):
     fn = MagicMock()
     fn.name = name
     fn.arguments = args
@@ -105,7 +105,7 @@ def self_establishing_harness():
     for tname, entry in list(registry._tools.items()):
         if not hasattr(entry, "toolset"):
             registry._tools.pop(tname, None)
-    for tname in ["reflect_pause", "reflect_settle", "reflect_done"]:
+    for tname in ["enter_private", "exit_private", "end_session"]:
         registry._tools.pop(tname, None)
 
     manifest = PluginManifest(name="wharenui", key="wharenui", version="0.1.0", path="/tmp")
@@ -113,10 +113,10 @@ def self_establishing_harness():
     import wharenui_plugin; ctx.plugin_module = wharenui_plugin
     register(ctx)
 
-    assert "reflect_pause" in mgr._control_phase_handlers, "reflect_pause handler missing"
-    assert "reflect_pause" in registry.get_all_tool_names(), "reflect_pause missing from registry"
-    assert "reflect_settle" in registry.get_all_tool_names(), "reflect_settle missing from registry"
-    assert "reflect_done" in registry.get_all_tool_names(), "reflect_done missing from registry"
+    assert "enter_private" in mgr._control_phase_handlers, "enter_private handler missing"
+    assert "enter_private" in registry.get_all_tool_names(), "enter_private missing from registry"
+    assert "exit_private" in registry.get_all_tool_names(), "exit_private missing from registry"
+    assert "end_session" in registry.get_all_tool_names(), "end_session missing from registry"
     assert model_tools.registry is registry, "model_tools.registry out of sync"
 
     td = Path(tempfile.mkdtemp(prefix="reopen-"))
@@ -141,9 +141,9 @@ def self_establishing_harness():
         agent.client = MagicMock()
     agent._ensure_db_session()
     agent.save_trajectories = True
-    for tool in ["reflect_pause", "reflect_settle", "reflect_done"]:
+    for tool in ["enter_private", "exit_private", "end_session"]:
         agent.valid_tool_names.add(tool)
-    agent.tools = [{"function": {"name": n}} for n in ["reflect_pause", "reflect_settle", "reflect_done"]]
+    agent.tools = [{"function": {"name": n}} for n in ["enter_private", "exit_private", "end_session"]]
 
     yield {"agent": agent, "db": db, "td": td, "sid": sid}
 
@@ -163,7 +163,7 @@ def self_establishing_harness():
 
 
 def test_public_reopen_persists_post_private_content(self_establishing_harness, capsys):
-    """TQoL.1: Continuous session public -> reflect_pause ... reflect_settle -> public.
+    """TQoL.1: Continuous session public -> enter_private ... exit_private -> public.
     Positively asserts:
     1) Post-private public turn's content IS present in session DB (channels A/B).
     2) Session DB contains public content from BOTH sides of private phase and NO private canary.
@@ -177,8 +177,8 @@ def test_public_reopen_persists_post_private_content(self_establishing_harness, 
     from agent.conversation_loop import run_conversation
 
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_pause")], finish_reason="tool_calls"),
-        _nfake(content=f"Private thought {CANARY_PRIVATE}", tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("enter_private")], finish_reason="tool_calls"),
+        _nfake(content=f"Private thought {CANARY_PRIVATE}", tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(content=PUBLIC_POST, finish_reason="stop"),
     ]
 

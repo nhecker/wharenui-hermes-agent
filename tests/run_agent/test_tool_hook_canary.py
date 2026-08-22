@@ -49,7 +49,7 @@ def _nfake(content=None, tool_calls=None, finish_reason="stop"):
     m.provider_data = None
     return m
 
-def _tcfake(name="reflect_settle", args="{}"):
+def _tcfake(name="exit_private", args="{}"):
     fn = MagicMock(); fn.name = name; fn.arguments = args
     tc = MagicMock(function=fn, id=f"call_{name}")
     tc.type = "function"; tc.extra_content = None
@@ -116,7 +116,7 @@ def loaded_agent():
 
     a._ensure_db_session()
     a.save_trajectories = True
-    tool_names = ["reflect_pause", "reflect_settle", "reflect_done", "web_search"]
+    tool_names = ["enter_private", "exit_private", "end_session", "web_search"]
     a.valid_tool_names.update(tool_names)
     a.tools = [{"function": {"name": n}} for n in tool_names]
     return a, db, td, captured
@@ -125,9 +125,9 @@ def test_private_toolset_allowlist():
     from wharenui_plugin.phase.toolset import private_tools, public_tools, PRIVATE_ALLOWLIST
 
     all_tools = [
-        {"function": {"name": "reflect_pause"}},
-        {"function": {"name": "reflect_settle"}},
-        {"function": {"name": "reflect_done"}},
+        {"function": {"name": "enter_private"}},
+        {"function": {"name": "exit_private"}},
+        {"function": {"name": "end_session"}},
         {"function": {"name": "terminal"}},
         {"function": {"name": "write_file"}},
         {"function": {"name": "web_search"}},
@@ -135,17 +135,17 @@ def test_private_toolset_allowlist():
 
     p_tools = private_tools(all_tools)
     p_names = {(t.get("function", {}) or {}).get("name") for t in p_tools}
-    assert p_names == {"reflect_settle", "reflect_done"}, f"private_tools names: {p_names}"
-    assert "reflect_pause" not in p_names
+    assert p_names == {"exit_private", "end_session"}, f"private_tools names: {p_names}"
+    assert "enter_private" not in p_names
     assert "terminal" not in p_names
     assert "write_file" not in p_names
     assert "web_search" not in p_names
 
     pub_tools = public_tools(all_tools)
     pub_names = {(t.get("function", {}) or {}).get("name") for t in pub_tools}
-    assert "reflect_pause" in pub_names
-    assert "reflect_settle" not in pub_names
-    assert "reflect_done" not in pub_names
+    assert "enter_private" in pub_names
+    assert "exit_private" not in pub_names
+    assert "end_session" not in pub_names
 
 def test_tool_call_hooks_suppressed_in_private_phase(loaded_agent):
     agent, db, td, captured = loaded_agent
@@ -153,7 +153,7 @@ def test_tool_call_hooks_suppressed_in_private_phase(loaded_agent):
 
     private_args = json.dumps({"reason": f"settling_{CANARY}"})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_settle", private_args)], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("exit_private", private_args)], finish_reason="tool_calls"),
         _nfake(content="Public reply after private phase.", finish_reason="stop"),
     ]
 
@@ -184,7 +184,7 @@ def test_public_positive_control_fires_tool_hooks(loaded_agent):
 
     pub_args = json.dumps({"query": f"public_query_{CANARY}"})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_settle")], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("exit_private")], finish_reason="tool_calls"),
         _nfake(tool_calls=[_tcfake("web_search", pub_args)], finish_reason="tool_calls"),
         _nfake(content="Search completed.", finish_reason="stop"),
     ]
@@ -219,7 +219,7 @@ def test_per_site_mutation_neutralize_gate_causes_canary_leak(loaded_agent):
 
     private_args = json.dumps({"reason": f"settling_{CANARY}"})
     responses = [
-        _nfake(tool_calls=[_tcfake("reflect_settle", private_args)], finish_reason="tool_calls"),
+        _nfake(tool_calls=[_tcfake("exit_private", private_args)], finish_reason="tool_calls"),
         _nfake(content="Public reply.", finish_reason="stop"),
     ]
 

@@ -35,7 +35,7 @@ def test_no_plugin_module_is_refusal():
     ctx = _make_ctx()
     with pytest.raises(RuntimeError, match="plugin_module is not set"):
         ctx.register_control_tool(
-            name="reflect_pause", schema={},
+            name="enter_private", schema={},
             handler=lambda x: None, phase_handler=MagicMock(),
         )
 
@@ -47,7 +47,7 @@ def test_no_version_attribute_is_refusal():
     ctx = _make_ctx(plugin_module=NoVersion())
     with pytest.raises(RuntimeError, match="does not carry PHASE_CONTROL_API_VERSION"):
         ctx.register_control_tool(
-            name="reflect_pause", schema={},
+            name="enter_private", schema={},
             handler=lambda x: None, phase_handler=MagicMock(),
         )
 
@@ -57,7 +57,7 @@ def test_mismatched_version_still_refuses():
     ctx = _make_ctx(plugin_module=MismatchedModule())
     with pytest.raises(RuntimeError, match="version mismatch"):
         ctx.register_control_tool(
-            name="reflect_pause", schema={},
+            name="enter_private", schema={},
             handler=lambda x: None, phase_handler=MagicMock(),
         )
 
@@ -70,7 +70,7 @@ def test_matched_version_sets_ok():
     mod.SEAM_STATE = "unknown"
     ctx = _make_ctx(plugin_module=mod)
     ctx.register_control_tool(
-        name="reflect_pause", schema={},
+        name="enter_private", schema={},
         handler=lambda x: None, phase_handler=MagicMock(),
     )
     assert mod.SEAM_STATE == "ok"
@@ -85,7 +85,7 @@ def test_mismatched_with_override_sets_unverified():
     os.environ["WHARENUI_ALLOW_UNVERIFIED_SEAM"] = "plugin999-seam1"
     try:
         ctx.register_control_tool(
-            name="reflect_pause", schema={},
+            name="enter_private", schema={},
             handler=lambda x: None, phase_handler=MagicMock(),
         )
         assert mod.SEAM_STATE == "unverified"
@@ -102,7 +102,7 @@ def test_stale_override_does_not_grant():
     try:
         with pytest.raises(RuntimeError, match="version mismatch"):
             ctx.register_control_tool(
-                name="reflect_pause", schema={},
+                name="enter_private", schema={},
                 handler=lambda x: None, phase_handler=MagicMock(),
             )
     finally:
@@ -152,11 +152,11 @@ def test_mid_registration_failure_coherent():
     ctx = PluginContext(manifest, manager)
     ctx.plugin_module = mod
     ctx.register_control_tool(
-        name="reflect_pause", schema={},
+        name="enter_private", schema={},
         handler=lambda x: None, phase_handler=MagicMock(),
     )
     # The handler exists in the registry
-    assert "reflect_pause" in manager._control_phase_handlers
-    assert "reflect_pause" in manager._control_tool_names
+    assert "enter_private" in manager._control_phase_handlers
+    assert "enter_private" in manager._control_tool_names
     # No transition was triggered — phase stays public
     assert _PHASE_PRIVATE_MARKER == "_phase_private"

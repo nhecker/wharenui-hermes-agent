@@ -206,6 +206,17 @@ def _core_tool_names() -> frozenset[str]:
         return frozenset()
 
 
+def _control_tool_names() -> frozenset[str]:
+    """Return the set of control tool names that must NEVER be deferred."""
+    names = {"enter_private", "exit_private", "end_session"}
+    try:
+        from hermes_cli.plugins import get_control_tool_names
+        names.update(get_control_tool_names() or ())
+    except Exception:
+        pass
+    return frozenset(names)
+
+
 # Session-gated GUI toolsets. Off ``_HERMES_CORE_TOOLS`` so non-GUI clients
 # never pay their schema; once a session enables them they stay direct.
 _DIRECT_SURFACE_TOOLSETS = frozenset({"desktop_ui", "project"})
@@ -216,13 +227,15 @@ def is_deferrable_tool_name(name: str) -> bool:
 
     A tool is deferrable iff it is registered with an MCP toolset prefix
     OR it is neither in ``_HERMES_CORE_TOOLS`` nor a session-gated GUI
-    surface toolset. Core and direct surface tools are never deferred even
-    when their toolset is technically plugin-provided (this protects
-    against accidental shadowing).
+    surface toolset nor a control tool. Core, control, and direct surface
+    tools are never deferred even when their toolset is technically
+    plugin-provided (this protects against accidental shadowing).
     """
     if name in BRIDGE_TOOL_NAMES:
         return False
     if name in _core_tool_names():
+        return False
+    if name in _control_tool_names():
         return False
     # Check registry toolset for MCP prefix.
     try:

@@ -134,7 +134,7 @@ def test_contract_phase_control_api_version():
     
     with pytest.raises(RuntimeError, match="Wharenui phase-control version mismatch"):
         ctx.register_control_tool(
-            name="reflect_pause",
+            name="enter_private",
             schema={},
             handler=lambda x: None,
             phase_handler=MagicMock(),
