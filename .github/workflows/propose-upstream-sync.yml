@@ -25,7 +25,7 @@ on:
       max_delta_lines:
         description: "Maximum allowed upstream diff delta lines"
         type: string
-        default: "500"0
+        default: "5000"
       skip_tests:
         description: "Skip test gate execution (not recommended for production)"
         type: boolean
