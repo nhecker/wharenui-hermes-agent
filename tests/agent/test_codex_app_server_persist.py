@@ -163,7 +163,11 @@ def test_codex_turn_persists_each_message_exactly_once():
     finally:
         import shutil
 
-        shutil.rmtree(tmp)
+        try:
+            db.close()
+        except Exception:
+            pass
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 class TestGatewayPersistedResolution:
